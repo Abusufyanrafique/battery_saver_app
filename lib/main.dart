@@ -1,6 +1,8 @@
 import 'package:battery_saver_app/view/battery_saver/battery_saver_screen.dart';
+import 'package:battery_saver_app/view/bottom_nav/home_screen.dart';
 import 'package:battery_saver_app/view/cpu_cooler/cpu_cooler.dart';
 import 'package:battery_saver_app/view/junk_cleaner/junk_cleaner_screen.dart';
+import 'package:battery_saver_app/view/notification_cleaner/notification_cleaner.dart';
 import 'package:battery_saver_app/view/phone_boost/phone_boost_screen.dart';
 import 'package:battery_saver_app/view/security_scan/security_scan_screen.dart';
 import 'package:battery_saver_app/view/tools/tools_screen.dart';
@@ -23,7 +25,7 @@ class MyApp extends StatelessWidget {
         
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const SecurityScanScreen(),
+      home: const MainScreen(),
     );
   }
 }

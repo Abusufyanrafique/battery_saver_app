@@ -23,4 +23,7 @@ class AppImages {
   static const String cpumangerimage = "assets/images/phone_boost/cpumangerimage.png";
   static const String temperature = "assets/images/phone_boost/Temperature.png";
   static const String securityscanimage = "assets/images/phone_boost/securityscanimage.png";
+  static const String notificationcleanerimage = "assets/images/phone_boost/Notificationcleaner.png";
+  static const String home = "assets/images/nav/home.png";
+  static const String homeicon = "";
 } 

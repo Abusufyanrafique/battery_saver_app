@@ -9,4 +9,8 @@ class AppIcons {
   static const String quickwidgetBoost = "assets/icons/tools_screen/quickwidgetBoost.svg";
   static const String premiumicon = "assets/icons/tools_screen/premiumicon.svg";
   static const String chevronleftrounded = "assets/icons/tools_screen/chevron_left_rounded.svg";
+  static const String homeicon = "assets/icons/nav/homeicon.svg";
+  static const String usageicon = "assets/icons/nav/Usageicon.svg";
+  static const String toolsicon = "assets/icons/nav/Toolsicon.svg";
+  static const String profileicon = "assets/icons/nav/Profileicon.svg";
 }
