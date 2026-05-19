@@ -1,0 +1,26 @@
+class AppImages {
+  static const String junk ="assets/images/junk.png";
+  static const String premium = "assets/images/premium.png";
+  static const String chevron = "assets/images/tools/chevron.png";
+  static const String phoneboost = "assets/images/tools/phoneboost.png";
+  static const String toolbatterysaver = "assets/images/tools/toolbatterysaver.png";
+  static const String toolcpucooler = "assets/images/tools/toolcpucooler.png";
+  static const String toolsecurityscan ="assets/images/tools/toolSecurityScan.png";
+  static const String toolNotificationCleaner = "assets/images/tools/toolNotificationCleaner.png";
+  static const String toolappmanager = "assets/images/tools/toolNotificationCleaner.png";
+  static const String toolFileManager ="assets/images/tools/toolFileManager.png";
+  static const String toolDataUsage = "assets/images/tools/toolDataUsage.png";
+  static const String junkcleanscreenimage = "assets/images/junk_cleaner/junkcleanscreenimage.png";
+  static const String phoneboostOptimizeimage = "assets/images/junk_cleaner/phone_boost_optimizeimage.png";
+  static const String whatsapp = "assets/images/phone_boost/whatsapp.png";
+  static const String facebook = "assets/images/phone_boost/facebook.png";
+  static const String instagram = "assets/images/phone_boost/Instagram.png";
+  static const String youtube = "assets/images/phone_boost/youtube.png";
+  static const String others  = "assets/images/phone_boost/Others.png";
+  static const String batterysaverimage = "assets/images/phone_boost/batterysaverimage.png";
+  static const String cpucoolerimage = "assets/images/phone_boost/cpucoolerimage.png";
+  static const String cpuusage = "assets/images/phone_boost/cpuusage.png";
+  static const String cpumangerimage = "assets/images/phone_boost/cpumangerimage.png";
+  static const String temperature = "assets/images/phone_boost/Temperature.png";
+  static const String securityscanimage = "assets/images/phone_boost/securityscanimage.png";
+} 
