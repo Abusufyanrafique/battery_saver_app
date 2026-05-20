@@ -1,20 +1,39 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/widgets/app_drawer/phone_optimizer_drawer.dart';
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:flutter_svg/svg.dart';
+
 
 // ════════════════════════════════════════════════════════
 //  SCREEN
 // ════════════════════════════════════════════════════════
-class AppHomeScreen extends StatelessWidget {
+class AppHomeScreen extends StatefulWidget {
   const AppHomeScreen({super.key});
+
+  @override
+  State<AppHomeScreen> createState() => _AppHomeScreenState();
+}
+
+class _AppHomeScreenState extends State<AppHomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  String _selectedItem = 'Home';
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF080C20), 
+      key: _scaffoldKey,
+      drawer: PhoneOptimizerDrawer(
+        selectedItem: _selectedItem,
+        onItemSelected: (item) {
+          setState(() => _selectedItem = item);
+          Navigator.pop(context);
+        },
+      ),
+      backgroundColor: const Color(0xFF080C20),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
@@ -51,67 +70,71 @@ class _TopBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 14),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A1F4E),
-              borderRadius: BorderRadius.circular(8),
+          GestureDetector(
+            onTap: () {
+              Scaffold.of(context).openDrawer();
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1F4E),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Image(image: AssetImage(AppImages.meun)),
             ),
-            child: Image(image: AssetImage(AppImages.meun))
           ),
           Expanded(
-  child: Center(
-    child: RichText(
-      text: TextSpan(
-        children: [
-           TextSpan(
-            text: 'Battery ',
-             style: AppTextStyles.displayMedium.copyWith(
-                  fontSize: getFont(24),
-                  fontWeight: FontWeight.w700
-                ),
-            
-          ),
-
-          WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: ShaderMask(
-              shaderCallback: (bounds) {
-                return const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFFFE39C6),
-                    Color(0xFF5C0EE3),
-                    Color(0xFF55D0FF),
+            child: Center(
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: 'Battery ',
+                      style: AppTextStyles.displayMedium.copyWith(
+                        fontSize: getFont(24),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: ShaderMask(
+                        shaderCallback: (bounds) {
+                          return const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Color(0xFFFE39C6),
+                              Color(0xFF5C0EE3),
+                              Color(0xFF55D0FF),
+                            ],
+                          ).createShader(
+                            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                          );
+                        },
+                        child: Text(
+                          'Optimizer',
+                          style: AppTextStyles.displayMedium.copyWith(
+                            fontSize: getFont(24),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
-                ).createShader(
-                  Rect.fromLTWH(0, 0, bounds.width, bounds.height),
-                );
-              },
-              child:  Text(
-                'Optimizer',
-                style: AppTextStyles.displayMedium.copyWith(
-                  fontSize: getFont(24),
-                  fontWeight: FontWeight.w700
                 ),
               ),
             ),
           ),
-        ],
-      ),
-    ),
-  ),
-),
           Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF1A1F4E),
+              color: const Color(0xFF0E112F),
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Color(0xFF5C0EE3)),
             ),
-            child: Image(image: AssetImage(AppImages.setting))
+            child: Image(image: AssetImage(AppImages.setting)),
           ),
         ],
       ),
@@ -138,7 +161,6 @@ class _BatteryCard extends StatelessWidget {
           colors: [
             Color(0xFFFF0EBA),
             Color(0xFF5C0EE3),
-            
           ],
         ),
       ),
@@ -149,23 +171,23 @@ class _BatteryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Text(
+                Text(
                   'Battery Level',
-                  style:AppTextStyles.bodyLarge.copyWith(
+                  style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(16),
                     fontWeight: FontWeight.w600,
-                  )
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  children:  [
+                  children: [
                     Text(
                       '72%',
-                       style:AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(32),
-                    fontWeight: FontWeight.w600,
-                  )
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: getFont(32),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     SizedBox(width: 6),
                     Icon(Icons.bolt, color: Colors.white, size: 28),
@@ -183,112 +205,44 @@ class _BatteryCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                     Text(
+                    Text(
                       'Charging',
-                     style:AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(16),
-                    fontWeight: FontWeight.w500,
-                  )
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: getFont(16),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Row(
-                  children:  [
-                    Icon(Icons.favorite_border,
-                        color: Colors.white70, size: 16),
+                  children: [
+                    Icon(Icons.favorite_border, color: Colors.white70, size: 16),
                     SizedBox(width: 6),
                     Text(
                       'Good Health',
-                     style:AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(16),
-                    fontWeight: FontWeight.w500,
-                  )
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: getFont(16),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-      SizedBox(
-  width: 110,
-  height: 120,
-  child: Image.asset(
-    AppImages.bigbattery, 
-    fit: BoxFit.contain,
-  ),
-),
+          SizedBox(
+            width: 110,
+            height: 120,
+            child: Image.asset(
+              AppImages.bigbattery,
+              fit: BoxFit.contain,
+            ),
+          ),
         ],
       ),
     );
   }
-}
-
-
-
-class _BatteryPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
-    final arcPaint = Paint()
-      ..color = Colors.white.withOpacity(0.3)
-      ..strokeWidth = 2.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: Offset(cx, cy), radius: 48),
-      -math.pi * 0.75,
-      math.pi * 1.5,
-      false,
-      arcPaint,
-    );
-
-    final bodyPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFF7B2FBE), Color(0xFF4A0CA3)],
-      ).createShader(Rect.fromCenter(
-          center: Offset(cx, cy), width: 50, height: 80))
-      ..style = PaintingStyle.fill;
-
-    final bodyRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(cx - 18, cy - 36, 36, 68),
-        const Radius.circular(8));
-    canvas.drawRRect(bodyRect, bodyPaint);
-
-    final tipPaint = Paint()
-      ..color = Colors.white.withOpacity(0.5)
-      ..style = PaintingStyle.fill;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          Rect.fromLTWH(cx - 8, cy - 42, 16, 8),
-          const Radius.circular(3)),
-      tipPaint,
-    );
-
-    final fillPaint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFF00CFFF), Color(0xFF0055FF)],
-      ).createShader(Rect.fromLTWH(cx - 14, cy - 28, 28, 52))
-      ..style = PaintingStyle.fill;
-
-    final fillHeight = 52 * 0.72;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-          Rect.fromLTWH(cx - 14, cy - 28 + (52 - fillHeight), 28, fillHeight),
-          const Radius.circular(4)),
-      fillPaint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // ════════════════════════════════════════════════════════
@@ -300,32 +254,31 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: getHeight(60),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF181C3B),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A2F5A), width: 1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF414669), width: 1),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children:  [
+        children: [
           _StatItem(
-           iconPath: AppImages.remaining,
+            iconPath: AppImages.remaining,
             iconColor: Color(0xFFFF6B9D),
             value: '12 h 45 m',
             label: 'Remaining',
           ),
           _StatDivider(),
           _StatItem(
-            iconPath: AppImages.hometempimage,
+            iconPath: "assets/images/home/temp.png",
             iconColor: Color(0xFFFF9800),
             value: '32°C',
             label: 'Temperature',
           ),
           _StatDivider(),
           _StatItem(
-           iconPath: AppImages.goodhe,
+            iconPath: AppImages.goodhe,
             iconColor: Color(0xFF4A8EFF),
             value: 'Good',
             label: 'Health',
@@ -337,7 +290,7 @@ class _StatsRow extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  final String iconPath; // 👈 now image path
+  final String iconPath;
   final Color iconColor;
   final String value;
   final String label;
@@ -351,40 +304,41 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        // 👇 Image instead of Icon
         Image.asset(
           iconPath,
-          width: 22,
-          height: 22,
-          color: iconColor, // optional tint
+          width: getWidth(32),
+          height: getHeight(32),
         ),
-
-        const SizedBox(height: 6),
-
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-        ),
-
-        const SizedBox(height: 2),
-
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xFF8A91B8),
-          ),
+        const SizedBox(width: 8),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              value,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: getFont(14),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: getFont(12),
+                fontWeight: FontWeight.w400,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 }
+
 class _StatDivider extends StatelessWidget {
   const _StatDivider();
 
@@ -393,7 +347,7 @@ class _StatDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: 40,
-      color: const Color(0xFF2A2F5A),
+      color: const Color(0xFF414669),
     );
   }
 }
@@ -407,58 +361,98 @@ class _OptimizeBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF111638),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFFFE39C6),
+            Color(0xFF5C0EE3),
+            Color(0xFF5C0EE3),
+          ],
+          stops: [0.0, 0.25, 1.0],
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A2F5A), width: 1),
+        border: Border.all(color: const Color(0xFFCDD0E4), width: 1),
       ),
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: getWidth(40),
+            height: getHeight(40),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [Color(0xFF7B2FBE), Color(0xFFCC44FF)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFFFE39C6), Color(0xFF5C0EE3)],
               ),
             ),
-            child: const Icon(Icons.rocket_launch_rounded,
-                color: Colors.white, size: 22),
+            child: SvgPicture.asset(
+              AppIcons.rocket,
+              width: getWidth(24),
+              height: getHeight(26),
+            ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Optimize Now',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white)),
+                Text(
+                  'Optimize Now',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: getFont(16),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 SizedBox(height: 3),
-                Text('Improve battery performance',
-                    style: TextStyle(
-                        fontSize: 12, color: Color(0xFF8A91B8))),
+                Text(
+                  'Improve battery performance',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: getFont(12),
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                ),
               ],
             ),
           ),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            height: getHeight(24),
+            width: getWidth(84),
             decoration: BoxDecoration(
-              border:
-                  Border.all(color: const Color(0xFF4A4FCC), width: 1.2),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.10),
+                width: 1.2,
+              ),
               borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  offset: const Offset(0, 1),
+                  blurRadius: 4,
+                  spreadRadius: 0,
+                ),
+              ],
             ),
             child: Row(
-              children: const [
-                Text('Optimize',
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600)),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                  child: Text(
+                    'Optimize',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(10),
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF8A91B8),
+                    ),
+                  ),
+                ),
                 SizedBox(width: 4),
                 Icon(Icons.chevron_right, color: Colors.white, size: 16),
               ],
@@ -476,34 +470,38 @@ class _OptimizeBanner extends StatelessWidget {
 class _FeatureGrid extends StatelessWidget {
   const _FeatureGrid();
 
-  static const List<_FeatureData> features = [
+  static List<_FeatureData> features = [
     _FeatureData(
-      icon: Icons.battery_saver_rounded,
-      iconColor: Color(0xFFFF6B9D),
-      gradientColors: [Color(0xFF3A0050), Color(0xFF1A0030)],
+      iconPath: AppIcons.homebatteryicon,
+      chevronColor: Color(0xFF9A3CFF),
+      gradientColors: [Color(0xFF181C3B)],
       title: 'Battery Saver',
       subtitle: 'Save power and extend battery life',
+      iconBgColor: Color(0xFF9A3CFF),
     ),
     _FeatureData(
-      icon: Icons.bolt_rounded,
-      iconColor: Color(0xFFFFCC00),
-      gradientColors: [Color(0xFF1A1000), Color(0xFF0D0800)],
+      iconPath: AppIcons.homepowericon,
+      chevronColor: Color(0xFF9A3CFF),
+      gradientColors: [Color(0xFF1A1000)],
       title: 'Power Boost',
       subtitle: 'Boost performance when needed',
+      iconBgColor: Color(0xFF55D0FF),
     ),
     _FeatureData(
-      icon: Icons.ac_unit_rounded,
-      iconColor: Color(0xFF00CFFF),
+      iconPath: AppIcons.hometempicon,
       gradientColors: [Color(0xFF001A3A), Color(0xFF000D1F)],
       title: 'Temperature Control',
       subtitle: 'Keep your device cool',
+      chevronColor: Color(0xFF5C0EE3),
+      iconBgColor: Color(0xFF5C0EE3),
     ),
     _FeatureData(
-      icon: Icons.favorite_rounded,
-      iconColor: Color(0xFF3DDC84),
+      iconPath: AppIcons.homebatteryhe,
+      chevronColor: Color(0xFFFE39E0),
       gradientColors: [Color(0xFF001A10), Color(0xFF000D08)],
       title: 'Battery Health',
       subtitle: 'Monitor and protect your battery',
+      iconBgColor: Color(0xFFFE39C6),
     ),
   ];
 
@@ -515,25 +513,27 @@ class _FeatureGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.55,
+      childAspectRatio: 1.9,
       children: features.map((f) => _FeatureCard(data: f)).toList(),
     );
   }
 }
 
 class _FeatureData {
-  final IconData icon;
-  final Color iconColor;
   final List<Color> gradientColors;
   final String title;
   final String subtitle;
+  final Color chevronColor;
+  final String iconPath;
+  final Color iconBgColor;
 
   const _FeatureData({
-    required this.icon,
-    required this.iconColor,
     required this.gradientColors,
     required this.title,
     required this.subtitle,
+    required this.chevronColor,
+    required this.iconPath,
+    required this.iconBgColor,
   });
 }
 
@@ -545,27 +545,34 @@ class _FeatureCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+      padding: EdgeInsets.fromLTRB(8, 12, 8, 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: data.gradientColors,
-        ),
-        border: Border.all(color: const Color(0xFF2A2F5A), width: 1),
+        color: Color(0xFF181C3B),
+        border: Border.all(color: const Color(0xFF414669), width: 1),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            width: 38,
-            height: 38,
+            width: getWidth(40),
+            height: getHeight(40),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: data.iconColor.withOpacity(0.15),
+              color: data.iconBgColor,
             ),
-            child: Icon(data.icon, color: data.iconColor, size: 20),
+            child: Center(
+              child: SvgPicture.asset(
+                data.iconPath,
+                fit: BoxFit.contain,
+                colorFilter: ColorFilter.mode(
+                  Colors.white,
+                  BlendMode.srcIn,
+                ),
+                width: 20,
+                height: 20,
+              ),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -573,25 +580,34 @@ class _FeatureCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(data.title,
-                    style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  data.title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: getFont(12),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 3),
-                Text(data.subtitle,
-                    style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF8A91B8),
-                        height: 1.3),
-                    maxLines: 2),
+                Text(
+                  data.subtitle,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: getFont(10),
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right,
-              color: Color(0xFF4A4FCC), size: 18),
+          Icon(
+            Icons.chevron_right,
+            color: data.chevronColor,
+            size: 18,
+          ),
         ],
       ),
     );
@@ -609,31 +625,31 @@ class _CleanBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF111638),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A2F5A), width: 1),
+        color: const Color(0xFF181C3B),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF9EF377), width: 0.5),
       ),
       child: Row(
         children: [
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'Clean Background Apps',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF3DDC84),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontSize: getFont(12),
+                    color: Color(0xFF9DF474),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
                   'Stop unused apps running\nin the background',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF8A91B8),
-                    height: 1.4,
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontSize: getFont(12),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -644,29 +660,31 @@ class _CleanBanner extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: const Color(0xFF1A3A2A),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.check_box_rounded,
-                color: Color(0xFF3DDC84), size: 34),
+            child: SvgPicture.asset(AppIcons.checkedbox),
           ),
           const SizedBox(width: 10),
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            height: getHeight(32),
+            width: getWidth(94),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1A6B3A), Color(0xFF3DDC84)],
+                colors: [Color(0xFF9DF474), Color(0xFF5B8E44)],
               ),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'Clean Now',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
+            child: Row(
+              children: [
+                Text(
+                  'Clean Now',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: getFont(10),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Image(image: AssetImage(AppImages.cleaneNow)),
+              ],
             ),
           ),
         ],

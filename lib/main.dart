@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/view/home/app_home_screen.dart';
+import 'package:battery_saver_app/view/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {

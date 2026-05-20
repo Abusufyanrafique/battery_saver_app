@@ -26,4 +26,10 @@ class AppIcons {
   static const String closingHeavyApps = "assets/icons/power_boost/ClosingHeavyApps.svg";
   static const String scanningTemperature = "assets/icons/power_boost/scanningTemperature.svg";
   static const String cpuicon = "assets/icons/power_boost/cpuicon.svg";
+  static const String rocket = "assets/icons/home/rocket.svg";
+  static const String homebatteryicon = "assets/icons/home/homebatteryicon.svg";
+  static const String homepowericon = "assets/icons/home/homepowericon.svg";
+  static const String hometempicon = "assets/icons/home/hometempicon.svg";
+  static const String homebatteryhe = "assets/icons/home/homebatteryhe.svg";
+  static const String checkedbox = "assets/icons/home/checkedbox.svg";
   }

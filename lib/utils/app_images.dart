@@ -35,8 +35,9 @@ class AppImages {
   static const String meun = "assets/images/home/meun.png";
   static const String setting = "assets/images/home/Setting.png";
   static const String batteryimage = "assets/images/home/batteryimage.jpg";
-    static const String remaining = "assets/images/home/remaining.png";
-      static const String hometempimage  = "assets/images/home/hometempimage.png";
-        static const String goodhe = "assets/images/home/goodhe.png";
-        static const String bigbattery = "assets/images/home/bigbattery.png";
+  static const String remaining = "assets/images/home/remaining.png";
+  static const String hometempimage  = "assets/images/home/hometempimage.png";
+  static const String goodhe = "assets/images/home/goodhe.png";
+  static const String bigbattery = "assets/images/home/bigbattery.png";
+  static const String cleaneNow = "assets/images/home/CleaneNow.png";
 } 
