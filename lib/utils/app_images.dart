@@ -26,4 +26,10 @@ class AppImages {
   static const String notificationcleanerimage = "assets/images/phone_boost/Notificationcleaner.png";
   static const String home = "assets/images/nav/home.png";
   static const String homeicon = "";
+  static const String homebatterysaver = "assets/images/battery_saver/homebatterysaver.png";
+  static const String resultbatterysaver = "assets/images/battery_saver/resultbatterysaver.png";
+  static const String powerboostimage = "assets/images/power_boost/powerboostimage.png";
+  static const String resultpowerboost = "assets/images/power_boost/resultpowerboost.png";
+  static const String temperaturecontorl = "assets/images/temperature/tempimage.png";
+  static const String resulttempimage = "assets/images/temperature/resulttempimage.png";
 } 

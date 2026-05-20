@@ -74,6 +74,11 @@ flutter:
     - assets/icons/notification_cleaner/
     - assets/images/nav/
     - assets/icons/nav/
+    - assets/images/battery_saver/
+    - assets/icons/battery_saver/
+    - assets/icons/power_boost/
+    - assets/images/power_boost/
+    - assets/images/temperature/
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

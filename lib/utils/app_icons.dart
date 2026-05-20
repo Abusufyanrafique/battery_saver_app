@@ -13,4 +13,17 @@ class AppIcons {
   static const String usageicon = "assets/icons/nav/Usageicon.svg";
   static const String toolsicon = "assets/icons/nav/Toolsicon.svg";
   static const String profileicon = "assets/icons/nav/Profileicon.svg";
-}
+  static const String smarticon = "assets/icons/battery_saver/smarticon.svg";
+  static const String ultarsaver = "assets/icons/battery_saver/ultarsaver.svg";
+  static const String customsaver = "assets/icons/battery_saver/customsaver.svg";
+  static const String brightness = "assets/icons/battery_saver/Brightness.svg";
+  static const String backgroundApps = "assets/icons/battery_saver/BackgroundApps.svg";
+  static const String autoSync = "assets/icons/battery_saver/AutoSync.svg";
+  static const String notificationsicon = "assets/icons/battery_saver/Notificationsicon.svg";
+  static const String clearram = "assets/icons/power_boost/clearram.svg";
+  static const String  optimizecup = "assets/icons/power_boost/optimizecup.svg";
+  static const String closebackgroundapps = "assets/icons/power_boost/Closebackgroundapps.svg";
+  static const String closingHeavyApps = "assets/icons/power_boost/ClosingHeavyApps.svg";
+  static const String scanningTemperature = "assets/icons/power_boost/scanningTemperature.svg";
+  static const String cpuicon = "assets/icons/power_boost/cpuicon.svg";
+  }
