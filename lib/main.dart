@@ -1,17 +1,4 @@
-import 'package:battery_saver_app/view/battery_saver/battery_saver_screen.dart';
-import 'package:battery_saver_app/view/battery_saver_home_screen/battery_saver_home_screen.dart';
-import 'package:battery_saver_app/view/battery_saver_home_screen/result_battery_saver_screen.dart';
-import 'package:battery_saver_app/view/bottom_nav/home_screen.dart';
-import 'package:battery_saver_app/view/cpu_cooler/cpu_cooler.dart';
-import 'package:battery_saver_app/view/junk_cleaner/junk_cleaner_screen.dart';
-import 'package:battery_saver_app/view/notification_cleaner/notification_cleaner.dart';
-import 'package:battery_saver_app/view/phone_boost/phone_boost_screen.dart';
-import 'package:battery_saver_app/view/power_boost/power_boost_home_screen.dart';
-import 'package:battery_saver_app/view/power_boost/result_power_boost_screen.dart';
-import 'package:battery_saver_app/view/security_scan/security_scan_screen.dart';
-import 'package:battery_saver_app/view/temperature_control/result_temperature_control_screen.dart';
-import 'package:battery_saver_app/view/temperature_control/temperature_control_screen.dart';
-import 'package:battery_saver_app/view/tools/tools_screen.dart';
+import 'package:battery_saver_app/view/home/app_home_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -31,7 +18,7 @@ class MyApp extends StatelessWidget {
         
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const ResultTemperatureControlScreen(),
+      home: const AppHomeScreen(),
     );
   }
 }

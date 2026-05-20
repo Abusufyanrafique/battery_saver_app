@@ -79,6 +79,7 @@ flutter:
     - assets/icons/power_boost/
     - assets/images/power_boost/
     - assets/images/temperature/
+    - assets/images/home/
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

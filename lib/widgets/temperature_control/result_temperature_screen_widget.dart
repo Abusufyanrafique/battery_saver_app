@@ -7,10 +7,10 @@ import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-// ─── Status Enum ──────────────────────────────────────────────────────────────
+// ─── Status Enum ─────────────────────────────────────────────────
 enum TaskStatus { done, inProgress, pending }
 
-// ─── Data Model ───────────────────────────────────────────────────────────────
+// ─── Data Model ──────────────────────────────────────────────────
 class ScanTask {
   final String svgPath;
   final String title;

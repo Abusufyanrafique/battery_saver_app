@@ -36,7 +36,7 @@ class ResultTemperatureControlScreen extends StatelessWidget {
                 ),
               ),
       
-              // const SizedBox(height: 16),
+               SizedBox(height: getHeight(70)),
       
               // Title
               Center(
@@ -64,10 +64,10 @@ class ResultTemperatureControlScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(height: getHeight(40),),
+              SizedBox(height: getHeight(44),),
              
              ScanResultWidget(),
-              const SizedBox(height: 12),
+               SizedBox(height: getHeight(38)),
       
               // Button
               CleanButtonWidget(

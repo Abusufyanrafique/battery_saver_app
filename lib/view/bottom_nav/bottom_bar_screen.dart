@@ -11,8 +11,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter_svg/svg.dart';
 
-class MainScreen extends StatelessWidget {
-  const MainScreen({super.key});
+class BottomBarScreen extends StatelessWidget {
+  const BottomBarScreen({super.key});
 
   final pages = const [
     HomeScreen(),
