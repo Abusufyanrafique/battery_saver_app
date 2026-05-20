@@ -1,6 +1,8 @@
 // ─────────────────────────────────────────────
 //  MAIN DRAWER WIDGET
 // ─────────────────────────────────────────────
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
 
 class PhoneOptimizerDrawer extends StatelessWidget {
@@ -115,26 +117,25 @@ class PhoneOptimizerDrawer extends StatelessWidget {
               size: 28,
             ),
           ),
-          const SizedBox(width: 14),
+           SizedBox(width: getWidth(14)),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+               Text(
                 'Phone Optimizer',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3,
-                ),
+                style:AppTextStyles.bodyLarge.copyWith(
+                  fontSize: getFont(14),
+                  fontWeight: FontWeight.w600
+                )
               ),
               const SizedBox(height: 2),
               Text(
                 'Version 1.0.0',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.45),
-                  fontSize: 12,
-                ),
+                 style:AppTextStyles.bodyLarge.copyWith(
+                  fontSize: getFont(12),
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFD9D9D9)
+                )
               ),
             ],
           ),
@@ -215,16 +216,16 @@ class _DrawerTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item.label,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.75),
-                      fontSize: 14.5,
-                      fontWeight: isSelected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      letterSpacing: 0.2,
-                    ),
+                   style: AppTextStyles.displayMedium.copyWith(
+                  fontSize: getFont(12),
+                  
+     color: isSelected
+      ? Colors.white
+      : Colors.white,
+  fontWeight: isSelected
+      ? FontWeight.w500
+      : FontWeight.w500,
+),
                   ),
                 ),
                 // Arrow
