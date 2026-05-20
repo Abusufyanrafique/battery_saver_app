@@ -1,20 +1,37 @@
-import 'dart:ui';
-
+import 'dart:async';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    Future.delayed(const Duration(seconds: 2), () {
+      context.go('/onboarding'); //  navigation
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    SizeConfig().init(context);
+
     return Scaffold(
       backgroundColor: const Color(0xFF080C20),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.only(
-            top: getHeight(100), // 
+            top: getHeight(100),
           ),
           child: Align(
             alignment: Alignment.center,
