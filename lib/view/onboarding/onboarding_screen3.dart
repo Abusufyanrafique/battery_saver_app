@@ -11,6 +11,12 @@ class OnboardingScreen3 extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          SizedBox(height: getHeight(80),),
+           Container(
+          height: getHeight(296),
+          width: getWidth(284),
+          child: Image.asset('assets/images/onboarding/onboardingimagethree.png')),
+           SizedBox(height: getHeight(100),),
           Text(
             "All tools in\n One Place",
             textAlign: TextAlign.center,

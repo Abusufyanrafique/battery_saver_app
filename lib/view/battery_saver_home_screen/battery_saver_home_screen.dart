@@ -7,6 +7,7 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/battery_saver_home_screen/battery_saver_home_screen_widgets.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class BatterySaverHomeScreen extends StatefulWidget {
   const BatterySaverHomeScreen({super.key});
@@ -45,7 +46,7 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
                 ),
               ),
           
-               SizedBox(height: getHeight(60)),
+               SizedBox(height: getHeight(35)),
           
               // Gradient Title
               Center(
@@ -90,7 +91,9 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
               // Button
               CleanButtonWidget(
                 text: AppText.activateBatterySaver,
-                onPressed: () {},
+                onPressed: () {
+                  context.push('/ResultBatterySaverScreen');
+                },
               ),
             ],
           ),

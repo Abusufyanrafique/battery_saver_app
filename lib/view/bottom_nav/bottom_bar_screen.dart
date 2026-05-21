@@ -3,6 +3,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/view/home/app_home_screen.dart';
 import 'package:battery_saver_app/view/screens.dart';
 import 'package:battery_saver_app/view/tools/tools_screen.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
@@ -15,10 +16,9 @@ class BottomBarScreen extends StatelessWidget {
   const BottomBarScreen({super.key});
 
   final pages = const [
-    HomeScreen(),
+    AppHomeScreen(),
     SearchScreen(),
-    ToolsScreen(),
-    
+    ToolsScreen(), 
     ProfileScreen(),
   ];
 

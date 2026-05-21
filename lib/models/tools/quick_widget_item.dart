@@ -30,27 +30,31 @@ final List<ToolItem> toolsData = [
     iconColor: const Color(0xFFB39DDB),
     iconBgColor: const Color(0xFF3D2B6B),
     imagepath: AppImages.junk,
+     route: '/JunkCleanerScreen',
   ),
   ToolItem(
     title: 'Phone Boost',
     subtitle: 'Boost RAM and improve performance',
     imagepath: AppImages.phoneboost,
     iconColor: const Color(0xFF80DEEA),
-    iconBgColor: const Color(0xFF1A3A4A),
+    iconBgColor: const Color(0xFF1A3A4A), 
+    route: '/PhoneBoostScreen',
   ),
   ToolItem(
     title: 'Battery Saver',
     subtitle: 'Saver power and\nextend battery life',
     imagepath: AppImages.toolbatterysaver,
     iconColor: const Color(0xFF69F0AE),
-    iconBgColor: const Color(0xFF1A3A2A),
+    iconBgColor: const Color(0xFF1A3A2A), 
+    route: '/BatterySaverScreen',
   ),
   ToolItem(
     title: 'CPU Cooler',
     subtitle: 'Cool down CPU and\nreduce temperature',
     icon: Icons.ac_unit_rounded,
     // iconColor: const Color(0xFF90CAF9),
-    iconBgColor: const Color(0xFF1A2A4A),
+    iconBgColor: const Color(0xFF1A2A4A), 
+    route: '/CpuCoolerScreen',
   ),
   ToolItem(
     title: 'Security Scan',
@@ -58,7 +62,8 @@ final List<ToolItem> toolsData = [
     imagepath: AppImages.toolsecurityscan,
     // icon: Icons.shield_rounded,
     // iconColor: const Color(0xFF69F0AE),
-    iconBgColor: const Color(0xFF1A3A2A),
+    iconBgColor: const Color(0xFF1A3A2A), 
+    route: '/SecurityScanScreen',
   ),
   ToolItem(
     title: 'Notification Cleaner',
@@ -66,7 +71,8 @@ final List<ToolItem> toolsData = [
     // icon: Icons.notifications_rounded,
     imagepath: AppImages.toolNotificationCleaner,
     iconColor: const Color(0xFF80DEEA),
-    iconBgColor: const Color(0xFF1A3A4A),
+    iconBgColor: const Color(0xFF1A3A4A), 
+    route: '/NotificationCleanerScreen',
   ),
   ToolItem(
     title: 'App Manager',
@@ -75,6 +81,7 @@ final List<ToolItem> toolsData = [
     imagepath: AppImages.toolappmanager,
     iconColor: const Color(0xFFB39DDB),
     iconBgColor: const Color(0xFF3D2B6B),
+     route: '',
   ),
   ToolItem(
     title: 'File Manager',
@@ -83,6 +90,7 @@ final List<ToolItem> toolsData = [
     // icon: Icons.folder_rounded,
     iconColor: const Color(0xFFFFCC80),
     iconBgColor: const Color(0xFF3A2B1A),
+     route: '',
   ),
   ToolItem(
     title: 'Data Usage',
@@ -91,6 +99,7 @@ final List<ToolItem> toolsData = [
     // icon: Icons.data_usage_rounded,
     iconColor: const Color(0xFF80DEEA),
     iconBgColor: const Color(0xFF1A3A4A),
+     route: '',
   ),
 ];
  

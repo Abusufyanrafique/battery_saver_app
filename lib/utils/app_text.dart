@@ -26,4 +26,29 @@ class AppText {
   static const String optimizingdevicetemperature = "Optimizing device temperature";
   static const String pleasewait = "Please wait.";
   static const String cancletemp = "Cancle";
+  static const String batteryHealth = "Battery Health";
+  static const String monitorProtectYourBattery ="Monitor & Protect Your Battery";
+  static const String checkbatteryhealthandgetlifespan ="Check battery health and get\ntips to extend battery\nlifespan.";
+  static const String cleanNow = 'Clean Now';
+  static const String cleanBackgroundApps = 'Clean Background Apps';
+  static const String stopunusedappsrunninginthebackground = 'Stop unused apps running\nin the background';
+  static const String battery = 'Battery ';
+  static const String optimizer = 'Optimizer';
+  static const String optimize = 'Optimize';
+  static const String improvebatteryperformance = 'Improve battery performance';
+  static const String optimizeNow = 'Optimize Now';
+  static const String   batteryLevel =   'Battery Level';
+  static const String charging = 'Charging';
+  static const String goodHealth = 'Good Health';
+  static const String checkbatteryhealthandgettipstoextendbattery = 'Check battery health and get\n tips to extend battery\nlifespan.';
+  static const String  viewDetails = 'View Details';
+  static const String monitorProtect = "Monitor & Protect";
+  static const String yourBattery = "Your Battery";
+
+
+
+
+
+
+
 }

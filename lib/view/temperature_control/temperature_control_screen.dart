@@ -6,6 +6,7 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/temperature_control/temperature_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class TemperatureControlScreen extends StatelessWidget {
   const TemperatureControlScreen({super.key});
@@ -72,7 +73,9 @@ class TemperatureControlScreen extends StatelessWidget {
               // Button
               CleanButtonWidget(
                 text:AppText.coolDownNow,
-                onPressed: () {},
+                onPressed: () {
+                  context.push('/ResultTemperatureControlScreen');
+                },
               ),
             ],
           ),

@@ -7,6 +7,7 @@ import 'package:battery_saver_app/widgets/tools/quick_widget_card.dart';
 import 'package:battery_saver_app/widgets/tools/tool_card_widget.dart';
 import 'package:battery_saver_app/widgets/tools/tools_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ToolsScreen extends StatelessWidget {
   const ToolsScreen({super.key});
@@ -91,9 +92,13 @@ class _ToolsGrid extends StatelessWidget {
 
         return ToolCardWidget(
           tool: tool,
-          onTap: () {
-            debugPrint('Tapped: ${tool.title}');
-          },
+         onTap: () {
+    if (tool.route.isNotEmpty) {
+      context.push(tool.route);
+    } else {
+      debugPrint('No route set for ${tool.title}');
+    }
+  },
         );
       },
     );

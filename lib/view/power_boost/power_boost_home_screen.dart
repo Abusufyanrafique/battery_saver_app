@@ -4,9 +4,9 @@ import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
-import 'package:battery_saver_app/widgets/phone_boost/phone_boost_list_widget.dart';
 import 'package:battery_saver_app/widgets/power_boost/power_boost_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class PowerBoostHomeScreen extends StatelessWidget {
   const PowerBoostHomeScreen({super.key});
@@ -103,7 +103,9 @@ class PowerBoostHomeScreen extends StatelessWidget {
               // Button
               CleanButtonWidget(
                 text: AppText.boostNow,
-                onPressed: () {},
+                onPressed: () {
+                  context.push('/ResultPowerBoostScreen');
+                },
               ),
             ],
           ),

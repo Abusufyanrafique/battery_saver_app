@@ -3,6 +3,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,8 +18,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 2), () {
-      context.go('/onboarding'); //  navigation
+    Future.delayed(const Duration(seconds: 3), () {
+      context.go('/onboarding');
     });
   }
 
@@ -30,14 +31,23 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: const Color(0xFF080C20),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.only(
-            top: getHeight(100),
-          ),
-          child: Align(
-            alignment: Alignment.center,
+          padding: EdgeInsets.only(top: getHeight(80)),
+          child: Center(
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+            
+                // ───── LOTTIE ANIMATION ─────
+                Lottie.asset(
+                  'assets/animations/battery progress.json',
+                  width: getWidth(220),
+                  height: getHeight(220),
+                  fit: BoxFit.contain,
+                ),
+            
+                SizedBox(height: getHeight(20)),
+            
+                // ───── TEXT UI (same as yours) ─────
                 Text(
                   "BATTERY",
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -45,9 +55,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-
+            
                 const SizedBox(height: 8),
-
+            
                 ShaderMask(
                   shaderCallback: (bounds) {
                     return const LinearGradient(
@@ -70,9 +80,9 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
                 ),
-
+            
                 SizedBox(height: getHeight(20)),
-
+            
                 Text(
                   "Optimize-Clean-Boost\nSave Battery Life",
                   textAlign: TextAlign.center,

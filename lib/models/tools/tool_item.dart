@@ -7,6 +7,7 @@ class ToolItem {
   final Color? iconColor;
   final Color iconBgColor;
   final String? imagepath;
+  final String route;
  
   const ToolItem({
     required this.title,
@@ -14,6 +15,7 @@ class ToolItem {
     this.icon,
      this.iconColor,
     required this.iconBgColor,  
-    this.imagepath,
+    this.imagepath, 
+    required this.route,
   });
 }

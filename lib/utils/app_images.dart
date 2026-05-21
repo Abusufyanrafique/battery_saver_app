@@ -40,4 +40,14 @@ class AppImages {
   static const String goodhe = "assets/images/home/goodhe.png";
   static const String bigbattery = "assets/images/home/bigbattery.png";
   static const String cleaneNow = "assets/images/home/CleaneNow.png";
+  static const String googlebattery = "assets/images/home/googlebattery.png";
+  static const String cleanonboarding = "assets/images/home/cleanonboarding.png";
+  static const String homerocket = "assets/images/home/homerocket.png";
+  static const String batteryhome1 = "assets/images/home/batteryhome1.png";
+  static const String powerboost1 = "assets/images/home/powerboost1.png";
+  static const String tempcontrol1 = "assets/images/home/tempcontrol1.png";
+  static const String battery1 = "assets/images/home/battery1.png";
+  static const String checkbox1 = "assets/images/home/checkbox1.png";
+  static const String batteryhealthimage = '/assets/images/battery_saver/batteryhealthimage.png';
+  static const String lowbattery = "assets/images/home/lowbattery.png";
 } 

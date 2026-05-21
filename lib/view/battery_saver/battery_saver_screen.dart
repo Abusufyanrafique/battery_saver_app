@@ -4,7 +4,6 @@ import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/battery_saver/battery_mode_list_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
-import 'package:battery_saver_app/widgets/phone_boost/phone_boost_list_widget.dart';
 import 'package:flutter/material.dart';
 
 class BatterySaverScreen extends StatelessWidget {

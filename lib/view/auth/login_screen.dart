@@ -1,7 +1,9 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,11 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   // ─── Colors (match your screenshot) ───────────────────────────────────────
-  static const Color _bg = Color(0xFF0D1B3E);          // deep navy
-  // static const Color _card = Color(0xFF162040);         // slightly lighter navy
-  static const Color _inputBg = Color(0xFF1C2A52);      // input field bg
-  static const Color _accent = Color(0xFF3B82F6);       // blue accent
-  static const Color _gradStart = Color(0xFF38BDF8);    // cyan
+  
+  static const Color _accent = Color(0xFF3B82F6);       // blue accent   // cyan
   static const Color _gradEnd = Color(0xFF3B82F6);      // blue
   static const Color _textHint = Color(0xFF6B7FAB);
   static const Color _white = Colors.white;
@@ -119,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildGradientButton(
                 label: 'Log in',
                 onTap: () {
-                  // TODO: handle login
+                 context.push('/signup');
                 },
               ),
 
@@ -150,17 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Expanded(
                     child: _socialButton(
                       onTap: () {},
-                      child: Image.network(
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/480px-Google_%22G%22_logo.svg.png',
-                        height: 22,
-                        width: 22,
-                        // fallback icon if network unavailable
-                        errorBuilder: (_, __, ___) => const Icon(
-                          Icons.g_mobiledata,
-                          color: _white,
-                          size: 26,
-                        ),
-                      ),
+                      child:Image(image: AssetImage(AppImages.googlebattery))
                     ),
                   ),
                   const SizedBox(width: 16),

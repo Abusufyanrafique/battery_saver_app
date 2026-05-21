@@ -1,10 +1,10 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_drawer/phone_optimizer_drawer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 
 // ════════════════════════════════════════════════════════
@@ -75,8 +75,8 @@ class _TopBar extends StatelessWidget {
               Scaffold.of(context).openDrawer();
             },
             child: Container(
-              width: 36,
-              height: 36,
+              width: getWidth(36),
+              height: getHeight(36),
               decoration: BoxDecoration(
                 color: const Color(0xFF1A1F4E),
                 borderRadius: BorderRadius.circular(8),
@@ -90,7 +90,7 @@ class _TopBar extends StatelessWidget {
                 text: TextSpan(
                   children: [
                     TextSpan(
-                      text: 'Battery ',
+                      text: AppText.battery,
                       style: AppTextStyles.displayMedium.copyWith(
                         fontSize: getFont(24),
                         fontWeight: FontWeight.w700,
@@ -113,7 +113,7 @@ class _TopBar extends StatelessWidget {
                           );
                         },
                         child: Text(
-                          'Optimizer',
+                          AppText.optimizer,
                           style: AppTextStyles.displayMedium.copyWith(
                             fontSize: getFont(24),
                             fontWeight: FontWeight.w700,
@@ -127,11 +127,11 @@ class _TopBar extends StatelessWidget {
             ),
           ),
           Container(
-            width: 36,
-            height: 36,
+            width: getWidth(36),
+            height: getHeight(36),
             decoration: BoxDecoration(
               color: const Color(0xFF0E112F),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Color(0xFF5C0EE3)),
             ),
             child: Image(image: AssetImage(AppImages.setting)),
@@ -152,7 +152,7 @@ class _BatteryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 16, 24),
+      padding: const EdgeInsets.fromLTRB(20, 10, 16, 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: const LinearGradient(
@@ -172,7 +172,7 @@ class _BatteryCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Battery Level',
+                AppText.batteryLevel,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(16),
                     fontWeight: FontWeight.w600,
@@ -206,7 +206,7 @@ class _BatteryCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Charging',
+                      AppText.charging,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontSize: getFont(16),
                         fontWeight: FontWeight.w500,
@@ -220,7 +220,7 @@ class _BatteryCard extends StatelessWidget {
                     Icon(Icons.favorite_border, color: Colors.white70, size: 16),
                     SizedBox(width: 6),
                     Text(
-                      'Good Health',
+                      AppText.goodHealth,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontSize: getFont(16),
                         fontWeight: FontWeight.w500,
@@ -389,11 +389,7 @@ class _OptimizeBanner extends StatelessWidget {
                 colors: [Color(0xFFFE39C6), Color(0xFF5C0EE3)],
               ),
             ),
-            child: SvgPicture.asset(
-              AppIcons.rocket,
-              width: getWidth(24),
-              height: getHeight(26),
-            ),
+            child: Image(image: AssetImage(AppImages.homerocket))
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -401,7 +397,7 @@ class _OptimizeBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Optimize Now',
+                  AppText.optimizeNow,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(16),
                     fontWeight: FontWeight.w600,
@@ -410,7 +406,7 @@ class _OptimizeBanner extends StatelessWidget {
                 ),
                 SizedBox(height: 3),
                 Text(
-                  'Improve battery performance',
+                  AppText.improvebatteryperformance,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -445,11 +441,11 @@ class _OptimizeBanner extends StatelessWidget {
               children: [
                 Center(
                   child: Text(
-                    'Optimize',
+                    AppText.optimize,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(10),
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF8A91B8),
+                      color:  Colors.white,
                     ),
                   ),
                 ),
@@ -472,36 +468,47 @@ class _FeatureGrid extends StatelessWidget {
 
   static List<_FeatureData> features = [
     _FeatureData(
-      iconPath: AppIcons.homebatteryicon,
+      iconPath: AppImages.batteryhome1,
       chevronColor: Color(0xFF9A3CFF),
       gradientColors: [Color(0xFF181C3B)],
       title: 'Battery Saver',
       subtitle: 'Save power and extend battery life',
       iconBgColor: Color(0xFF9A3CFF),
+       route: '/BatterySaverHomeScreen',
+     
     ),
     _FeatureData(
-      iconPath: AppIcons.homepowericon,
+      iconPath: AppImages.powerboost1,
       chevronColor: Color(0xFF9A3CFF),
       gradientColors: [Color(0xFF1A1000)],
       title: 'Power Boost',
       subtitle: 'Boost performance when needed',
-      iconBgColor: Color(0xFF55D0FF),
+      iconBgColor: Color(0xFF55D0FF).withOpacity(0.20), route: '/PowerBoostHomeScreen',
+         
     ),
     _FeatureData(
-      iconPath: AppIcons.hometempicon,
+      iconPath: AppImages.tempcontrol1,
       gradientColors: [Color(0xFF001A3A), Color(0xFF000D1F)],
       title: 'Temperature Control',
       subtitle: 'Keep your device cool',
       chevronColor: Color(0xFF5C0EE3),
       iconBgColor: Color(0xFF5C0EE3),
+       route: '/TemperatureControlScreen',
+         
     ),
     _FeatureData(
-      iconPath: AppIcons.homebatteryhe,
+      iconPath: AppImages.battery1,
       chevronColor: Color(0xFFFE39E0),
       gradientColors: [Color(0xFF001A10), Color(0xFF000D08)],
       title: 'Battery Health',
       subtitle: 'Monitor and protect your battery',
       iconBgColor: Color(0xFFFE39C6),
+       iconGradient: [
+    Color(0xFFFE39C6),
+    Color(0xFF5C0EE3),
+  ],
+       route: '/BatteryHealthScreen',
+          
     ),
   ];
 
@@ -513,7 +520,7 @@ class _FeatureGrid extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.9,
+      childAspectRatio: 2,
       children: features.map((f) => _FeatureCard(data: f)).toList(),
     );
   }
@@ -526,6 +533,8 @@ class _FeatureData {
   final Color chevronColor;
   final String iconPath;
   final Color iconBgColor;
+  final String route;
+  final List<Color>? iconGradient;
 
   const _FeatureData({
     required this.gradientColors,
@@ -534,6 +543,9 @@ class _FeatureData {
     required this.chevronColor,
     required this.iconPath,
     required this.iconBgColor,
+     required this.route, 
+     this.iconGradient, 
+    
   });
 }
 
@@ -544,71 +556,94 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(8, 12, 8, 8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Color(0xFF181C3B),
-        border: Border.all(color: const Color(0xFF414669), width: 1),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: getWidth(40),
-            height: getHeight(40),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: data.iconBgColor,
+    return GestureDetector(
+      onTap: () {
+        if (data.route.isNotEmpty) {
+          context.push(data.route);
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(8, 12, 8, 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: Color(0xFF181C3B),
+          border: Border.all(color: const Color(0xFF414669), width: 1),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: getWidth(40),
+              height: getHeight(40),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: data.iconBgColor,
+              ),
+              child:   Container(
+  width: getWidth(40),
+  height: getHeight(40),
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+
+    color: data.iconGradient == null
+        ? data.iconBgColor
+        : null,
+
+    gradient: data.iconGradient != null
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: data.iconGradient!,
+          )
+        : null,
+  ),
+
+  child: Center(
+    child: Image.asset(
+      data.iconPath,
+      width: 20,
+      height: 20,
+      fit: BoxFit.contain,
+    ),
+  ),
+),
             ),
-            child: Center(
-              child: SvgPicture.asset(
-                data.iconPath,
-                fit: BoxFit.contain,
-                colorFilter: ColorFilter.mode(
-                  Colors.white,
-                  BlendMode.srcIn,
-                ),
-                width: 20,
-                height: 20,
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    data.title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(12),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    data.subtitle,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(10),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  data.title,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(12),
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  data.subtitle,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(10),
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                  maxLines: 2,
-                ),
-              ],
+            Icon(
+              Icons.chevron_right,
+              color: data.chevronColor,
+              size: 20,
             ),
-          ),
-          Icon(
-            Icons.chevron_right,
-            color: data.chevronColor,
-            size: 18,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -623,7 +658,7 @@ class _CleanBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+      padding: const EdgeInsets.fromLTRB(16, 8, 12, 14),
       decoration: BoxDecoration(
         color: const Color(0xFF181C3B),
         borderRadius: BorderRadius.circular(12),
@@ -636,16 +671,16 @@ class _CleanBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Clean Background Apps',
+                  AppText.cleanBackgroundApps,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(12),
+                    fontSize: getFont(14),
                     color: Color(0xFF9DF474),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Stop unused apps running\nin the background',
+                  AppText.stopunusedappsrunninginthebackground,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(12),
                     color: Colors.white,
@@ -662,7 +697,7 @@ class _CleanBanner extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
             ),
-            child: SvgPicture.asset(AppIcons.checkedbox),
+            child: Image(image: AssetImage(AppImages.checkbox1))
           ),
           const SizedBox(width: 10),
           Container(
@@ -674,17 +709,25 @@ class _CleanBanner extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
-              children: [
-                Text(
-                  'Clean Now',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: getFont(10),
-                    fontWeight: FontWeight.w500,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  Text(
+                    AppText.cleanNow,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(10),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-                Image(image: AssetImage(AppImages.cleaneNow)),
-              ],
+                  SizedBox(width: getWidth(10),),
+                  Center(child: Image(
+                    image: AssetImage(AppImages.cleaneNow),
+                    height: getHeight(22),
+                    width: getWidth(10),
+                    )),
+                ],
+              ),
             ),
           ),
         ],
