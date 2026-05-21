@@ -360,101 +360,106 @@ class _OptimizeBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Color(0xFFFE39C6),
-            Color(0xFF5C0EE3),
-            Color(0xFF5C0EE3),
-          ],
-          stops: [0.0, 0.25, 1.0],
+    return GestureDetector(
+      onTap: () {
+        context.push('/OptimizeScreen');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFFFE39C6),
+              Color(0xFF5C0EE3),
+              Color(0xFF5C0EE3),
+            ],
+            stops: [0.0, 0.25, 1.0],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFCDD0E4), width: 1),
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFCDD0E4), width: 1),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: getWidth(40),
-            height: getHeight(40),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFFE39C6), Color(0xFF5C0EE3)],
+        child: Row(
+          children: [
+            Container(
+              width: getWidth(40),
+              height: getHeight(40),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFFE39C6), Color(0xFF5C0EE3)],
+                ),
               ),
+              child: Image(image: AssetImage(AppImages.homerocket))
             ),
-            child: Image(image: AssetImage(AppImages.homerocket))
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppText.optimizeNow,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(16),
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(height: 3),
-                Text(
-                  AppText.improvebatteryperformance,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(12),
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: getHeight(24),
-            width: getWidth(84),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white.withOpacity(0.10),
-                width: 1.2,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.25),
-                  offset: const Offset(0, 1),
-                  blurRadius: 4,
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Center(
-                  child: Text(
-                    AppText.optimize,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppText.optimizeNow,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(10),
-                      fontWeight: FontWeight.w500,
-                      color:  Colors.white,
+                      fontSize: getFont(16),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
-                ),
-                SizedBox(width: 4),
-                Icon(Icons.chevron_right, color: Colors.white, size: 16),
-              ],
+                  SizedBox(height: 3),
+                  Text(
+                    AppText.improvebatteryperformance,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(12),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Container(
+              height: getHeight(24),
+              width: getWidth(84),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.10),
+                  width: 1.2,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    offset: const Offset(0, 1),
+                    blurRadius: 4,
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Text(
+                      AppText.optimize,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontSize: getFont(10),
+                        fontWeight: FontWeight.w500,
+                        color:  Colors.white,
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.chevron_right, color: Colors.white, size: 16),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

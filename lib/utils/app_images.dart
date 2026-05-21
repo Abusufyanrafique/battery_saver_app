@@ -50,4 +50,10 @@ class AppImages {
   static const String checkbox1 = "assets/images/home/checkbox1.png";
   static const String batteryhealthimage = '/assets/images/battery_saver/batteryhealthimage.png';
   static const String lowbattery = "assets/images/home/lowbattery.png";
+  static const String deleteimage= "assets/images/home/deleteimage.png";
+  static const String optimizerocket = "assets/images/home/optimizerocket.png";
+  static const String optimizeresource = "assets/images/home/optimizeresource.png";
+  static const String checkingoptimize = "assets/images/home/checkingoptimize.png";
+  static const String optimizetemp = "assets/images/home/optimizetemp.png";
+  static const String optimizationComplete = "assets/images/home/OptimizationComplete.png";
 } 

@@ -44,7 +44,10 @@ class AppText {
   static const String  viewDetails = 'View Details';
   static const String monitorProtect = "Monitor & Protect";
   static const String yourBattery = "Your Battery";
-
+  static const String optimize1 = "Optimize";
+  static const String optimizing = "Optimizing...";
+  static const String scanningdeviceandoptimizingperformance = "Scanning device and optimizing performance";
+  static const String optimizationinProgress = "Optimization in Progress";
 
 
 

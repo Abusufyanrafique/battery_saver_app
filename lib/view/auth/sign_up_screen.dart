@@ -72,7 +72,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 obscure: false,
               ),
 
-              const SizedBox(height: 16),
+               SizedBox(height: getHeight(16)),
 
               // ── Password Field ────────────────────────────────────────────
               _buildTextField(
@@ -91,6 +91,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 obscure: _obscurePassword,
               ),
+                SizedBox(height: getHeight(16)),
                _buildTextField(
                 controller: _passwordController,
                 hint: 'Password',
@@ -107,6 +108,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 obscure: _obscurePassword,
               ),
+                SizedBox(height: getHeight(16)),
                _buildTextField(
                 controller: _passwordController,
                 hint: 'Confirm Password',
@@ -125,7 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               ),
 
               
-              const SizedBox(height: 32),
+               SizedBox(height: getHeight(32)),
 
               // ── Log In Button ─────────────────────────────────────────────
               _buildGradientButton(

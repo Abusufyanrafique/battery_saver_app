@@ -11,6 +11,8 @@ import 'package:battery_saver_app/view/home/app_home_screen.dart';
 import 'package:battery_saver_app/view/junk_cleaner/junk_cleaner_screen.dart';
 import 'package:battery_saver_app/view/notification_cleaner/notification_cleaner.dart';
 import 'package:battery_saver_app/view/onboarding/onboarding_screen.dart';
+import 'package:battery_saver_app/view/optimize/optimize_screen.dart';
+import 'package:battery_saver_app/view/optimize/result_optimize_screen.dart';
 import 'package:battery_saver_app/view/phone_boost/phone_boost_screen.dart';
 import 'package:battery_saver_app/view/power_boost/power_boost_home_screen.dart';
 import 'package:battery_saver_app/view/power_boost/result_power_boost_screen.dart';
@@ -112,6 +114,15 @@ final GoRouter router = GoRouter(
       GoRoute(
       path: AppRoutes.notificationCleanerScreen,
       builder: (context, state) => const NotificationCleanerScreen(),
+    ),
+
+      GoRoute(
+      path: AppRoutes.optimizeScreen,
+      builder: (context, state) => const OptimizeScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.optimizationResultScreen,
+      builder: (context, state) => const OptimizationResultScreen(),
     ),
 
   ],
