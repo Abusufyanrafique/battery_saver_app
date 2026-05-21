@@ -81,7 +81,7 @@ final List<ToolItem> toolsData = [
     imagepath: AppImages.toolappmanager,
     iconColor: const Color(0xFFB39DDB),
     iconBgColor: const Color(0xFF3D2B6B),
-     route: '',
+     route: '/appManagerScreen',
   ),
   ToolItem(
     title: 'File Manager',
@@ -90,7 +90,7 @@ final List<ToolItem> toolsData = [
     // icon: Icons.folder_rounded,
     iconColor: const Color(0xFFFFCC80),
     iconBgColor: const Color(0xFF3A2B1A),
-     route: '',
+     route: '/FileManagerScreen',
   ),
   ToolItem(
     title: 'Data Usage',

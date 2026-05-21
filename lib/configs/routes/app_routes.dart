@@ -21,7 +21,8 @@ class AppRoutes {
   static const cpuCoolerScreen ='/CpuCoolerScreen';
   static const securityScanScreen = '/SecurityScanScreen';
   static const notificationCleanerScreen ='/NotificationCleanerScreen';
-
+  static const appManagerScreen = '/appManagerScreen';
+  static const fileManagerScreen = '/FileManagerScreen';
 
 
 

@@ -7,5 +7,6 @@ class AppColors {
   static const Color textwhitecolor = Color(0xFFFFFFFF);
   static const Color unknownbatterycolor = Color(0xFF10E3D6);
   static const Color bluetextcolor = Color(0xFF55D0FF);
+  static const Color bodercolor = Color(0xFF838283);
 }
 

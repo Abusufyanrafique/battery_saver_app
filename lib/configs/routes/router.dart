@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/view/app_manager/app_manager_screen.dart';
 import 'package:battery_saver_app/view/auth/login_screen.dart';
 import 'package:battery_saver_app/view/auth/sign_up_screen.dart';
 import 'package:battery_saver_app/view/battery_health/battery_health_screen.dart';
@@ -7,6 +8,7 @@ import 'package:battery_saver_app/view/battery_saver_home_screen/battery_saver_h
 import 'package:battery_saver_app/view/battery_saver_home_screen/result_battery_saver_screen.dart';
 import 'package:battery_saver_app/view/bottom_nav/bottom_bar_screen.dart';
 import 'package:battery_saver_app/view/cpu_cooler/cpu_cooler.dart';
+import 'package:battery_saver_app/view/file_manager/file_manager_screen.dart';
 import 'package:battery_saver_app/view/home/app_home_screen.dart';
 import 'package:battery_saver_app/view/junk_cleaner/junk_cleaner_screen.dart';
 import 'package:battery_saver_app/view/notification_cleaner/notification_cleaner.dart';
@@ -123,6 +125,14 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: AppRoutes.optimizationResultScreen,
       builder: (context, state) => const OptimizationResultScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.appManagerScreen,
+      builder: (context, state) => const AppManagerScreen(),
+    ),
+     GoRoute(
+      path: AppRoutes.fileManagerScreen,
+      builder: (context, state) => const FileManagerScreen(),
     ),
 
   ],
