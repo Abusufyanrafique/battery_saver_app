@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_list_container.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_manager_tabBar.dart';
 import 'package:battery_saver_app/widgets/app_manager/stats_card.dart';
@@ -18,12 +19,12 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
 
   // Sample data - in real app, fetch from device
   final List<AppModel> _apps = [
-    AppModel(name: 'WhatsApp', iconAsset: 'assets/icons/whatsapp.png', sizeMB: 452),
-    AppModel(name: 'Facebook', iconAsset: 'assets/icons/facebook.png', sizeMB: 412),
-    AppModel(name: 'Instagram', iconAsset: 'assets/icons/instagram.png', sizeMB: 398),
+    AppModel(name: 'WhatsApp', iconAsset: 'assets/icons/notification_cleaner/Whatsappicon.svg', sizeMB: 452),
+    AppModel(name: 'Facebook', iconAsset: 'assets/icons/notification_cleaner/facebookicon.svg', sizeMB: 412),
+    AppModel(name: 'Instagram', iconAsset: 'assets/icons/notification_cleaner/instagramicon.svg', sizeMB: 398),
     AppModel(name: 'YouTube', iconAsset: 'assets/icons/notification_cleaner/youtubeicon.svg', sizeMB: 278),
-    AppModel(name: 'Telegram', iconAsset: 'assets/icons/telegram.png', sizeMB: 245),
-    AppModel(name: 'Spotify', iconAsset: 'assets/icons/spotify.png', sizeMB: 234),
+    AppModel(name: 'Telegram', iconAsset: AppIcons.telegram, sizeMB: 245),
+    AppModel(name: 'Spotify', iconAsset: AppIcons.spotify, sizeMB: 234),
   ];
 
 
@@ -43,46 +44,46 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // ── Top Bar ──────────────────────────────────────────
-            _AppManagerAppBar(),
-
-            // ── Scrollable Content ───────────────────────────────
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                       AppManagerTabBar(
-                      selectedIndex: _selectedTabIndex,
-                      onTabChanged: (i) =>
-                          setState(() => _selectedTabIndex = i),
-                    ),
-                     SizedBox(height: getHeight(16)),
-                    // Stats Card
-                    StatsCard(
-                      totalApps: _apps.length,
-                      totalSizeGB: _totalSizeGB,
-                    ),
-                    const SizedBox(height: 20),
-                    
-
-                    // App List
-                    AppListContainer(
-                      apps: _apps,
-                      onToggle: _toggleApp,
-                    ),
-                    const SizedBox(height: 100), // bottom padding for button
-                  ],
-                ),
+      // appBar:CustomAppBar(title: 'App Manager',),
+      body: Column(
+        children: [
+          // SizedBox(height: 100,),
+          // ── Top Bar ──────────────────────────────────────────
+          _AppManagerAppBar(),
+      
+          // ── Scrollable Content ───────────────────────────────
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                     AppManagerTabBar(
+                    selectedIndex: _selectedTabIndex,
+                    onTabChanged: (i) =>
+                        setState(() => _selectedTabIndex = i),
+                  ),
+                   SizedBox(height: getHeight(16)),
+                  // Stats Card
+                  StatsCard(
+                    totalApps: _apps.length,
+                    totalSizeGB: _totalSizeGB,
+                  ),
+                  const SizedBox(height: 20),
+                  
+      
+                  // App List
+                  AppListContainer(
+                    apps: _apps,
+                    onToggle: _toggleApp,
+                  ),
+                  const SizedBox(height: 100), // bottom padding for button
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
 
       // ── Bottom Uninstall Button ──────────────────────────────

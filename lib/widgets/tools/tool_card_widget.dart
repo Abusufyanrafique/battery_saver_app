@@ -20,16 +20,9 @@ class ToolCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: getHeight(144),
-        width: getWidth(122),
+      width: getWidth(122),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.25),
-        //     blurRadius: 10,
-        //     offset: const Offset(0, 6),
-        //   ),
-        // ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -40,6 +33,20 @@ class ToolCardWidget extends StatelessWidget {
           child: Ink(
             padding: EdgeInsets.all(getWidth(6)),
             decoration: BoxDecoration(
+              // ───────── BACKGROUND IMAGE ─────────
+              image: tool.backgroundImage != null
+                  ? DecorationImage(
+                      image: AssetImage(tool.backgroundImage!),
+                      fit: BoxFit.cover,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.50),
+                        BlendMode.darken,
+                      ),
+                      onError: (exception, stackTrace) {
+                        debugPrint('=== BG IMAGE FAILED: ${tool.backgroundImage}');
+                      },
+                    )
+                  : null,
               gradient: const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -60,35 +67,35 @@ class ToolCardWidget extends StatelessWidget {
               children: [
                 // ───────── ICON ─────────
                 _ToolIcon(tool: tool),
-      
+
                 SizedBox(height: getHeight(5)),
-      
+
                 // ───────── TITLE ─────────
- // ───────── TITLE ─────────
-SizedBox(
-  width: double.infinity,
-  child: FittedBox(
-    fit: BoxFit.scaleDown,
-    child: Text(
-      tool.title,
-      maxLines: 1,
-      textAlign: TextAlign.center,
-      style: AppTextStyles.bodyLarge.copyWith(
-        fontSize: getFont(12),
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-),  
+                SizedBox(
+                  width: double.infinity,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      tool.title,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: getFont(12),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+
                 SizedBox(height: getHeight(1)),
-      
+
                 // ───────── SUBTITLE ─────────
                 Expanded(
                   child: Text(
                     tool.subtitle,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                     textAlign: TextAlign.center,
+                    textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Color(0xFFD9D9D9),
                       fontSize: getFont(9),
@@ -96,19 +103,16 @@ SizedBox(
                     ),
                   ),
                 ),
-      
+
                 // ───────── ARROW ─────────
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
                     padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                    
-                    ),
+                    decoration: const BoxDecoration(),
                     child: Icon(
                       Icons.arrow_forward_ios_rounded,
                       color: Color(0xFF9A3CFF),
-                      // color: tool.iconColor,
                       size: getWidth(14),
                     ),
                   ),
@@ -128,52 +132,43 @@ SizedBox(
 
 class _ToolIcon extends StatelessWidget {
   final ToolItem tool;
-  
+
   const _ToolIcon({
     required this.tool,
   });
 
   @override
   Widget build(BuildContext context) {
-      debugPrint('=== imagepath: ${tool.imagepath}');  // ← add karo
+    debugPrint('=== imagepath: ${tool.imagepath}');
     return Container(
       width: getWidth(60),
       height: getWidth(60),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: tool.iconBgColor,
-        boxShadow: [
-          BoxShadow(
-            // color: tool.iconColor.withOpacity(0.22),
-            blurRadius: 12,
-            spreadRadius: 1,
-          ),
-        ],
       ),
-       child: Center(
-  child: tool.imagepath != null
-      ? Image.asset(
-          tool.imagepath!,
-          width: getWidth(25),
-          height: getWidth(25),
-          fit: BoxFit.contain,
-
-          errorBuilder: (context, error, stackTrace) {
-            debugPrint('=== PNG FAILED: ${tool.imagepath}');
-            
-            return Icon(
-              Icons.broken_image,
-              color: Colors.red,
-              size: getWidth(25),
-            );
-          },
-        )
-      : Icon(
-          tool.icon,
-          color: tool.iconColor,
-          size: getWidth(25),
-        ),
-),
+      child: Center(
+        child: tool.imagepath != null
+            ? Image.asset(
+                tool.imagepath!,
+                width: getWidth(25),
+                height: getWidth(25),
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  debugPrint('=== PNG FAILED: ${tool.imagepath}');
+                  return Icon(
+                    Icons.broken_image,
+                    color: Colors.red,
+                    size: getWidth(25),
+                  );
+                },
+              )
+            : Icon(
+                tool.icon,
+                color: tool.iconColor,
+                size: getWidth(25),
+              ),
+      ),
     );
   }
 }

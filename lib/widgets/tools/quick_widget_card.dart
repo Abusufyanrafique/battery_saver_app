@@ -1,3 +1,5 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -37,11 +39,11 @@ class QuickWidgetCard extends StatelessWidget {
             Text(
               item.label,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.85),
-                fontSize: 12,
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: getFont(12),
                 fontWeight: FontWeight.w600,
-              ),
+                color: AppColors.textwhitecolor,
+              )
             ),
           ],
         ),
@@ -66,8 +68,8 @@ class _PlainIcon extends StatelessWidget {
       child: Center(
         child: SvgPicture.asset(
           item.svgIcon,
-          width: 46,
-          height: 46,
+          width: getWidth(46),
+          height: getHeight(46),
         ),
       ),
     );

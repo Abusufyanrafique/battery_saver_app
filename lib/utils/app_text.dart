@@ -49,6 +49,17 @@ class AppText {
   static const String scanningdeviceandoptimizingperformance = "Scanning device and optimizing performance";
   static const String optimizationinProgress = "Optimization in Progress";
 
+  static const String accountSettings = 'Account & Settings';
+  static const String  yourBatterySummary =  'Your Battery Summary';
+  static const String youPremium = "You're Premium!";
+  static const String enjoyallpremiumfeatures = 'Enjoy all premium features\nand optimize your device';
+  static const String managePlan = 'Manage Plan';
+  static const String premiumUser = 'Premium User';
+  static const String profileScore = 'Profile Score';
+
+
+
+
 
 
 

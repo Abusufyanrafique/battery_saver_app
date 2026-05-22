@@ -1,5 +1,7 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
 
 // ─── DATA MODELS ─────────────────────────────────────────────
@@ -7,16 +9,17 @@ import 'package:flutter/material.dart';
 class FileCategory {
   final String name;
   final String size;
-  final IconData icon;
+  final String imagePath;
   final Color iconColor;
   final Color iconBg;
 
   const FileCategory({
     required this.name,
     required this.size,
-    required this.icon,
+   
     required this.iconColor,
-    required this.iconBg,
+    required this.iconBg, 
+    required this.imagePath,
   });
 }
 
@@ -57,46 +60,46 @@ class _FileManagerScreenState extends State<FileManagerScreen>
 
   final TextEditingController _searchController = TextEditingController();
 
-  final List<FileCategory> _categories = const [
+  final List<FileCategory> _categories =  [
     FileCategory(
       name: 'Images',
       size: '1.28 GB',
-      icon: Icons.image_rounded,
+      imagePath: AppImages.filemanagerimages,
       iconColor: Color(0xFFFF6B6B),
       iconBg: Color(0xFF2A1A1A),
     ),
     FileCategory(
       name: 'Videos',
       size: '2.35 GB',
-      icon: Icons.play_circle_fill_rounded,
+      imagePath: AppImages.filemanagervideos,
       iconColor: Color(0xFF4ECDC4),
       iconBg: Color(0xFF0F2A29),
     ),
     FileCategory(
       name: 'Audio',
       size: '320 MB',
-      icon: Icons.music_note_rounded,
+      imagePath: AppImages.filemanageraudio,
       iconColor: Color(0xFFFF6B9D),
       iconBg: Color(0xFF2A0F1E),
     ),
     FileCategory(
       name: 'Documents',
       size: '245 MB',
-      icon: Icons.description_rounded,
+      imagePath:AppImages.filemanagernotes,
       iconColor: Color(0xFF74B9FF),
       iconBg: Color(0xFF0F1E2A),
     ),
     FileCategory(
       name: 'Downloads',
       size: '512 MB',
-      icon: Icons.download_rounded,
+      imagePath: AppImages.filemanagerdownload,
       iconColor: Color(0xFF55EFC4),
       iconBg: Color(0xFF0A2A1E),
     ),
     FileCategory(
       name: 'APKs',
       size: '156 MB',
-      icon: Icons.android_rounded,
+      imagePath: AppImages.filemanagerapk,
       iconColor: Color(0xFFA29BFE),
       iconBg: Color(0xFF1A0F2A),
     ),
@@ -159,7 +162,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1B3E),
+      backgroundColor:AppColors.allscreenBackgroundColor,
       body: Stack(
         children: [
           _buildBackground(),
@@ -212,15 +215,14 @@ class _FileManagerScreenState extends State<FileManagerScreen>
     return Row(
       children: [
         _GlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () {}),
-        const Expanded(
+         Expanded(
           child: Center(
             child: Text(
               'File Manager',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
+              style:AppTextStyles.bodyLarge.copyWith(
+                fontSize: getFont(24),
                 fontWeight: FontWeight.w700,
-              ),
+              )
             ),
           ),
         ),
@@ -249,7 +251,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       ),
       child: Row(
         children: [
-          const Icon(Icons.search, color: Colors.white54),
+          const Icon(Icons.search, color: Color(0xFFD9D9D9)),
           const SizedBox(width: 10),
           Expanded(
             child: TextField(
@@ -258,7 +260,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
               decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Search files...',
-                hintStyle: TextStyle(color: Colors.white38),
+                hintStyle: TextStyle(color: Color(0xFFD9D9D9)),
               ),
             ),
           ),
@@ -314,10 +316,17 @@ class _CategoryCardState extends State<_CategoryCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 110,
+      height: getHeight(126),
+      width: getWidth(120),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF232C6D), Color(0xFF13173A)],
+       gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF232C6D),
+            Color(0xFF1B2153),
+            Color(0xFF13173A),
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -328,9 +337,13 @@ class _CategoryCardState extends State<_CategoryCard> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(widget.category.icon,
-              color: widget.category.iconColor, size: 28),
-          const SizedBox(height: 8),
+         Image.asset(
+         widget.category.imagePath,
+         width: getWidth(40),
+         height: getHeight(40),
+         fit: BoxFit.contain,
+),
+           SizedBox(height:getHeight(8)),
           Text(widget.category.name,
                  style: AppTextStyles.bodyMedium.copyWith(
                 fontSize:getFont(16),
@@ -342,7 +355,8 @@ class _CategoryCardState extends State<_CategoryCard> {
           Text(widget.category.size,
               style: AppTextStyles.bodyMedium.copyWith(
                 fontSize: getFont(16),
-                color: Color(0xFFFFFFFF),
+                color: Color(0xFFD9D9D9),
+                fontWeight: FontWeight.w500
 
               )),
         ],
@@ -366,7 +380,13 @@ class _StorageCard extends StatelessWidget {
       padding:  EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF232C6D), Color(0xFF13173A)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF232C6D),
+            Color(0xFF1B2153),
+            Color(0xFF13173A),
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
          border:Border.all(
@@ -374,31 +394,100 @@ class _StorageCard extends StatelessWidget {
         )
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-         Row(
-          
-          children: [
-           Text(storage.name,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontSize:getFont(16)
-              )
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+
+    Row(
+      children: [
+
+        //  Left Image
+        Image.asset(
+          AppImages.filemanagerimages, // apni image lagao
+          width: getWidth(32),
+          height: getHeight(32),
+        ),
+
+        SizedBox(width: getWidth(12)),
+
+        //  Text + Progress Area
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              //  Top Row
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
+                children: [
+
+                  Text(
+                    storage.name,
+                    style:
+                        AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(16),
+                      color: AppColors.textwhitecolor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
+                  RichText(
+                    text: TextSpan(
+                      children: [
+
+                        TextSpan(
+                          text: storage.usedLabel,
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(
+                            fontSize: getFont(18),
+                            fontWeight:
+                                FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        TextSpan(
+                          text: " / ",
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(
+                            fontSize: getFont(14),
+                            color: Colors.white70,
+                          ),
+                        ),
+
+                        TextSpan(
+                          text: storage.totalLabel,
+                          style: AppTextStyles.bodyMedium
+                              .copyWith(
+                            fontSize: getFont(13),
+                            color: Colors.white54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(width: getWidth(80),),
-               Text("91.2 GB / 128 GB",
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontSize:getFont(16)
-              )
+
+              SizedBox(height: getHeight(10)),
+
+              //  Progress Bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: LinearProgressIndicator(
+                  minHeight: getHeight(6),
+                  value: pct,
+                  color:Color(0xFF1F8EFF),
+                  backgroundColor: Color(0xFF232C6D),
+                ),
               ),
-         ],),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: pct,
-            color: storage.progressColor,
-            backgroundColor: Colors.white12,
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
+    ),
+  ],
+)
     );
   }
 }
@@ -419,7 +508,7 @@ class _GlassIconButton extends StatelessWidget {
         width: getWidth(40),
         height: getHeight(40),
         decoration: BoxDecoration(
-          color: Colors.white12,
+          // color: Colors.white12,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: Colors.white),

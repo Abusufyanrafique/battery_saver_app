@@ -1,10 +1,8 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 class ToolsAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final VoidCallback? onBackPressed;

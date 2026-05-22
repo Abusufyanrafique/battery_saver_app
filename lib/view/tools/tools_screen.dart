@@ -1,6 +1,7 @@
 // tools_screen.dart
 
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/models/tools/quick_widget_item.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/widgets/tools/quick_widget_card.dart';
@@ -132,13 +133,13 @@ class _QuickWidgetsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Quick Widgets',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppTextStyles.bodySmall.copyWith(
+              fontSize: getFont(12),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textwhitecolor
+            )
           ),
 
            SizedBox(height:getHeight(16)),

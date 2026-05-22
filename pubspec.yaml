@@ -84,6 +84,7 @@ flutter:
     - assets/icons/home/
     - assets/images/onboarding/
     - assets/animations/
+    - assets/images/file_manager/
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

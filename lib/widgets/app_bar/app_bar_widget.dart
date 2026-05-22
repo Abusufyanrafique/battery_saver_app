@@ -13,35 +13,35 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ SizeConfig().init(context) — HATAYA, screen mein already call hota hai
-    // ✅ SafeArea — HATAYA, Scaffold AppBar slot khud handle karta hai
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.maybePop(context),
-            icon: const Image(
-              image: AssetImage(AppImages.chevron),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.displayMedium.copyWith(
-                fontSize: getFont(24),
-                fontWeight: FontWeight.w700,
+    return SizedBox(
+      height: preferredSize.height,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Row(
+          children: [
+            IconButton(
+              onPressed: () => Navigator.maybePop(context),
+              icon: const Image(
+                image: AssetImage(AppImages.chevron),
               ),
             ),
-          ),
-          const SizedBox(width: 48),
-        ],
+            Expanded(
+              child: Text(
+                title,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.displayMedium.copyWith(
+                  fontSize: getFont(24),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(width: 48),
+          ],
+        ),
       ),
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(60); // ✅ Theek hai
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

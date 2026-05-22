@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class QuickWidgetItem {
   final String label;
-  final String svgIcon; //  change here
+  final String svgIcon; 
   final Color? color;
   final Color borderColor;
   final int? percentage;
@@ -28,8 +28,9 @@ final List<ToolItem> toolsData = [
     title: 'Junk Cleaner',
     subtitle: 'Remove unnecessary\n files and cache',
     iconColor: const Color(0xFFB39DDB),
-    iconBgColor: const Color(0xFF3D2B6B),
+    // iconBgColor: const Color(0xFF3D2B6B),
     imagepath: AppImages.junk,
+    // backgroundImage: ,
      route: '/JunkCleanerScreen',
   ),
   ToolItem(
@@ -37,7 +38,7 @@ final List<ToolItem> toolsData = [
     subtitle: 'Boost RAM and improve performance',
     imagepath: AppImages.phoneboost,
     iconColor: const Color(0xFF80DEEA),
-    iconBgColor: const Color(0xFF1A3A4A), 
+    // iconBgColor: const Color(0xFF1A3A4A), 
     route: '/PhoneBoostScreen',
   ),
   ToolItem(
@@ -45,7 +46,7 @@ final List<ToolItem> toolsData = [
     subtitle: 'Saver power and\nextend battery life',
     imagepath: AppImages.toolbatterysaver,
     iconColor: const Color(0xFF69F0AE),
-    iconBgColor: const Color(0xFF1A3A2A), 
+    // iconBgColor: const Color(0xFF1A3A2A), 
     route: '/BatterySaverScreen',
   ),
   ToolItem(
@@ -53,7 +54,7 @@ final List<ToolItem> toolsData = [
     subtitle: 'Cool down CPU and\nreduce temperature',
     icon: Icons.ac_unit_rounded,
     // iconColor: const Color(0xFF90CAF9),
-    iconBgColor: const Color(0xFF1A2A4A), 
+    // iconBgColor: const Color(0xFF1A2A4A), 
     route: '/CpuCoolerScreen',
   ),
   ToolItem(
@@ -62,7 +63,7 @@ final List<ToolItem> toolsData = [
     imagepath: AppImages.toolsecurityscan,
     // icon: Icons.shield_rounded,
     // iconColor: const Color(0xFF69F0AE),
-    iconBgColor: const Color(0xFF1A3A2A), 
+    // iconBgColor: const Color(0xFF1A3A2A), 
     route: '/SecurityScanScreen',
   ),
   ToolItem(
@@ -71,7 +72,7 @@ final List<ToolItem> toolsData = [
     // icon: Icons.notifications_rounded,
     imagepath: AppImages.toolNotificationCleaner,
     iconColor: const Color(0xFF80DEEA),
-    iconBgColor: const Color(0xFF1A3A4A), 
+    // iconBgColor: const Color(0xFF1A3A4A), 
     route: '/NotificationCleanerScreen',
   ),
   ToolItem(
@@ -80,7 +81,7 @@ final List<ToolItem> toolsData = [
     // icon: Icons.apps_rounded,
     imagepath: AppImages.toolappmanager,
     iconColor: const Color(0xFFB39DDB),
-    iconBgColor: const Color(0xFF3D2B6B),
+    // iconBgColor: const Color(0xFF3D2B6B),
      route: '/appManagerScreen',
   ),
   ToolItem(
@@ -89,7 +90,7 @@ final List<ToolItem> toolsData = [
     imagepath: AppImages.toolFileManager,
     // icon: Icons.folder_rounded,
     iconColor: const Color(0xFFFFCC80),
-    iconBgColor: const Color(0xFF3A2B1A),
+    // iconBgColor: const Color(0xFF3A2B1A),
      route: '/FileManagerScreen',
   ),
   ToolItem(
@@ -98,7 +99,7 @@ final List<ToolItem> toolsData = [
     imagepath: AppImages.toolDataUsage,
     // icon: Icons.data_usage_rounded,
     iconColor: const Color(0xFF80DEEA),
-    iconBgColor: const Color(0xFF1A3A4A),
+    // iconBgColor: const Color(0xFF1A3A4A),
      route: '',
   ),
 ];

@@ -56,4 +56,23 @@ class AppImages {
   static const String checkingoptimize = "assets/images/home/checkingoptimize.png";
   static const String optimizetemp = "assets/images/home/optimizetemp.png";
   static const String optimizationComplete = "assets/images/home/OptimizationComplete.png";
+  // ===================file manager==============
+  static const String filemanagerimages = "assets/images/file_manager/filemanagerimages.png";
+  static const String filemanagervideos = "assets/images/file_manager/filemanagervideos.png";
+  static const String filemanageraudio = "assets/images/file_manager/filemanageraudio.png";
+  static const String filemanagernotes = "assets/images/file_manager/filemanagernotes.png";
+  static const String filemanagerdownload = "assets/images/file_manager/filemanagerdownload.png";
+  static const String filemanagerapk = "assets/images/file_manager/filemanagerapk.png";
+ 
+ static const String profilescore = "assets/images/home/profilescore.png";
+
+
+
+
+
+
+
+
+
+
 } 

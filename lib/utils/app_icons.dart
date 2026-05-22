@@ -32,4 +32,6 @@ class AppIcons {
   static const String hometempicon = "assets/icons/home/hometempicon.svg";
   static const String homebatteryhe = "assets/icons/home/homebatteryhe.svg";
   static const String checkedbox = "assets/icons/home/checkedbox.svg";
+  static const String telegram = "assets/icons/notification_cleaner/Telegram.svg";
+  static const String spotify = "assets/icons/notification_cleaner/Spotify.svg";
   }

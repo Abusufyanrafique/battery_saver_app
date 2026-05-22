@@ -1,4 +1,3 @@
-import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/view/app_manager/app_manager_screen.dart';
 import 'package:flutter/material.dart';
 import 'app_list_tile.dart';
