@@ -29,5 +29,7 @@ class AppRoutes {
   // optimize===========
   static const optimizeScreen= "/OptimizeScreen";
   static const optimizationResultScreen= '/OptimizationResultScreen';
+  static const cleanBackGroundScreen = '/CleanBackGroundScreen';
+  static const String cleaningCompleteScreen = '/CleaningCompleteScreen';
 
 }

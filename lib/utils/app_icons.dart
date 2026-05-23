@@ -38,4 +38,11 @@ class AppIcons {
   static const String facebookicon = "assets/icons/notification_cleaner/facebookicon.svg";
   static const String telegram = "assets/icons/notification_cleaner/Telegram.svg";
   static const String spotify = "assets/icons/notification_cleaner/Spotify.svg";
-  }
+  static const String internalstorage = "assets/icons/notification_cleaner/internalstorage.svg";
+  static const String card = "assets/icons/notification_cleaner/card.svg";
+  static const String files = "assets/icons/clean/files.svg";
+  static const String appsClosed ="assets/icons/clean/Apps Closed.svg";
+  static const String cacheCleared ="assets/icons/clean/CacheCleared.svg";
+
+  static const String files2 = "assets/icons/clean/files2.svg";
+  } 

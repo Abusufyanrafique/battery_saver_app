@@ -662,80 +662,85 @@ class _CleanBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 12, 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF181C3B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF9EF377), width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppText.cleanBackgroundApps,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(14),
-                    color: Color(0xFF9DF474),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  AppText.stopunusedappsrunninginthebackground,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(12),
-                    color: Colors.white,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Image(image: AssetImage(AppImages.checkbox1))
-          ),
-          const SizedBox(width: 10),
-          Container(
-            height: getHeight(32),
-            width: getWidth(94),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF9DF474), Color(0xFF5B8E44)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
+    return GestureDetector(
+      onTap: () {
+        context.push('/CleanBackGroundScreen');
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 12, 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF181C3B),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF9EF377), width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppText.cleanNow,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: getFont(10),
-                      fontWeight: FontWeight.w500,
+                    AppText.cleanBackgroundApps,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontSize: getFont(14),
+                      color: Color(0xFF9DF474),
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(width: getWidth(10),),
-                  Center(child: Image(
-                    image: AssetImage(AppImages.cleaneNow),
-                    height: getHeight(22),
-                    width: getWidth(10),
-                    )),
+                  SizedBox(height: 4),
+                  Text(
+                    AppText.stopunusedappsrunninginthebackground,
+                    style: AppTextStyles.bodyLarge.copyWith(
+                      fontSize: getFont(12),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 10),
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Image(image: AssetImage(AppImages.checkbox1))
+            ),
+            const SizedBox(width: 10),
+            Container(
+              height: getHeight(32),
+              width: getWidth(94),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF9DF474), Color(0xFF5B8E44)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Text(
+                      AppText.cleanNow,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: getFont(10),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    SizedBox(width: getWidth(10),),
+                    Center(child: Image(
+                      image: AssetImage(AppImages.cleaneNow),
+                      height: getHeight(22),
+                      width: getWidth(10),
+                      )),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

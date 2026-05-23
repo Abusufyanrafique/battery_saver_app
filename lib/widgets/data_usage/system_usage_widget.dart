@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -12,18 +13,19 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 // ─────────────────────────────────────────────────────────────
 
 class SystemUsageItem {
-  final IconData icon;
+  final String imagepath;
   final Color iconColor;
   final String label;
   final String value;
   final List<Color> chartColors;
 
   const SystemUsageItem({
-    required this.icon,
+
     required this.iconColor,
     required this.label,
     required this.value,
-    required this.chartColors,
+    required this.chartColors, 
+    required this.imagepath,
   });
 }
 
@@ -49,28 +51,28 @@ class SystemUsageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<SystemUsageItem> items = [
       SystemUsageItem(
-        icon: Icons.memory_rounded,
+        imagepath: AppImages.datausagecpu,
         iconColor: const Color(0xFF9A3CFF),
         label: 'CPU Usge',
         value: cpuUsage,
         chartColors: [const Color(0xFF9A3CFF), const Color(0xFF4103AC)],
       ),
       SystemUsageItem(
-        icon: Icons.thermostat_rounded,
+        imagepath: AppImages.datausagetemp,
         iconColor: const Color(0xFFE53935),
         label: 'Temperature',
         value: temperature,
         chartColors: [const Color(0xFFE53935), const Color(0xFF7B1FA2)],
       ),
       SystemUsageItem(
-        icon: Icons.storage_rounded,
+        imagepath: AppImages.datausageram,
         iconColor: const Color(0xFF1E88E5),
         label: 'RAM Usage',
         value: ramUsage,
         chartColors: [const Color(0xFF1E88E5), const Color(0xFF0D47A1)],
       ),
       SystemUsageItem(
-        icon: Icons.access_time_rounded,
+        imagepath: '',
         iconColor: const Color(0xFFE040FB),
         label: 'Charge Cycles',
         value: '$chargeCycles',
@@ -188,11 +190,12 @@ class _SystemCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  item.icon,
-                  color: item.iconColor,
-                  size: getWidth(16),
-                ),
+              Image.asset(
+              item.imagepath,
+                width: getWidth(16),
+                height: getWidth(16),
+                color: item.iconColor, // optional tint
+               ),
                 SizedBox(height: getHeight(6)),
                 Text(
                   item.label,

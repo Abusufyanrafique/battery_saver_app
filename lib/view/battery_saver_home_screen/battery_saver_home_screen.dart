@@ -25,14 +25,16 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor:AppColors.allscreenBackgroundColor,
+        extendBodyBehindAppBar: true,
+        backgroundColor: AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batterySaver),
         body: Padding(
-          padding: const EdgeInsets.only(left: 20.0,right: 20),
+          padding: const EdgeInsets.only(left: 20.0, right: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: getHeight(40),),
+              SizedBox(height: getHeight(40)),
+
               // Image
               Container(
                 height: getHeight(200),
@@ -45,9 +47,9 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
                   ),
                 ),
               ),
-          
-               SizedBox(height: getHeight(35)),
-          
+
+              SizedBox(height: getHeight(35)),
+
               // Gradient Title
               Center(
                 child: ShaderMask(
@@ -66,7 +68,9 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: getHeight(12),),
+
+              SizedBox(height: getHeight(12)),
+
               Center(
                 child: Text(
                   AppText.optimizeSystemSettings,
@@ -77,17 +81,17 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
                   ),
                 ),
               ),
-          
+
               SizedBox(height: getHeight(24)),
-          
+
               // Battery Saver Mode Card Widget
               BatterySaverModeCard(
                 selected: _selectedMode,
                 onChanged: (mode) => setState(() => _selectedMode = mode),
               ),
-          
+
               SizedBox(height: getHeight(24)),
-          
+
               // Button
               CleanButtonWidget(
                 text: AppText.activateBatterySaver,

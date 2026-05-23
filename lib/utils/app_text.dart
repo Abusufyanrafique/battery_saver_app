@@ -56,6 +56,12 @@ class AppText {
   static const String managePlan = 'Manage Plan';
   static const String premiumUser = 'Premium User';
   static const String profileScore = 'Profile Score';
+  static const String cleanBackgroundApp = "Clean Background Apps";
+  static const String scanning = "Scanning...";
+  static const String detectingandcleaningunnecessary = "Detecting and cleaning unnecessary\nbackground apps";
+  static const String cleaningComplete = "Cleaning Complete";
+  static const String greatYouDeviceisNowClean = "Great! You Device is Now Clean";
+  static const String wehavesuccessfullycleanedunnecessarfiles = "We have successfully cleaned unnecessar files\nand optimized your device.";
 
 
 

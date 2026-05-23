@@ -1,8 +1,10 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 // ─── DATA MODELS ─────────────────────────────────────────────
 
@@ -29,7 +31,7 @@ class StorageDevice {
   final double total;
   final String usedLabel;
   final String totalLabel;
-  final IconData icon;
+   final String iconPath;  
   final Color progressColor;
 
   const StorageDevice({
@@ -38,7 +40,7 @@ class StorageDevice {
     required this.total,
     required this.usedLabel,
     required this.totalLabel,
-    required this.icon,
+     required this.iconPath,
     required this.progressColor,
   });
 }
@@ -112,7 +114,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       total: 128,
       usedLabel: '91.2 GB',
       totalLabel: '128 GB',
-      icon: Icons.smartphone_rounded,
+      iconPath: AppIcons.internalstorage,
       progressColor: Color(0xFF6C63FF),
     ),
     StorageDevice(
@@ -121,7 +123,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       total: 32,
       usedLabel: '12.7 GB',
       totalLabel: '32 GB',
-      icon: Icons.sd_card_rounded,
+      iconPath: AppIcons.card,
       progressColor: Color(0xFF00B4D8),
     ),
   ];
@@ -401,11 +403,11 @@ class _StorageCard extends StatelessWidget {
       children: [
 
         //  Left Image
-        Image.asset(
-          AppImages.filemanagerimages, // apni image lagao
-          width: getWidth(32),
-          height: getHeight(32),
-        ),
+  SvgPicture.asset(
+  storage.iconPath,
+  width: getWidth(32),
+  height: getHeight(32),
+),
 
         SizedBox(width: getWidth(12)),
 

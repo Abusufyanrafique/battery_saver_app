@@ -13,31 +13,32 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: preferredSize.height,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: Row(
-          children: [
-            IconButton(
-              onPressed: () => Navigator.maybePop(context),
-              icon: const Image(
-                image: AssetImage(AppImages.chevron),
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      automaticallyImplyLeading: false,
+      title: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.maybePop(context),
+            icon: const Image(
+              image: AssetImage(AppImages.chevron),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.displayMedium.copyWith(
+                fontSize: getFont(24),
+                fontWeight: FontWeight.w700,
               ),
             ),
-            Expanded(
-              child: Text(
-                title,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.displayMedium.copyWith(
-                  fontSize: getFont(24),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(width: 48),
-          ],
-        ),
+          ),
+          const SizedBox(width: 48),
+        ],
       ),
     );
   }

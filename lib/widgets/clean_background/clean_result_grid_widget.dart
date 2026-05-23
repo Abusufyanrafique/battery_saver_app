@@ -1,0 +1,168 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+class CleanResultItem {
+  final String iconPath;
+  final String title;
+  final String value;
+  final String subtitle;
+  final Color valueColor;
+
+  const CleanResultItem({
+    required this.iconPath,
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    required this.valueColor,
+  });
+}
+
+class CleanResultGridWidget extends StatelessWidget {
+  final List<CleanResultItem> items;
+
+  const CleanResultGridWidget({
+    super.key,
+    required this.items,
+  });
+
+  factory CleanResultGridWidget.defaultValues() {
+    return  CleanResultGridWidget(
+      items: [
+        CleanResultItem(
+          iconPath: AppIcons.files,
+          title: 'Junk Removed',
+          value: '433 MB',
+          subtitle: 'Space Freed',
+          valueColor: Color(0xFFFE39C6),
+        ),
+        CleanResultItem(
+          iconPath: AppIcons.appsClosed,
+          title: 'Apps Closed',
+          value: '18 Apps',
+          subtitle: 'Background',
+          valueColor: Color(0xFFEDB309),
+        ),
+        CleanResultItem(
+          iconPath: AppIcons.cacheCleared,
+          title: 'Cache Cleared',
+          value: '236 MB',
+          subtitle: 'Cache',
+          valueColor: Color(0xFF55D0FF),
+        ),
+        CleanResultItem(
+          iconPath: AppIcons.files2,
+          title: 'Residual Files Removed',
+          value: '102 MB',
+          subtitle: 'Files',
+          valueColor: Color(0xFF9A3CFF),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight( // Sab cards ki height equal
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to max height
+        children: List.generate(items.length, (index) {
+          final item = items[index];
+          final isLast = index == items.length - 1;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: isLast ? 0 : getWidth(8)),
+              child: _CleanResultCard(item: item),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+class _CleanResultCard extends StatelessWidget {
+  final CleanResultItem item;
+
+  const _CleanResultCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(8),
+        vertical: getHeight(2),
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF232C6D),
+            Color(0xFF1B2153),
+            Color(0xFF13173A),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: const Color(0xFF4103AC),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(height: getHeight(6),),
+          SvgPicture.asset(
+            item.iconPath,
+            width: getWidth(20),
+            height: getHeight(20),
+          ),
+
+          SizedBox(height: getHeight(4)),
+
+          // Title
+          Text(
+            item.title,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: getFont(9),
+              fontWeight: FontWeight.w600,
+              color: AppColors.textwhitecolor,
+            ),
+          ),
+
+          // SizedBox(height: getHeight()),
+
+          // Value
+          Text(
+            item.value,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: getFont(14),
+              fontWeight: FontWeight.w600,
+              color: item.valueColor,
+            ),
+          ),
+
+          SizedBox(height: getHeight(4)),
+
+          // Subtitle
+          Text(
+            item.subtitle,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: getFont(10),
+              
+              fontWeight: FontWeight.w500,
+              color: AppColors.allsmalltextcolor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
