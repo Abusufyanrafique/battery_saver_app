@@ -29,7 +29,7 @@ final List<ToolItem> toolsData = [
     subtitle: 'Remove unnecessary\n files and cache',
     iconColor: const Color(0xFFB39DDB),
     // iconBgColor: const Color(0xFF3D2B6B),
-    imagepath: AppImages.junk,
+    imagepath: AppImages.containerrocket,
     // backgroundImage: ,
      route: '/JunkCleanerScreen',
   ),
@@ -44,9 +44,8 @@ final List<ToolItem> toolsData = [
   ToolItem(
     title: 'Battery Saver',
     subtitle: 'Saver power and\nextend battery life',
-    imagepath: AppImages.toolbatterysaver,
-    iconColor: const Color(0xFF69F0AE),
-    // iconBgColor: const Color(0xFF1A3A2A), 
+    imagepath: AppImages.containerbattery,
+    iconColor: const Color(0xFF69F0AE), 
     route: '/BatterySaverScreen',
   ),
   ToolItem(
@@ -121,7 +120,7 @@ final List<QuickWidgetItem> quickWidgetsData = [
   ),
   QuickWidgetItem(
     label: 'Clean',
-    svgIcon:AppIcons.quickwidgetcleanicon,
+    svgIcon:"assets/icons/tools_screen/deleteicon.svg",
     borderColor: const Color(0xFFFF00D9),
     
   ),

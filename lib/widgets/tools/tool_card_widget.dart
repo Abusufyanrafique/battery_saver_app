@@ -151,8 +151,8 @@ class _ToolIcon extends StatelessWidget {
         child: tool.imagepath != null
             ? Image.asset(
                 tool.imagepath!,
-                width: getWidth(25),
-                height: getWidth(25),
+                width: getWidth(60),
+                height: getWidth(60),
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   debugPrint('=== PNG FAILED: ${tool.imagepath}');

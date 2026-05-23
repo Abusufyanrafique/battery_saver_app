@@ -32,6 +32,10 @@ class AppIcons {
   static const String hometempicon = "assets/icons/home/hometempicon.svg";
   static const String homebatteryhe = "assets/icons/home/homebatteryhe.svg";
   static const String checkedbox = "assets/icons/home/checkedbox.svg";
+  static const String  instagramicon = "assets/icons/notification_cleaner/instagramicon.svg";
+  static const String  youtubeicon = "assets/icons/notification_cleaner/youtubeicon.svg";
+  static const String whatsappicon = "assets/icons/notification_cleaner/Whatsappicon.svg";
+  static const String facebookicon = "assets/icons/notification_cleaner/facebookicon.svg";
   static const String telegram = "assets/icons/notification_cleaner/Telegram.svg";
   static const String spotify = "assets/icons/notification_cleaner/Spotify.svg";
   }

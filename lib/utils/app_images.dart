@@ -66,6 +66,14 @@ class AppImages {
  
  static const String profilescore = "assets/images/home/profilescore.png";
 
+ static const String containerrocket = "assets/images/tools/containerrocket.png";
+ static const String containerbattery = "assets/images/tools/containerbattery.png";
+//   ====================data usage screen==========================
+static const String time  = "assets/images/data_usage/Time.png";
+static const String phone = "assets/images/data_usage/phone.png";
+static const String heart = "assets/images/data_usage/heart.png";
+static const String performance = "assets/images/data_usage/performance.png";
+
 
 
 

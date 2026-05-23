@@ -39,6 +39,7 @@ dependencies:
   curved_labeled_navigation_bar: ^2.0.6
   flutter_bloc: ^8.1.0
   lottie: ^3.1.0
+  fl_chart: ^0.69.0
    
 
 
@@ -85,6 +86,7 @@ flutter:
     - assets/images/onboarding/
     - assets/animations/
     - assets/images/file_manager/
+    - assets/images/data_usage/
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       'or',
                       style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: getFont(24)
+                        fontSize: getFont(20)
                       )
                     ),
                   ),
@@ -212,7 +212,12 @@ class _LoginScreenState extends State<LoginScreen> {
   return Container(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(12),
-      gradient: const LinearGradient(
+     
+    ),
+    child: Container(
+      margin: const EdgeInsets.all(1), // border effect
+      decoration: BoxDecoration(
+         gradient: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
@@ -221,11 +226,6 @@ class _LoginScreenState extends State<LoginScreen> {
           Color(0xFF13173A), // bottom (dark blue)
         ],
       ),
-    ),
-    child: Container(
-      margin: const EdgeInsets.all(1), // border effect
-      decoration: BoxDecoration(
-        color: const Color(0xFF0E122A), // inner input background (slightly darker)
         borderRadius: BorderRadius.circular(11),
         border: Border.all(
           color: Color(0xFF4103AC),
@@ -321,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _divider() => Container(
-        height: 3,
+        height: 1,
         color: const Color(0xFF373C62),
       );
 }
