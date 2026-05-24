@@ -39,7 +39,7 @@ class StorageComparisonWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Title
+          // TITLE
           Text(
             'Storage Comparison',
             style: AppTextStyles.bodyMedium.copyWith(
@@ -51,82 +51,86 @@ class StorageComparisonWidget extends StatelessWidget {
 
           SizedBox(height: getHeight(10)),
 
-          // Comparison Row
-          IntrinsicHeight(
-            child: Row(
-              children: [
-                // Before Cleaning
-                Expanded(
-                  child: _StorageColumn(
-                    label: 'Before Cleaning',
-                    valueGB: beforeGB,
-                    totalGB: totalGB,
-                    valueColor: AppColors.textwhitecolor,
-                    usedColor: AppColors.textwhitecolor,
-                    barColor: const Color(0xFFFF19BD),
-                  ),
+          // ROW
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // BEFORE
+              Expanded(
+                child: _StorageColumn(
+                  label: 'Before Cleaning',
+                  valueGB: beforeGB,
+                  totalGB: totalGB,
+                  valueColor: AppColors.textwhitecolor,
+                  usedColor: AppColors.textwhitecolor,
+                  barColor: const Color(0xFFFF19BD),
                 ),
+              ),
 
-                // Divider + Arrow
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: getWidth(12)),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Vertical Divider Left
-                      Expanded(
-                        child: Container(
-                          width: 1,
-                          color: Colors.white.withOpacity(0.15),
+              // PIPE + ARROW + PIPE
+              Container(
+                width: getWidth(70),
+                padding: EdgeInsets.symmetric(horizontal: getWidth(6)),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // LEFT PIPE
+                   Container(
+  width: 2,
+  height: 58,
+  decoration: BoxDecoration(
+    color: const Color(0xFF838283),
+    borderRadius: BorderRadius.circular(2),
+  ),
+),
+
+                    SizedBox(width: getWidth(16)),
+
+                    // ARROW
+                    Container(
+                      width: getWidth(30),
+                      height: getWidth(30),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF4103AC),
+                          width: 1.5,
                         ),
                       ),
-
-                      SizedBox(height: getHeight(4)),
-
-                      // Arrow Circle
-                      Container(
-                        width: getWidth(34),
-                        height: getWidth(34),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF4103AC),
-                            width: 1.5,
-                          ),
-                          color: Colors.transparent,
-                        ),
-                        child: Icon(
-                          Icons.arrow_forward_rounded,
-                          color: const Color(0xFF00E676),
-                          size: getWidth(18),
-                        ),
+                      child: const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Color(0xFF00E676),
+                        size: 18,
                       ),
+                    ),
 
-                      SizedBox(height: getHeight(4)),
+                    SizedBox(width: getWidth(6)),
 
-                      Expanded(
-                        child: Container(
-                          width: 1,
-                          color: Colors.white.withOpacity(0.15),
-                        ),
-                      ),
-                    ],
-                  ),
+                    // RIGHT PIPE
+                    Container(
+  width: 2,
+  height: 58,
+  decoration: BoxDecoration(
+    color: const Color(0xFF838283),
+    borderRadius: BorderRadius.circular(2),
+  ),
+),
+                  ],
                 ),
+              ),
 
-                // After Cleaning
-                Expanded(
-                  child: _StorageColumn(
-                    label: 'After Cleaning',
-                    valueGB: afterGB,
-                    totalGB: totalGB,
-                    valueColor: const Color(0xFF00E676),
-                    usedColor: const Color(0xFF00E676),
-                    barColor: const Color(0xFF00E676),
-                  ),
+              // AFTER
+              Expanded(
+                child: _StorageColumn(
+                  label: 'After Cleaning',
+                  valueGB: afterGB,
+                  totalGB: totalGB,
+                  valueColor: const Color(0xFF00E676),
+                  usedColor: const Color(0xFF00E676),
+                  barColor: const Color(0xFF00E676),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
@@ -157,89 +161,65 @@ class _StorageColumn extends StatelessWidget {
 
     return Center(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Label
           Text(
             label,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(8),
-              fontWeight: FontWeight.w400,
               color: AppColors.allsmalltextcolor,
             ),
           ),
-      
+
           SizedBox(height: getHeight(6)),
-      
-          // Value
+
           Text(
             '${valueGB.toStringAsFixed(1)} GB',
             style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(22),
-              fontWeight: FontWeight.w700,
+              fontSize: getFont(12),
+              fontWeight: FontWeight.w600,
               color: valueColor,
             ),
           ),
-      
+
           SizedBox(height: getHeight(2)),
-      
-          // Used label
+
           Text(
             'used',
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(8),
-              fontWeight: FontWeight.w400,
               color: usedColor,
             ),
           ),
-      
+
           SizedBox(height: getHeight(4)),
-      
-          // Progress Bar
+
           ClipRRect(
             borderRadius: BorderRadius.circular(100),
             child: Stack(
               children: [
-                // Background
                 Container(
                   height: getHeight(4),
                   width: getWidth(80),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(100),
-                  ),
+                  color: Colors.white.withOpacity(0.12),
                 ),
-                // Foreground
                 FractionallySizedBox(
                   widthFactor: progress,
                   child: Container(
                     height: getHeight(4),
-                    decoration: BoxDecoration(
-                      color: barColor,
-                      borderRadius: BorderRadius.circular(100),
-                      boxShadow: [
-                        BoxShadow(
-                          color: barColor.withOpacity(0.5),
-                          blurRadius: 4,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
+                    color: barColor,
                   ),
                 ),
               ],
             ),
           ),
-      
+
           SizedBox(height: getHeight(8)),
-      
-          // Total
+
           Text(
             'Total ${totalGB.toInt()} GB',
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(8),
-              fontWeight: FontWeight.w400,
               color: AppColors.allsmalltextcolor,
             ),
           ),

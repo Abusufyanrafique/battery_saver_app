@@ -11,81 +11,112 @@ class SecurityScanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
-        appBar: CustomAppBar(title: 'Security Scan'),
-        body: SingleChildScrollView(  
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              Container(
-                height: getHeight(200),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: const DecorationImage(
-                    image: AssetImage(AppImages.securityscanimage),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-      
-              const SizedBox(height: 16),
-      
-              // Title
-              Center(
-                child: Text(
-                  "100%",
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: getFont(30),
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-               Center(
-                child: Text(
-                  "safe",
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: getFont(14),
-                    color: Color(0xFFD9D9D9),
-                  ),
-                ),
-              ),
-               Center(
-                child: Text(
-                  "No threats found",
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: getFont(16),
-                    color: Color(0xFF2FE55D),
-                  ),
-                ),
-              ),
-      
-              SizedBox(height: getHeight(80)), 
-      
-             
-              SecurityScanWidget(
-  items: const [
-    SecurityScanItem(title: "Virus Scan"),
-    SecurityScanItem(title: "Privacy Scan"),
-    SecurityScanItem(title: "Vulnerability Scan"),
-    SecurityScanItem(title: "System Protection"),
-  ],
-),
-      
-             SizedBox(height: getHeight(64),),
-      
-              // Button
-              CleanButtonWidget(
-                text: "Scan Again",
-                onPressed: () {},
-              ),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1633),
+
+      //  inside Scaffold (removes white flash)
+      appBar: CustomAppBar(title: 'Security Scan'),
+
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+
+        // stable gradient background
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0F1633),
+              Color(0xFF0B122B),
+              Color(0xFF070C1F),
             ],
+          ),
+        ),
+
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ───── IMAGE ─────
+                Container(
+                  height: getHeight(200),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    image: const DecorationImage(
+                      image: AssetImage(AppImages.securityscanimage),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ───── STATUS TEXT ─────
+                Center(
+                  child: Text(
+                    "100%",
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(30),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+
+                Center(
+                  child: Text(
+                    "safe",
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(14),
+                      color: const Color(0xFFD9D9D9),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+
+                Center(
+                  child: Text(
+                    "No threats found",
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(16),
+                      color: const Color(0xFF2FE55D),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: getHeight(70)),
+
+                // ───── SCAN LIST ─────
+                const SecurityScanWidget(
+                  items: [
+                    SecurityScanItem(title: "Virus Scan"),
+                    SecurityScanItem(title: "Privacy Scan"),
+                    SecurityScanItem(title: "Vulnerability Scan"),
+                    SecurityScanItem(title: "System Protection"),
+                  ],
+                ),
+
+                SizedBox(height: getHeight(50)),
+
+                // ───── BUTTON ─────
+                CleanButtonWidget(
+                  text: "Scan Again",
+                  onPressed: () {},
+                ),
+
+                SizedBox(height: getHeight(20)),
+              ],
+            ),
           ),
         ),
       ),

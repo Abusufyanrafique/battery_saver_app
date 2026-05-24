@@ -11,79 +11,103 @@ class PhoneBoostScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
-        appBar: CustomAppBar(title: 'Phone Boost'),
-        body: SingleChildScrollView(  
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image
-              Container(
-                height: getHeight(200),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: const DecorationImage(
-                    image: AssetImage(AppImages.phoneboostOptimizeimage),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-      
-              const SizedBox(height: 16),
-      
-              // Title
-              Center(
-                child: Text(
-                  "Memory Used",
-                  style: AppTextStyles.bodySmall.copyWith(
-                    fontSize: getFont(14),
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-      
-              SizedBox(height: getHeight(80)), 
-      
-              // Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Running Processes",
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: getFont(20),
-                      color: const Color(0xFFD9D9D9),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1633),
+      appBar: CustomAppBar(title: 'Phone Boost'),
+
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0F1633),
+              Color(0xFF0B122B),
+              Color(0xFF070C1F),
+            ],
+          ),
+        ),
+
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.all(16.0),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // ───── IMAGE ─────
+                Container(
+                  height: getHeight(200),
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    image: const DecorationImage(
+                      image: AssetImage(AppImages.phoneboostOptimizeimage),
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  Text(
-                    "23",
+                ),
+
+                const SizedBox(height: 16),
+
+                // ───── TITLE ─────
+                Center(
+                  child: Text(
+                    "Memory Used",
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(14),
                       color: Colors.white,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
-      
-              const SizedBox(height: 8),
-      
-             
-              const PhoneBoostListWidget(),
-      
-              const SizedBox(height: 12),
-      
-              // Button
-              CleanButtonWidget(
-                text: "Boost Now",
-                onPressed: () {},
-              ),
-            ],
+                ),
+
+                SizedBox(height: getHeight(80)),
+
+                // ───── HEADER ROW ─────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Running Processes",
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: getFont(20),
+                        color: const Color(0xFFD9D9D9),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      "23",
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: getFont(16),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // ───── LIST ─────
+                const PhoneBoostListWidget(),
+
+                const SizedBox(height: 20),
+
+                // ───── BUTTON ─────
+                CleanButtonWidget(
+                  text: "Boost Now",
+                  onPressed: () {},
+                ),
+              ],
+            ),
           ),
         ),
       ),

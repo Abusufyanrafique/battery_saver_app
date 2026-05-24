@@ -146,7 +146,7 @@ class _AppsRunningInBackgroundWidgetState
                     isSelected: _selected[index],
                     onTap: () => _toggleItem(index),
                   ),
-                  // ✅ Divider sirf icon size ke baad start ho
+                  //  Divider sirf icon size ke baad start ho
                   if (!isLast)
                     Padding(
                       padding: EdgeInsets.only(
@@ -236,7 +236,7 @@ class _AppTile extends StatelessWidget {
               color: isSelected
                   ? const Color(0xFF4CAF50)
                   : Colors.white.withOpacity(0.3),
-              size: 20,
+              size: 16,
             ),
           ],
         ),

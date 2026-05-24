@@ -13,18 +13,23 @@ class ResultBatterySaverScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor:AppColors.allscreenBackgroundColor,
-        appBar: CustomAppBar(title:AppText.batterySaver),
-        body: Padding(
-          padding: const EdgeInsets.only(left: 20.0,right: 20),
+    return Scaffold(
+      backgroundColor: AppColors.allscreenBackgroundColor,
+
+      appBar: CustomAppBar(
+        title: AppText.batterySaver,
+      ),
+
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: getHeight(20),),
+              SizedBox(height: getHeight(20)),
+
               // Image
               Container(
                 height: getHeight(200),
@@ -37,43 +42,49 @@ class ResultBatterySaverScreen extends StatelessWidget {
                   ),
                 ),
               ),
-                
+
               const SizedBox(height: 16),
-                
+
               // Title
               Center(
                 child: Text(
-                      AppText.batterySaverIsActive,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: getFont(20),
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF55D0FF),
-                      ),
-                    ),
+                  AppText.batterySaverIsActive,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: getFont(20),
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF55D0FF),
+                  ),
+                ),
               ),
-            
-           SizedBox(height: getHeight(12),),
-            Center(
-              child: Text(AppText.yourDeviceIsNowInSmartSaverModeToExtendBatteryLife,
-               textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(
-               fontSize: getFont(14),
-               color: Color(0xFFD9D9D9),
+
+              SizedBox(height: getHeight(12)),
+
+              // Description
+              Center(
+                child: Text(
+                  AppText.yourDeviceIsNowInSmartSaverModeToExtendBatteryLife,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: getFont(14),
+                    color: const Color(0xFFD9D9D9),
+                  ),
+                ),
               ),
-              ),
-            ),
-                
-              SizedBox(height: getHeight(24)), 
-             
+
+              SizedBox(height: getHeight(24)),
+
+              // Widget
               BatteryLifeWidget(),
-                
-               SizedBox(height: getHeight(16)),
-                
+
+              SizedBox(height: getHeight(16)),
+
               // Button
               CleanButtonWidget(
                 text: AppText.done,
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),

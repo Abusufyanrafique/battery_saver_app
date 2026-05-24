@@ -20,10 +20,23 @@ class CleanBackGroundScreen extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         backgroundColor: const Color(0xFF0F1633),
-        appBar: CustomAppBar(
-          title:AppText.cleanBackgroundApp,
-        
-          ),
+        appBar:AppBar(
+            leading: IconButton(
+    onPressed: () => Navigator.maybePop(context),
+    icon: const Image(
+      image: AssetImage(AppImages.chevron),
+    ),
+  ),
+
+          title: Text(
+            AppText.cleanBackgroundApp,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontSize: getFont(24),
+              fontWeight: FontWeight.w700,
+            ),
+            
+            ),
+        ),
         body: SingleChildScrollView(  
           padding: const EdgeInsets.all(16.0),
           child: Column(

@@ -12,13 +12,17 @@ class ResultTemperatureControlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
-        appBar: CustomAppBar(title:AppText.temperatureControl),
-        body: SingleChildScrollView(  
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1633),
+
+      appBar: CustomAppBar(
+        title: AppText.temperatureControl,
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,44 +39,45 @@ class ResultTemperatureControlScreen extends StatelessWidget {
                   ),
                 ),
               ),
-      
-               SizedBox(height: getHeight(70)),
-      
+
+              SizedBox(height: getHeight(70)),
+
               // Title
               Center(
                 child: Text(
-                 AppText.optimizingdevicetemperature,
-                 textAlign: TextAlign.center,
+                  AppText.optimizingdevicetemperature,
+                  textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w600,
                     fontSize: getFont(20),
-                    color: Color(0xFF55D0FF),
+                    color: const Color(0xFF55D0FF),
                   ),
                 ),
               ),
-      
-              SizedBox(height: getHeight(4)), 
-      
+
+              SizedBox(height: getHeight(4)),
+
               Center(
                 child: Text(
-                 AppText.pleasewait,
-                 textAlign: TextAlign.center,
+                  AppText.pleasewait,
+                  textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     fontSize: getFont(14),
-                    color: Color(0xFFD9D9D9),
+                    color: const Color(0xFFD9D9D9),
                   ),
                 ),
               ),
-              SizedBox(height: getHeight(44),),
-             
-             ScanResultWidget(),
-               SizedBox(height: getHeight(38)),
-      
+
+              SizedBox(height: getHeight(44)),
+
+              ScanResultWidget(),
+
+              SizedBox(height: getHeight(38)),
+
               // Button
               CleanButtonWidget(
-                text:AppText.cancletemp 
-,
+                text: AppText.cancletemp,
                 onPressed: () {},
               ),
             ],

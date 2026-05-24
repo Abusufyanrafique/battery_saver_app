@@ -65,7 +65,7 @@ class BatteryLifeWidget extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 14),
+            SizedBox(height: getHeight(14)),
 
           const Divider(
             color: Color(0xFF838283),
@@ -144,17 +144,17 @@ class _BatteryRow extends StatelessWidget {
                 child: Center(
                   child: SvgPicture.asset(
                     svgPath,
-                    width: 14, 
-                    height: 14,
+                    width: getWidth(20), 
+                    height: getHeight(20),
                     colorFilter: const ColorFilter.mode(
-                      Color(0xFF8A91B8),
+                      Color(0xFF989CDF),
                       BlendMode.srcIn,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(width: 10),
+               SizedBox(width: getWidth(10)),
 
               Expanded(
                 child: Text(

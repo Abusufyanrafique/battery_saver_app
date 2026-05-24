@@ -158,7 +158,7 @@ class _StatusRow extends StatelessWidget {
 
         if (!isLast)
           const Divider(
-            color: Color(0xFF2A2F5A),
+            color: Color(0xFF838283),
             thickness: 1,
             height: 1,
           ),

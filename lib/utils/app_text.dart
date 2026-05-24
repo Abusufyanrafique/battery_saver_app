@@ -62,7 +62,7 @@ class AppText {
   static const String cleaningComplete = "Cleaning Complete";
   static const String greatYouDeviceisNowClean = "Great! You Device is Now Clean";
   static const String wehavesuccessfullycleanedunnecessarfiles = "We have successfully cleaned unnecessar files\nand optimized your device.";
-
+  static const String  dataUsage =  "Data Usage";
 
 
 

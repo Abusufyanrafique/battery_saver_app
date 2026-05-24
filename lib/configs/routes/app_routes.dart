@@ -23,7 +23,7 @@ class AppRoutes {
   static const notificationCleanerScreen ='/NotificationCleanerScreen';
   static const appManagerScreen = '/appManagerScreen';
   static const fileManagerScreen = '/FileManagerScreen';
-
+  static const tooldataUsageScreen = '/tooldataUsageScreen';
 
 
   // optimize===========

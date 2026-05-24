@@ -7,24 +7,29 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/power_boost/result_power_boost_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ResultPowerBoostScreen extends StatelessWidget {
   const ResultPowerBoostScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor:AppColors.allscreenBackgroundColor,
-        appBar: CustomAppBar(title:AppText.powerBoost),
-        body: SingleChildScrollView(  
-          padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      backgroundColor: AppColors.allscreenBackgroundColor,
+
+      appBar: CustomAppBar(
+        title: AppText.powerBoost,
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: getHeight(40),),
+              SizedBox(height: getHeight(20)),
+
               // Image
               Container(
                 height: getHeight(200),
@@ -37,46 +42,54 @@ class ResultPowerBoostScreen extends StatelessWidget {
                   ),
                 ),
               ),
-      
-               SizedBox(height: getHeight(70)),
-      
+
+              SizedBox(height: getHeight(40)),
+
               // Title
-            Center(
-              child: Text(
-                    AppText.boostPerformance,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: getFont(20),
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF55D0FF),
-                    ),
-                  
+              Center(
+                child: Text(
+                  AppText.boostPerformance,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: getFont(20),
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF55D0FF),
+                  ),
+                ),
               ),
-            ),
-            SizedBox(height: getHeight(4),),
-          Center(
-            child: Text(
+
+              SizedBox(height: getHeight(6)),
+
+              // Subtitle
+              Center(
+                child: Text(
                   AppText.pleasewaitwhileweoptimizeyourdevice,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(14),
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFFD9D9D9),
+                    color: const Color(0xFFD9D9D9),
                   ),
-                
-            ),
-          ),
-              SizedBox(height: getHeight(24)), 
-             
+                ),
+              ),
+
+              SizedBox(height: getHeight(24)),
+
+              // Result Widget
               ResultPowerBoostWidget(),
-      
-               SizedBox(height: getHeight(38)),
-      
+
+              SizedBox(height: getHeight(30)),
+
               // Button
               CleanButtonWidget(
                 text: AppText.cancle,
-                onPressed: () {},
+                onPressed: () {
+                  // back to previous screen
+                  context.pop();
+                },
               ),
+
+              SizedBox(height: getHeight(20)),
             ],
           ),
         ),

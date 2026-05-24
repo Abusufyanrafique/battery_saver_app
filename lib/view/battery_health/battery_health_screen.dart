@@ -13,16 +13,19 @@ class BatteryHealthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
-        appBar: CustomAppBar(title:AppText.batteryHealth),
-        body: SingleChildScrollView(  
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1633),
+
+      appBar: CustomAppBar(
+        title: AppText.batteryHealth,
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image
               Container(
@@ -36,73 +39,77 @@ class BatteryHealthScreen extends StatelessWidget {
                   ),
                 ),
               ),
-      
+
               const SizedBox(height: 16),
-      
-              // Title
+
+              // Title 1 (Gradient)
               Center(
-      child: ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-      colors: [
-        Color(0xFFB8CBEF),
-        Color(0xFF0E65B0),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).createShader(bounds),
-    child: Text(
-      AppText.monitorProtect,
-      textAlign: TextAlign.center,
-      style: AppTextStyles.bodySmall.copyWith(
-        fontSize: getFont(20),
-        fontWeight: FontWeight.w600
-        // color: Colors.white,
-      ),
-    ),
-  ),
-),
-           Text(
-             AppText.yourBattery,
-             textAlign: TextAlign.center,
-             style: AppTextStyles.bodySmall.copyWith(
-               fontSize: getFont(20),
-               fontWeight: FontWeight.w600,
-               color: Color(0xFF7634C0),
-             ),
-           ),
-
-
-            Center(
-              child: Text(AppText.checkbatteryhealthandgettipstoextendbattery,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(
-              fontSize: getFont(14),
-              color: Color(0xFFD9D9D9)
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [
+                      Color(0xFFB8CBEF),
+                      Color(0xFF0E65B0),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: Text(
+                    AppText.monitorProtect,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(20),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
+
+              // Title 2
+              Text(
+                AppText.yourBattery,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: getFont(20),
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF7634C0),
+                ),
               ),
-            ),
-      
-              SizedBox(height: getHeight(80)), 
-             
-             // Apni screen mein widget call karein:
-BatteryHealthWidget(
-  healthStatus: 'Good',
-  healthPercent: 85,
-  designCapacity: '5000 mah',
-  currentCapacity: '4250 mah',
-  batteryVoltage: '3.9 V',
-  batteryTemperature: '32°C',
-),
-      
-             SizedBox(height: getHeight(24),),
-      
+
+              const SizedBox(height: 6),
+
+              // Subtitle
+              Text(
+                AppText.checkbatteryhealthandgettipstoextendbattery,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: getFont(14),
+                  color: const Color(0xFFD9D9D9),
+                ),
+              ),
+
+              SizedBox(height: getHeight(40)),
+
+              // Widget
+              BatteryHealthWidget(
+                healthStatus: 'Good',
+                healthPercent: 85,
+                designCapacity: '5000 mah',
+                currentCapacity: '4250 mah',
+                batteryVoltage: '3.9 V',
+                batteryTemperature: '32°C',
+              ),
+
+              SizedBox(height: getHeight(24)),
+
               // Button
               CleanButtonWidget(
-                text:AppText.viewDetails,
+                text: AppText.viewDetails,
                 onPressed: () {
                   context.push('/ResultBatteryHealthScreen');
                 },
               ),
+
+              SizedBox(height: getHeight(20)),
             ],
           ),
         ),

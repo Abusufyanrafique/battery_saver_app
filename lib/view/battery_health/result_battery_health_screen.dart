@@ -1,5 +1,6 @@
 
-import 'package:battery_saver_app/widgets/battery_health/battery_app_bar.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
+import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/battery_health/battery_capacity_card.dart';
 import 'package:battery_saver_app/widgets/battery_health/battery_health_card.dart';
 import 'package:battery_saver_app/widgets/battery_health/battery_tips_card.dart';
@@ -13,7 +14,9 @@ class ResultBatteryHealthScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0D1B3E),
-      appBar: const BatteryAppBar(),
+      appBar:CustomAppBar(
+        title: AppText.batteryHealth,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(
           horizontal: 16,

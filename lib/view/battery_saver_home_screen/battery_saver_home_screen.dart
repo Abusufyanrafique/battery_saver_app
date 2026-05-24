@@ -23,12 +23,14 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        backgroundColor: AppColors.allscreenBackgroundColor,
-        appBar: CustomAppBar(title: AppText.batterySaver),
-        body: Padding(
+    return Scaffold(
+      backgroundColor: AppColors.allscreenBackgroundColor,
+
+      // AppBar same rahega
+      appBar: CustomAppBar(title: AppText.batterySaver),
+
+      body: SafeArea(
+        child: Padding(
           padding: const EdgeInsets.only(left: 20.0, right: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +86,7 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
 
               SizedBox(height: getHeight(24)),
 
-              // Battery Saver Mode Card Widget
+              // Mode Card
               BatterySaverModeCard(
                 selected: _selectedMode,
                 onChanged: (mode) => setState(() => _selectedMode = mode),

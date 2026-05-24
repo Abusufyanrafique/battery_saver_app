@@ -13,17 +13,22 @@ class PowerBoostHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    SizeConfig().init(context); 
+    SizeConfig().init(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
-        appBar: CustomAppBar(title:AppText.powerBoost),
-        body: SingleChildScrollView(  
-          padding: const EdgeInsets.all(16.0),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F1633),
+
+      appBar: CustomAppBar(
+        title: AppText.powerBoost,
+      ),
+
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Column(
-            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: getHeight(10)),
+
               // Image
               Container(
                 height: getHeight(200),
@@ -36,70 +41,74 @@ class PowerBoostHomeScreen extends StatelessWidget {
                   ),
                 ),
               ),
-      
+
               const SizedBox(height: 16),
-      
-              // Title
+
+              // Title 1 (Blue Gradient)
               Center(
-      child: ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-      colors: [
-        Color(0xFF55D0FF),
-        Color(0xFF4103AC),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).createShader(bounds),
-    child: Text(
-      AppText.boostPerformance,
-      textAlign: TextAlign.center,
-      style: AppTextStyles.bodySmall.copyWith(
-        fontSize: getFont(20),
-        fontWeight: FontWeight.w600
-        // color: Colors.white,
-      ),
-    ),
-  ),
-),
-           Center(
-  child: ShaderMask(
-    shaderCallback: (bounds) => const LinearGradient(
-      colors: [
-        Color(0xFFFE39C6),
-        Color(0xFF9A3CFF),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ).createShader(bounds),
-    child: Text(
-      AppText.whenYouNeedIt,
-      textAlign: TextAlign.center,
-      style: AppTextStyles.bodySmall.copyWith(
-        fontSize: getFont(20),
-        fontWeight: FontWeight.w600
-        // color: Colors.white,
-      ),
-    ),
-  ),
-),
-
-
-            Center(
-              child: Text(AppText.clearMemoryOptimizeSystem,
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(
-              fontSize: getFont(14),
-              color: Color(0xFFD9D9D9)
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [
+                      Color(0xFF55D0FF),
+                      Color(0xFF4103AC),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: Text(
+                    AppText.boostPerformance,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(20),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
+
+              // Title 2 (Pink Gradient)
+              Center(
+                child: ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [
+                      Color(0xFFFE39C6),
+                      Color(0xFF9A3CFF),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ).createShader(bounds),
+                  child: Text(
+                    AppText.whenYouNeedIt,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(20),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ),
-            ),
-      
-              SizedBox(height: getHeight(80)), 
-             
+
+              const SizedBox(height: 10),
+
+              // Description
+              Center(
+                child: Text(
+                  AppText.clearMemoryOptimizeSystem,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    fontSize: getFont(14),
+                    color: const Color(0xFFD9D9D9),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: getHeight(40)),
+
+              // System Widget
               SystemOptimizeWidget(),
-      
-             SizedBox(height: getHeight(24),),
-      
+
+              SizedBox(height: getHeight(24)),
+
               // Button
               CleanButtonWidget(
                 text: AppText.boostNow,
@@ -107,6 +116,8 @@ class PowerBoostHomeScreen extends StatelessWidget {
                   context.push('/ResultPowerBoostScreen');
                 },
               ),
+
+              SizedBox(height: getHeight(20)),
             ],
           ),
         ),

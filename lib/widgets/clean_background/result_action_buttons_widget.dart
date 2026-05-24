@@ -62,15 +62,16 @@ class ResultActionButtonsWidget extends StatelessWidget {
                 )
               ),
               child: Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(width: getWidth(10),),
     Icon(
       Icons.home_rounded,
       color: Colors.white,
       size: getWidth(22),
     ),
 
-    SizedBox(width: getWidth(10)),
+    SizedBox(width: getWidth(6)),
 
     Column(
       crossAxisAlignment: CrossAxisAlignment.start,
