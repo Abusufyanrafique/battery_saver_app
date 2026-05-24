@@ -64,7 +64,30 @@ class AppText {
   static const String wehavesuccessfullycleanedunnecessarfiles = "We have successfully cleaned unnecessar files\nand optimized your device.";
   static const String  dataUsage =  "Data Usage";
 
+  static const String whatapp = "WhatsApp";
+  static const String facebook = "Facebook";
+  static const String instagram = "Instagram";
+  static const String youTube = "YouTube";
+  static const String telegram = "Telegram";
+  static const String spotify = "Spotify";
+  static const String  appManager =  'App Manager';
+  // optimize screen===================================================================
+   static const String optimizationInProgress = "Optimization in Progress";
 
+  static const String cleaningJunkFiles = "Cleaning Junk Files";
+  static const String removingUnnecessaryFiles = "Removing unnecessary files";
+
+  static const String closingBackgroundApps = "Closing Background Apps";
+  static const String stoppingBackgroundProcesses =  "Stopping background processes";
+
+  static const String optimizingSystemResources = "Optimizing System Resources";
+  static const String improvingSystemPerformance = "Improving system performance";
+
+  static const String checkingBatteryHealth = "Checking Battery Health";
+  static const String analyzingBatteryStatus = "Analyzing battery status";
+
+  static const String balancingTemperature = "Balancing Temperature";
+  static const String ensuringOptimalTemperature ="Ensuring optimal temperature";
 
 
 

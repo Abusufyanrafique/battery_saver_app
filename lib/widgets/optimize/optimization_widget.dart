@@ -1,9 +1,10 @@
-import 'package:battery_saver_app/utils/app_images.dart';
-import 'package:flutter/material.dart';
-import 'package:battery_saver_app/configs/colors/app_colors.dart';
-import 'package:battery_saver_app/configs/text_style/text_style.dart';
-import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
+import 'package:flutter/material.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
+
 
 enum TaskStatus { completed, inProgress, pending }
 
@@ -13,7 +14,7 @@ class OptimizationTask {
   final String imagePath;
   final Color iconColor;
   final TaskStatus status;
-  final bool isSpecial; // 
+  final bool isSpecial;
 
   const OptimizationTask({
     required this.title,
@@ -30,41 +31,39 @@ class OptimizationWidget extends StatelessWidget {
 
   final List<OptimizationTask> tasks = const [
     OptimizationTask(
-      title: 'Cleaning Junk Files',
-      subtitle: 'Removing unnecessary files',
+      title: AppText.cleaningJunkFiles,
+      subtitle: AppText.removingUnnecessaryFiles,
       imagePath: AppImages.deleteimage,
-      iconColor: Color(0xFFE57373),
+      iconColor: AppColors.junkFiles,
       status: TaskStatus.completed,
     ),
     OptimizationTask(
-      title: 'Closing Background Apps',
-      subtitle: 'Stopping background processes',
+      title: AppText.closingBackgroundApps,
+      subtitle: AppText.stoppingBackgroundProcesses,
       imagePath: AppImages.optimizerocket,
-      iconColor: Color(0xFF9575CD),
+      iconColor: AppColors.backgroundApps,
       status: TaskStatus.completed,
     ),
     OptimizationTask(
-      title: 'Optimizing System Resources',
-      subtitle: 'Improving system performance',
+      title: AppText.optimizingSystemResources,
+      subtitle: AppText.improvingSystemPerformance,
       imagePath: AppImages.optimizeresource,
-      iconColor: Color(0xFFBA68C8),
+      iconColor: AppColors.systemResources,
       status: TaskStatus.inProgress,
     ),
-
-    //  SPECIAL 2 ITEMS
     OptimizationTask(
-      title: 'Checking Battery Health',
-      subtitle: 'Analyzing battery status',
+      title: AppText.checkingBatteryHealth,
+      subtitle: AppText.analyzingBatteryStatus,
       imagePath: AppImages.checkingoptimize,
-      iconColor: Color(0xFF4DB6AC),
+      iconColor: AppColors.batteryHealth,
       status: TaskStatus.pending,
       isSpecial: true,
     ),
     OptimizationTask(
-      title: 'Balancing Temperature',
-      subtitle: 'Ensuring optimal temperature',
+      title: AppText.balancingTemperature,
+      subtitle: AppText.ensuringOptimalTemperature,
       imagePath: AppImages.optimizetemp,
-      iconColor: Color(0xFFFFA726),
+      iconColor: AppColors.temperature,
       status: TaskStatus.pending,
       isSpecial: true,
     ),
@@ -73,10 +72,10 @@ class OptimizationWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 360,
+      height: getHeight(375),
       width: double.infinity,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        // shape: BoxShape.circle,
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -87,14 +86,13 @@ class OptimizationWidget extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF1E2A5E), width: 1),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
-      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppText.optimizationinProgress,
+            AppText.optimizationInProgress,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(16),
               fontWeight: FontWeight.w600,
@@ -110,8 +108,8 @@ class OptimizationWidget extends StatelessWidget {
                 color: Color(0xFF838283),
                 height: 1,
                 thickness: 0.5,
-                endIndent: 20,
                 indent: 17,
+                endIndent: 20,
               ),
               itemBuilder: (context, index) {
                 return _TaskTile(task: tasks[index]);
@@ -129,7 +127,7 @@ class _TaskTile extends StatelessWidget {
 
   const _TaskTile({required this.task});
 
-  Widget _buildStatusWidget() {
+  Widget _buildStatus() {
     switch (task.status) {
       case TaskStatus.completed:
         return Container(
@@ -137,18 +135,20 @@ class _TaskTile extends StatelessWidget {
           height: 16,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFF4CAF50), width: 1.5),
+            border: Border.all(color: AppColors.completed, width: 1.5),
           ),
-          child: const Icon(Icons.check, color: Color(0xFF4CAF50), size: 10),
+          child: Icon(Icons.check,
+              size: 10, color: AppColors.completed),
         );
 
       case TaskStatus.inProgress:
-        return  SizedBox(
+        return SizedBox(
           width: getWidth(12),
           height: getHeight(12),
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation(Color(0xFF7986CB)),
+            valueColor:
+                const AlwaysStoppedAnimation(AppColors.inProgress),
           ),
         );
 
@@ -169,35 +169,26 @@ class _TaskTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 60,
+      height: getHeight(60),
       child: Row(
         children: [
-          //  IMAGE + CONDITIONAL STYLE
           Container(
             width: getWidth(40),
             height: getHeight(40),
             decoration: BoxDecoration(
-               shape: BoxShape.circle,
+              shape: BoxShape.circle,
               color: task.isSpecial
-                  ? const Color(0xFF1A1F4E) // different theme
+                  ? const Color(0xFF1A1F4E)
                   : const Color(0xFF232C6D),
-              // borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: task.isSpecial
-                    ? const Color(0xFF212650)
-                    : const Color(0xFF212650),
-              ),
+              border: Border.all(color: AppColors.border),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Image.asset(
-                task.imagePath,
-                fit: BoxFit.contain,
-              ),
+              padding: const EdgeInsets.all(8),
+              child: Image.asset(task.imagePath),
             ),
           ),
 
-           SizedBox(width: getWidth(12)),
+          SizedBox(width: getWidth(12)),
 
           Expanded(
             child: Column(
@@ -224,7 +215,7 @@ class _TaskTile extends StatelessWidget {
             ),
           ),
 
-          _buildStatusWidget(),
+          _buildStatus(),
         ],
       ),
     );
@@ -240,13 +231,13 @@ class _DotIndicator extends StatelessWidget {
       width: 5,
       height: 5,
       decoration: const BoxDecoration(
-        gradient: LinearGradient(colors: 
-        [
-          Color(0xFFDA2DF1),
-          Color(0xFF55D0FF)
-        ]),
         shape: BoxShape.circle,
-        color: Color(0xFF7986CB),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.dotGradient1,
+            AppColors.dotGradient2,
+          ],
+        ),
       ),
     );
   }

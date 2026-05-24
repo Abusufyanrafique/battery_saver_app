@@ -69,6 +69,7 @@ class _OptimizeScreenState extends State<OptimizeScreen> {
                   style: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(14),
                     fontWeight: FontWeight.w500,
+                    color: AppColors.allsmalltextcolor
                   ),
                 ),
               ),

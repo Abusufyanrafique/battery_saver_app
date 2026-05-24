@@ -30,8 +30,8 @@ class AppListTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 child: SvgPicture.asset(
                   app.iconAsset,
-                  width: getWidth(36),
-                  height: getHeight(36),
+                  width: getWidth(20),
+                  height: getHeight(20),
                   fit: BoxFit.contain,
                   placeholderBuilder: (context) => Container(
                     width: 36,

@@ -85,8 +85,8 @@ class _AppUsageRowState extends State<_AppUsageRow>
         children: [
           // App Icon
           Container(
-            width: getWidth(40),
-            height: getHeight(40),
+            width: getWidth(20),
+            height: getHeight(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
             ),

@@ -1,7 +1,8 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
-import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
+import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_list_container.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_manager_tabBar.dart';
 import 'package:battery_saver_app/widgets/app_manager/stats_card.dart';
@@ -19,12 +20,12 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
 
   // Sample data - in real app, fetch from device
   final List<AppModel> _apps = [
-    AppModel(name: 'WhatsApp', iconAsset: 'assets/icons/notification_cleaner/Whatsappicon.svg', sizeMB: 452),
-    AppModel(name: 'Facebook', iconAsset: 'assets/icons/notification_cleaner/facebookicon.svg', sizeMB: 412),
-    AppModel(name: 'Instagram', iconAsset: 'assets/icons/notification_cleaner/instagramicon.svg', sizeMB: 398),
-    AppModel(name: 'YouTube', iconAsset: 'assets/icons/notification_cleaner/youtubeicon.svg', sizeMB: 278),
-    AppModel(name: 'Telegram', iconAsset: AppIcons.telegram, sizeMB: 245),
-    AppModel(name: 'Spotify', iconAsset: AppIcons.spotify, sizeMB: 234),
+    AppModel(name: AppText.whatapp, iconAsset: AppIcons.whatsappicon, sizeMB: 452),
+    AppModel(name: AppText.facebook, iconAsset: AppIcons.facebookicon, sizeMB: 412),
+    AppModel(name: AppText.instagram, iconAsset: AppIcons.instagramicon, sizeMB: 398),
+    AppModel(name: AppText.youTube, iconAsset:AppIcons.youtubeicon, sizeMB: 278),
+    AppModel(name: AppText.telegram, iconAsset: AppIcons.telegram, sizeMB: 245),
+    AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 234),
   ];
 
 
@@ -44,17 +45,14 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
-      // appBar:CustomAppBar(title: 'App Manager',),
+      appBar:CustomAppBar(title:AppText.appManager,),
       body: Column(
         children: [
-          // SizedBox(height: 100,),
-          // ── Top Bar ──────────────────────────────────────────
-          _AppManagerAppBar(),
-      
+          
           // ── Scrollable Content ───────────────────────────────
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -70,7 +68,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
                     totalApps: _apps.length,
                     totalSizeGB: _totalSizeGB,
                   ),
-                  const SizedBox(height: 20),
+                   SizedBox(height: getHeight(20)),
                   
       
                   // App List
@@ -78,7 +76,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
                     apps: _apps,
                     onToggle: _toggleApp,
                   ),
-                  const SizedBox(height: 100), // bottom padding for button
+                  // const SizedBox(height: 100), // bottom padding for button
                 ],
               ),
             ),
@@ -86,49 +84,10 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
         ],
       ),
 
-      // ── Bottom Uninstall Button ──────────────────────────────
-      // bottomNavigationBar: Container(
-      //   // color: AppColors.background,
-      //   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-      //   child: UninstallButton(
-      //     selectedCount: _selectedCount,
-      //     onUninstall: _onUninstall,
-      //   ),
-      // ),
     );
   }
 }
 
-// ── App Bar Widget (local, simple enough to stay here) ──────────
-class _AppManagerAppBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Row(
-        children: [
-          IconButton(
-            icon:  Icon(Icons.arrow_back_ios,
-                color: AppColors.textwhitecolor, 
-                size: 18),
-            onPressed: () => Navigator.maybePop(context),
-          ),
-           Expanded(
-            child: Text(
-              'App Manager',
-              textAlign: TextAlign.center,
-              style:AppTextStyles.bodyLarge.copyWith(
-                fontSize: getFont(24),
-                fontWeight:FontWeight.w700,
-              )
-            ),
-          ),
-           SizedBox(width: getWidth(48)), // balance the back button
-        ],
-      ),
-    );
-  }
-}
 class AppModel {
   final String name;
   final String iconAsset; 

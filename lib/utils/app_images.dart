@@ -65,9 +65,12 @@ class AppImages {
   static const String filemanagerapk = "assets/images/file_manager/filemanagerapk.png";
  
  static const String profilescore = "assets/images/home/profilescore.png";
-
+            //  ==============tool screen===================
  static const String containerrocket = "assets/images/tools/containerrocket.png";
  static const String containerbattery = "assets/images/tools/containerbattery.png";
+ static const String containercpucooler ="assets/images/tools/containercpucooler.png";
+ static const String containersecurity = "assets/images/tools/containersecurity.png";
+ static const String containerdatausage = "assets/images/tools/containerdatausage.png";
 //   ====================data usage screen==========================
 static const String time  = "assets/images/data_usage/Time.png";
 static const String phone = "assets/images/data_usage/phone.png";
@@ -76,6 +79,7 @@ static const String performance = "assets/images/data_usage/performance.png";
 static const String datausagecpu = "assets/images/data_usage/datausagecpu.png";
 static const String datausagetemp = "assets/images/data_usage/datausagetemp.png";
 static const String datausageram = "assets/images/data_usage/datausageram.png";
+
 
 
 

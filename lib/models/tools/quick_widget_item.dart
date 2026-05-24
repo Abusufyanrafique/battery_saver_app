@@ -51,15 +51,13 @@ final List<ToolItem> toolsData = [
   ToolItem(
     title: 'CPU Cooler',
     subtitle: 'Cool down CPU and\nreduce temperature',
-    icon: Icons.ac_unit_rounded,
-    // iconColor: const Color(0xFF90CAF9),
-    // iconBgColor: const Color(0xFF1A2A4A), 
+    imagepath: AppImages.containercpucooler,
     route: '/CpuCoolerScreen',
   ),
   ToolItem(
     title: 'Security Scan',
     subtitle: 'Protect your device\nfrom threats',
-    imagepath: AppImages.toolsecurityscan,
+    imagepath: AppImages.containersecurity,
     // icon: Icons.shield_rounded,
     // iconColor: const Color(0xFF69F0AE),
     // iconBgColor: const Color(0xFF1A3A2A), 
@@ -95,7 +93,7 @@ final List<ToolItem> toolsData = [
   ToolItem(
     title: 'Data Usage',
     subtitle: 'Monitor data usage\nin real-time',
-    imagepath: AppImages.toolDataUsage,
+    imagepath: AppImages.containerdatausage,
     // icon: Icons.data_usage_rounded,
     iconColor: const Color(0xFF80DEEA),
     // iconBgColor: const Color(0xFF1A3A4A),
