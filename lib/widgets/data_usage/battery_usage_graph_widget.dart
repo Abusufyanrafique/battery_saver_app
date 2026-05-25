@@ -48,7 +48,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
     final labels = _xLabels[_selected]!;
 
     return SizedBox(
-      height: getHeight(190),
+      height: getHeight(178),
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(

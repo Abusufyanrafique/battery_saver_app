@@ -1,12 +1,12 @@
 // premium_banner_widget.dart
 
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+
 
 class PremiumBannerWidget extends StatelessWidget {
   final VoidCallback? onManageTap;
@@ -59,16 +59,11 @@ class PremiumBannerWidget extends StatelessWidget {
               ),
               child: Center(
                 child:
-                // SvgPicture.asset(
-                //   height: 20,
-                //   width: 20,
-                //   AppIcons.daimondicon,
-                // )
-                Icon(
-                  Icons.diamond_rounded,
-                  size: getWidth(28),
-                  color: const Color(0xFFE040FB),
-                ),
+              Image.asset(
+                AppImages.daimond,
+                 width: getWidth(20),
+                 height: getHeight(20),
+                )
               ),
             ),
       
@@ -109,8 +104,8 @@ class PremiumBannerWidget extends StatelessWidget {
               onTap: onManageTap,
               child: Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: getWidth(10),
-                  vertical: getHeight(8),
+                  horizontal: getWidth(8),
+                  vertical: getHeight(6),
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(24),

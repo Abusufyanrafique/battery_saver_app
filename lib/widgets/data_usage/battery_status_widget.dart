@@ -156,7 +156,7 @@ class _CircularBattery extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: getWidth(114),
-      height: getWidth(110),
+      height: getWidth(108),
       child: CustomPaint(
         painter: _CircularBatteryPainter(level: level),
         child: Center(

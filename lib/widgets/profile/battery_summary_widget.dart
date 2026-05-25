@@ -79,7 +79,7 @@ class BatterySummaryWidget extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.symmetric(
           horizontal: getWidth(12),
-          vertical: getHeight(10),
+          vertical: getHeight(8),
         ),
         decoration: BoxDecoration(
            gradient: const LinearGradient(

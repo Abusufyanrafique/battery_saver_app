@@ -85,16 +85,16 @@ class _AppUsageRowState extends State<_AppUsageRow>
         children: [
           // App Icon
           Container(
-            width: getWidth(20),
-            height: getHeight(20),
+            width: getWidth(30),
+            height: getHeight(30),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
             ),
             clipBehavior: Clip.antiAlias,
             child: SvgPicture.asset(
               item.svgAssetPath,
-              width: getWidth(20),
-              height: getHeight(20),
+              width: getWidth(30),
+              height: getHeight(30),
               fit: BoxFit.cover,
             ),
           ),

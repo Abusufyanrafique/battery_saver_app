@@ -110,6 +110,7 @@ static const String  after =  'After';
 static const String recommendations = 'Recommendations';
 static const String  quickWidgets =  'Quick Widgets';
 static const String profile = "Profile";
+static const String batteryUsage ="Battery Usage";
 
 
 }

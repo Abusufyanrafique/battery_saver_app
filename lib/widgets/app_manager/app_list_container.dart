@@ -5,18 +5,20 @@ import 'app_list_tile.dart';
 class AppListContainer extends StatelessWidget {
   final List<AppModel> apps;
   final Function(int index) onToggle;
+  final bool isApkMode; // ← new
 
   const AppListContainer({
     super.key,
     required this.apps,
     required this.onToggle,
+    this.isApkMode = false, // ← new
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-         gradient: const LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
@@ -38,6 +40,7 @@ class AppListContainer extends StatelessWidget {
               app: apps[index],
               onToggle: () => onToggle(index),
               showDivider: index != apps.length - 1,
+              isApkMode: isApkMode, // ← pass karo
             );
           },
         ),

@@ -71,4 +71,8 @@ class AppIcons {
   static const String daimondicon = "assets/icons/profile/daimondicon.svg";
   static const String menuhome = "assets/icons/menu/menuhome.svg";
   static const String menudelete = "assets/icons/menu/menudelete.svg";
+  static const String filledhome ="assets/icons/home/filledhome.svg";
+  static const String filledusage = "assets/icons/home/filledusage.svg";
+  static const String filledTools = "assets/icons/home/filledTools.svg";
+  static const String filledprofile= "assets/icons/home/filledprofile.svg";
     } 

@@ -100,4 +100,5 @@ static const String menufeedback ="assets/images/home/menufeedback.png";
 static const String menurateus = "assets/images/home/menurateus.png";
 static const String menushareapp = "assets/images/home/menushareapp.png";
 static const String menuprivacyPolicy ="assets/images/home/menuprivacyPolicy.png";
+static const String daimond = "assets/images/home/daimond.png";
 } 

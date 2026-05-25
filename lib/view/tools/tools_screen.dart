@@ -87,7 +87,7 @@ class _ToolsGrid extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 14,
         mainAxisSpacing: 14,
-        childAspectRatio: 0.80,
+        childAspectRatio: 0.82,
       ),
       itemBuilder: (context, index) {
         final tool = toolsData[index];

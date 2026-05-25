@@ -32,6 +32,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
 
   static final List<_DrawerItem> _bottomItems = [
     _DrawerItem('Settings', AppImages.menusettings, Color(0xFF989CDF).withOpacity(0.20)),
+    // ignore: deprecated_member_use
     _DrawerItem('Feedback',AppImages.menufeedback, Color(0xFF7075C9).withOpacity(0.20)),
     _DrawerItem('Rate Us', AppImages.menurateus, Color(0xFFFFDD55).withOpacity(0.20)),
     _DrawerItem('Share App', AppImages.menushareapp, Color(0xFF989CDF).withOpacity(0.20)),
@@ -43,7 +44,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
     return Drawer(
       width: 220,
 
-      // ✔️ ONLY CHANGE: BACKGROUND GRADIENT ADDED
+      //  BACKGROUND GRADIENT ADDED
       child: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(

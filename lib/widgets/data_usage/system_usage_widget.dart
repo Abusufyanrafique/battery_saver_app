@@ -84,7 +84,7 @@ class SystemUsageWidget extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: getWidth(14),
-        vertical: getHeight(5),
+        vertical: getHeight(3),
       ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(

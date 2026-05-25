@@ -1,8 +1,10 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 class ToolsAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final VoidCallback? onBackPressed;
@@ -66,36 +68,38 @@ class _PremiumBadge extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         decoration: BoxDecoration(
-          color: Colors.transparent,
+          color: Color(0xFF0E112F),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color(0xFFD4A017), // golden border
+            color: const Color(0xFFEDC009), // golden border
             width: 1.5,
           ),
         ),
         child:  Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image(image: AssetImage(AppImages.premium)),
-//             SvgPicture.asset(
-//             AppIcons.premiumicon,
-//             width: 16,
-//             height: 14,
-//             colorFilter: const ColorFilter.mode(
-//           Colors.white,
-//             BlendMode.srcIn,
-//   ),
-// ),
-            SizedBox(width: 5),
-            Text(
-              'Premium',
-              style: TextStyle(
-                color:AppColors.premiumbannercolor, // golden text
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.3,
+            Image(image: AssetImage(AppImages.premium)),
+            SvgPicture.asset(
+            AppIcons.premiumicon,
+            width: getWidth(8),
+            height: getHeight(10),
+            colorFilter: const ColorFilter.mode(
+          Colors.white,
+            BlendMode.srcIn,
+  ),
+),
+            
+            Padding(
+              padding: const EdgeInsets.only(right: 5.0),
+              child: Text(
+                'Premium',
+                style:AppTextStyles.bodySmall.copyWith(
+                  fontSize: getFont(12),
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFE7CC5A)
+                )
               ),
             ),
           ],

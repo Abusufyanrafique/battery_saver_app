@@ -6,6 +6,7 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_list_container.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_manager_tabBar.dart';
 import 'package:battery_saver_app/widgets/app_manager/stats_card.dart';
+import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:flutter/material.dart';
 
 class AppManagerScreen extends StatefulWidget {
@@ -23,32 +24,43 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
     AppModel(name: AppText.whatapp, iconAsset: AppIcons.whatsappicon, sizeMB: 452),
     AppModel(name: AppText.facebook, iconAsset: AppIcons.facebookicon, sizeMB: 412),
     AppModel(name: AppText.instagram, iconAsset: AppIcons.instagramicon, sizeMB: 398),
-    AppModel(name: AppText.youTube, iconAsset:AppIcons.youtubeicon, sizeMB: 278),
+    AppModel(name: AppText.youTube, iconAsset: AppIcons.youtubeicon, sizeMB: 278),
     AppModel(name: AppText.telegram, iconAsset: AppIcons.telegram, sizeMB: 245),
     AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 234),
   ];
 
+  // APK Files list — same structure, just different data
+  final List<AppModel> _apkFiles = [
+    AppModel(name: AppText.whatapp, iconAsset: AppIcons.whatsappicon, sizeMB: 52.4),
+    AppModel(name: AppText.facebook, iconAsset: AppIcons.facebookicon, sizeMB: 62.7),
+    AppModel(name: AppText.instagram, iconAsset: AppIcons.instagramicon, sizeMB: 45.3),
+    AppModel(name: AppText.youTube, iconAsset: AppIcons.youtubeicon, sizeMB: 4.8),
+    AppModel(name: AppText.telegram, iconAsset: AppIcons.telegram, sizeMB: 91.7),
+    AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 58.6),
+    // AppModel(name: AppText.threads, iconAsset: AppIcons.threads, sizeMB: 40.4),
+  ];
+
+  List<AppModel> get _currentList =>
+      _selectedTabIndex == 0 ? _apps : _apkFiles;
 
   double get _totalSizeGB {
-    final totalMB = _apps.fold<double>(0, (sum, a) => sum + a.sizeMB);
+    final totalMB = _currentList.fold<double>(0, (sum, a) => sum + a.sizeMB);
     return totalMB / 1024;
   }
 
   void _toggleApp(int index) {
     setState(() {
-      _apps[index].isSelected = !_apps[index].isSelected;
+      _currentList[index].isSelected = !_currentList[index].isSelected;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
-      appBar:CustomAppBar(title:AppText.appManager,),
+      appBar: CustomAppBar(title: AppText.appManager),
       body: Column(
         children: [
-          
           // ── Scrollable Content ───────────────────────────────
           Expanded(
             child: SingleChildScrollView(
@@ -57,40 +69,44 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 16),
-                     AppManagerTabBar(
+                  AppManagerTabBar(
                     selectedIndex: _selectedTabIndex,
                     onTabChanged: (i) =>
                         setState(() => _selectedTabIndex = i),
                   ),
-                   SizedBox(height: getHeight(16)),
+                  SizedBox(height: getHeight(16)),
                   // Stats Card
                   StatsCard(
-                    totalApps: _apps.length,
+                    totalApps: _currentList.length,
                     totalSizeGB: _totalSizeGB,
                   ),
-                   SizedBox(height: getHeight(20)),
-                  
-      
-                  // App List
+                  SizedBox(height: getHeight(20)),
+
+                  // App List — switches based on selected tab
                   AppListContainer(
-                    apps: _apps,
-                    onToggle: _toggleApp,
-                  ),
-                  // const SizedBox(height: 100), // bottom padding for button
+                 apps: _currentList,
+                 onToggle: _toggleApp,
+                 isApkMode: _selectedTabIndex == 1, // ← bas yeh add karo
+                 ),
+                  SizedBox(height: getHeight(200)),
+             CleanButtonWidget(
+                text: "Uninstall (0)",
+                onPressed: () {},
+              ),
+               
                 ],
               ),
             ),
           ),
         ],
       ),
-
     );
   }
 }
 
 class AppModel {
   final String name;
-  final String iconAsset; 
+  final String iconAsset;
   final double sizeMB;
   bool isSelected;
 
