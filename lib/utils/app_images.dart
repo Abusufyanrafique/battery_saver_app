@@ -79,15 +79,25 @@ static const String performance = "assets/images/data_usage/performance.png";
 static const String datausagecpu = "assets/images/data_usage/datausagecpu.png";
 static const String datausagetemp = "assets/images/data_usage/datausagetemp.png";
 static const String datausageram = "assets/images/data_usage/datausageram.png";
+static const String optimizeimage = "assets/images/tools/Optimizeimage.png";
 
-
-
-
-
-
-
-
-
-
-
+static const String cleaningcomplete = "assets/images/junk_cleaner/cleaningcomplete.png";
+static const String containerphoneboost = "assets/images/tools/containerphoneboost.png";
+static const String containernotification = "assets/images/tools/containernotification.png";
+static const String containerappmanager = "assets/images/tools/containerappmanager.png";
+static const String containerfile = "assets/images/tools/containerfile.png";
+static const String menujunk = "assets/images/home/menujunk.png";
+static const String menuphoneboost ="assets/images/home/menuphoneboost.png";
+static const String menubatterysaver ="assets/images/home/menubatterysaver.png";
+static const String menuCPUCooler = "assets/images/home/menuCPUCooler.png";
+static const String menusecurityscan = "assets/images/home/menusecurityscan.png";
+static const String menunotificationcleaner = "assets/images/home/menunotificationcleaner.png";
+static const String menuappsmanager = "assets/images/home/menuappsmanager.png";
+static const String menufilemanager = "assets/images/home/menufilemanager.png";
+static const String menudatausage = "assets/images/home/menudatausage.png";
+static const String menusettings ="assets/images/home/menusettings.png";
+static const String menufeedback ="assets/images/home/menufeedback.png";
+static const String menurateus = "assets/images/home/menurateus.png";
+static const String menushareapp = "assets/images/home/menushareapp.png";
+static const String menuprivacyPolicy ="assets/images/home/menuprivacyPolicy.png";
 } 

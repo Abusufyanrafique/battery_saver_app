@@ -35,7 +35,7 @@ class CleaningCompleteScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   image: const DecorationImage(
-                    image: AssetImage(AppImages.resulttempimage),
+                    image: AssetImage(AppImages.cleaningcomplete),
                     fit: BoxFit.contain,
                   ),
                 ),

@@ -1,10 +1,12 @@
 // premium_banner_widget.dart
 
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class PremiumBannerWidget extends StatelessWidget {
   final VoidCallback? onManageTap;
@@ -26,15 +28,15 @@ class PremiumBannerWidget extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-           gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
-        ),
+            gradient: const LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [
+      Color(0xFF232C6D), // dark left
+      Color(0xFF1B2153), // mid blend
+      Color(0xFF6913FD), // blue right
+    ],
+  ),
           border: Border.all(
             color: const Color(0xFF4103AC),
             width: 1.2,
@@ -44,8 +46,8 @@ class PremiumBannerWidget extends StatelessWidget {
           children: [
             // ───────── GEM ICON ─────────
             Container(
-              width: getWidth(52),
-              height: getWidth(52),
+              width: getWidth(40),
+              height: getWidth(40),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: const RadialGradient(
@@ -56,7 +58,13 @@ class PremiumBannerWidget extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: Icon(
+                child:
+                // SvgPicture.asset(
+                //   height: 20,
+                //   width: 20,
+                //   AppIcons.daimondicon,
+                // )
+                Icon(
                   Icons.diamond_rounded,
                   size: getWidth(28),
                   color: const Color(0xFFE040FB),

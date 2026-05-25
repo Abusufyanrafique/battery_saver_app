@@ -7,6 +7,7 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/battery_saver_home_screen/battery_saver_home_screen_widgets.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/optimize/optimization_widget.dart';
+import 'package:battery_saver_app/widgets/optimize/stop_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -41,7 +42,7 @@ class _OptimizeScreenState extends State<OptimizeScreen> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   image: const DecorationImage(
-                    image: AssetImage(AppImages.homebatterysaver),
+                    image: AssetImage(AppImages.optimizeimage),
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -78,12 +79,11 @@ class _OptimizeScreenState extends State<OptimizeScreen> {
           OptimizationWidget(),
                 SizedBox(height: getHeight(20),),
               // Button
-              CleanButtonWidget(
-                text: 'Stop',
-                onPressed: () {
-                  context.push('/OptimizationResultScreen');
-                },
-              ),
+             StopButton(
+    onPressed: () {
+    context.push('/OptimizationResultScreen');
+  },
+),
             ],
           ),
         ),

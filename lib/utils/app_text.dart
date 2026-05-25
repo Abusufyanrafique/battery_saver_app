@@ -88,10 +88,28 @@ class AppText {
 
   static const String balancingTemperature = "Balancing Temperature";
   static const String ensuringOptimalTemperature ="Ensuring optimal temperature";
+  static const String optimizationComplete = "Optimization Complete!";
+  static const String yourdeviceisnowoptimized = "Your device is now optimized";
+  static const String optimizationResult = "Optimization Result";
+  static const String improved = 'Improved';
+  
+  // Titles
+static const String enableAutoOptimize = 'Enable Auto Optimize';
+static const String turnOnBatterySaver = 'Turn On Battery Saver';
+static const String cleanAppsRegularly = 'Clean Apps Regularly';
 
-
-
-
+// Subtitles
+static const String enableAutoOptimizeSub = 'Automatically optimize your device regularly';
+static const String turnOnBatterySaverSub = 'Save more power and extend battery life';
+static const String cleanAppsRegularlySub = 'Keep your device fast and smooth';
+static const String optimizationSummary = 'Optimization Summary';
+static const String performanceImprovement = 'Performance Improvement';
+static const String performanceScore = 'Performance Score';
+static const String before = 'Before';
+static const String  after =  'After';
+static const String recommendations = 'Recommendations';
+static const String  quickWidgets =  'Quick Widgets';
+static const String profile = "Profile";
 
 
 }

@@ -4,6 +4,7 @@ import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/models/tools/quick_widget_item.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/tools/quick_widget_card.dart';
 import 'package:battery_saver_app/widgets/tools/tool_card_widget.dart';
 import 'package:battery_saver_app/widgets/tools/tools_app_bar.dart';
@@ -26,7 +27,7 @@ class ToolsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               _ToolsGrid(),
-              SizedBox(height: 28),
+              SizedBox(height:20),
               _QuickWidgetsSection(),
             ],
           ),
@@ -86,7 +87,7 @@ class _ToolsGrid extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 14,
         mainAxisSpacing: 14,
-        childAspectRatio: 0.74,
+        childAspectRatio: 0.80,
       ),
       itemBuilder: (context, index) {
         final tool = toolsData[index];
@@ -134,7 +135,7 @@ class _QuickWidgetsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
            Text(
-            'Quick Widgets',
+           AppText.quickWidgets,
             style: AppTextStyles.bodySmall.copyWith(
               fontSize: getFont(12),
               fontWeight: FontWeight.w600,

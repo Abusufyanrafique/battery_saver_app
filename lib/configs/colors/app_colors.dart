@@ -28,5 +28,7 @@ class AppColors {
   static const Color tileBg = Color(0xFF232C6D);
   static const Color tileBgSpecial = Color(0xFF1A1F4E);
   static const Color border = Color(0xFF212650);
+
+  static const Color criclecolor = Color(0xFF9A3CFF);
 }
 

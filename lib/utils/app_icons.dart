@@ -1,3 +1,5 @@
+import 'dart:core';
+
 class AppIcons {
   static const String junkCleaner  = 'assets/icons/tools_screen/JunkCleaner.svg';  
   static const String phoneBoost   = 'assets/icons/tools_screen/phone_boost.svg';
@@ -45,4 +47,28 @@ class AppIcons {
   static const String cacheCleared ="assets/icons/clean/CacheCleared.svg";
 
   static const String files2 = "assets/icons/clean/files2.svg";
-  } 
+  // optimize screen=======================================
+  static const String optimizebattery = "assets/icons/optimize/optimizebattery.svg";
+  static const String optimizeram = "assets/icons/optimize/optimizeram.svg";
+  static const String optimizedelete = "assets/icons/optimize/optimizedelete.svg";
+  static const String optimizetemp = "assets/icons/optimize/optimizetemp.svg";
+  static const String hearticon = "assets/icons/optimize/hearticon.svg";
+  // profile screen ===============================================
+  static const String profilebatteryicon= "assets/icons/profile/profilebatteryicon.svg"; 
+  static const String profilechargeicon= "assets/icons/profile/profilechargeicon.svg"; 
+  static const String profileffici= "assets/icons/profile/profileffici.svg"; 
+  static const String profiledrainicon= "assets/icons/profile/profiledrainicon.svg"; 
+  // settings icons''''''''''''''''''''''''''''''''''''''''''
+ static const String profileperson = "assets/icons/profile/profileperson.svg";
+  static const String profilenoti= "assets/icons/profile/profilenoti.svg";
+  static const String profiletheme= "assets/icons/profile/profiletheme.svg";
+
+  static const String profilelanguage= "assets/icons/profile/profilelanguage.svg";
+  static const String profilebackaup= "assets/icons/profile/profilebackaup.svg";
+  static const String profilehelp="assets/icons/profile/profilehelp.svg";
+  static const String profileinfo="assets/icons/profile/profileinfo.svg";
+  static const String profileicon1 = "assets/icons/profile/profileicon.svg";
+  static const String daimondicon = "assets/icons/profile/daimondicon.svg";
+  static const String menuhome = "assets/icons/menu/menuhome.svg";
+  static const String menudelete = "assets/icons/menu/menudelete.svg";
+    } 

@@ -31,11 +31,11 @@ class ProfileHeaderWidget extends StatelessWidget {
     return Container(
       width: getWidth(390),
       padding: EdgeInsets.symmetric(
-        horizontal: getWidth(16),
-        vertical: getHeight(0),
+        horizontal: getWidth(6),
+        // vertical: getHeight(0),
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF0D1035),
+        // color: const Color(0xFF0D1035),
         // border: Border(
         //   bottom: BorderSide(
         //     color: const Color(0xFF9A3CFF).withOpacity(0.4),
@@ -60,7 +60,7 @@ class ProfileHeaderWidget extends StatelessWidget {
             ),
           ),
 
-          SizedBox(width: getWidth(12)),
+          SizedBox(width: getWidth(20)),
 
           // ───────── PROFILE SCORE ─────────
           _ProfileScoreCard(
@@ -85,14 +85,14 @@ class _AvatarSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: getWidth(80),
-      height: getWidth(80),
+      width: getWidth(90),
+      height: getWidth(90),
       child: Stack(
         children: [
           // Gradient border circle
           Container(
-            width: getWidth(80),
-            height: getWidth(80),
+            width: getWidth(90),
+            height: getWidth(90),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(

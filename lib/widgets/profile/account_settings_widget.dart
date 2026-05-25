@@ -1,25 +1,28 @@
 // account_settings_widget.dart
 
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // ─────────────────────────────────────────────────────────────
 // MODEL
 // ─────────────────────────────────────────────────────────────
 
 class SettingsItem {
-  final IconData icon;
+  final String svgicon;
   final String title;
   final String? trailingText;
   final VoidCallback? onTap;
 
   const SettingsItem({
-    required this.icon,
+   
     required this.title,
     this.trailingText,
-    this.onTap,
+    this.onTap, 
+    required this.svgicon,
   });
 }
 
@@ -37,39 +40,39 @@ class AccountSettingsWidget extends StatelessWidget {
 
   List<SettingsItem> _defaultItems(BuildContext context) => [
         SettingsItem(
-          icon: Icons.person_outline_rounded,
+         svgicon:AppIcons.profileperson ,
           title: 'Personal Information',
           onTap: () {},
         ),
         SettingsItem(
-          icon: Icons.notifications_none_rounded,
+       svgicon:AppIcons.profilenoti ,
           title: 'Notifications',
           onTap: () {},
         ),
         SettingsItem(
-          icon: Icons.palette_outlined,
+          svgicon:AppIcons.profiletheme ,
           title: 'Theme',
           trailingText: 'Dark',
           onTap: () {},
         ),
         SettingsItem(
-          icon: Icons.language_rounded,
+          svgicon:AppIcons.profilelanguage ,
           title: 'Language',
           trailingText: 'English',
           onTap: () {},
         ),
         SettingsItem(
-          icon: Icons.cloud_upload_outlined,
+          svgicon: AppIcons.profilebackaup,
           title: 'Backup & Restore',
           onTap: () {},
         ),
         SettingsItem(
-          icon: Icons.headset_mic_outlined,
+          svgicon:AppIcons.profilehelp ,
           title: 'Help & Support',
           onTap: () {},
         ),
         SettingsItem(
-          icon: Icons.info_outline_rounded,
+         svgicon:AppIcons.profileinfo ,
           title: 'About Battery Optimizer',
           trailingText: 'v2.4.1',
           onTap: () {},
@@ -173,18 +176,16 @@ class _SettingsRow extends StatelessWidget {
               height: getWidth(30),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.transparent,
+                color: Color(0xFF1B2153),
                 border: Border.all(
-                  color: const Color(0xFF5A3FBF),
-                  width: 1.5,
+                  color: const Color(0xFF4103AC),
+                  width: 1,
                 ),
               ),
               child: Center(
-                child: Icon(
-                  item.icon,
-                  size: getWidth(18),
-                  color: const Color(0xFF9A80E8),
-                ),
+                child: SvgPicture.asset(
+                  item.svgicon,
+                )
               ),
             ),
 

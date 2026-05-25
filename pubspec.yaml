@@ -88,6 +88,9 @@ flutter:
     - assets/images/file_manager/
     - assets/images/data_usage/
     - assets/icons/clean/
+    - assets/icons/optimize/
+    - assets/icons/profile/
+    - assets/icons/menu/
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

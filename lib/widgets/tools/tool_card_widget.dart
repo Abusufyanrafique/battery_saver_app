@@ -19,7 +19,7 @@ class ToolCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: getHeight(144),
+      // height: getHeight(14),
       width: getWidth(122),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
@@ -108,7 +108,7 @@ class ToolCardWidget extends StatelessWidget {
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(2),
                     decoration: const BoxDecoration(),
                     child: Icon(
                       Icons.arrow_forward_ios_rounded,

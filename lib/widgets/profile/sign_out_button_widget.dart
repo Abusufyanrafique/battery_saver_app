@@ -27,7 +27,6 @@ class SignOutButtonWidget extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF232C6D),
             Color(0xFF1B2153),
             Color(0xFF13173A),
           ],
@@ -50,7 +49,7 @@ class SignOutButtonWidget extends StatelessWidget {
               Text(
                 'Sign Out',
                 style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: getFont(15),
+                  fontSize: getFont(16),
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFFAD2020),
                 ),

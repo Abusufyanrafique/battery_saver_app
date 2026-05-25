@@ -1,25 +1,28 @@
 // battery_summary_widget.dart
 
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // ─────────────────────────────────────────────────────────────
 // MODEL
 // ─────────────────────────────────────────────────────────────
 
 class BatterySummaryItem {
-  final IconData icon;
+  final String svgicon;
   final Color iconColor;
   final String value;
   final String label;
 
   const BatterySummaryItem({
-    required this.icon,
+   
     required this.iconColor,
     required this.value,
-    required this.label,
+    required this.label, 
+    required this.svgicon,
   });
 }
 
@@ -45,25 +48,25 @@ class BatterySummaryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<BatterySummaryItem> items = [
       BatterySummaryItem(
-        icon: Icons.battery_charging_full_rounded,
+       svgicon: AppIcons.profilebatteryicon,
         iconColor: const Color(0xFFFF2D9B),
         value: batteryLife,
         label: 'Avy. Battery Life',
       ),
       BatterySummaryItem(
-        icon: Icons.bolt_rounded,
+        svgicon:AppIcons.profilechargeicon ,
         iconColor: const Color(0xFF00BFFF),
         value: '$chargingCycles',
         label: 'Charging Cycles',
       ),
       BatterySummaryItem(
-        icon: Icons.eco_rounded,
+       svgicon:AppIcons.profileffici ,
         iconColor: const Color(0xFF00E676),
         value: '$efficiency%',
         label: 'Efficiency',
       ),
       BatterySummaryItem(
-        icon: Icons.trending_up_rounded,
+        svgicon: AppIcons.profiledrainicon,
         iconColor: const Color(0xFFD32F7A),
         value: '${batteryDrain > 0 ? '+' : ''}$batteryDrain%',
         label: 'Battery Drain',
@@ -167,11 +170,9 @@ class _SummaryItem extends StatelessWidget {
             ),
           ),
           child: Center(
-            child: Icon(
-              item.icon,
-              size: getWidth(18),
-              color: item.iconColor,
-            ),
+            child: SvgPicture.asset(
+              item.svgicon,
+            )
           ),
         ),
 

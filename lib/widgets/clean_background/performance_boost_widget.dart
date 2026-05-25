@@ -21,7 +21,7 @@ class PerformanceBoostWidget extends StatelessWidget {
             Color(0xFF13173A),
           ],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: const Color(0xFF4103AC),
           width: 1.5,

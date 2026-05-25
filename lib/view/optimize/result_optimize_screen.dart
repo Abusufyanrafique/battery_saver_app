@@ -1,24 +1,31 @@
 import 'dart:math' as math;
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
+import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
+import 'package:battery_saver_app/widgets/clean_background/result_action_buttons_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 
 // ─── Colors ────────────────────────────────────────────────────────────────
-class AppColors {
-  static const bg = Color(0xFF080C2A);
-  static const card = Color(0xFF0F1540);
-  static const cardBorder = Color(0xFF1E2660);
-  static const green = Color(0xFF00E676);
-  static const greenDark = Color(0xFF00C853);
-  static const purple = Color(0xFF7C4DFF);
-  static const cyan = Color(0xFF00E5FF);
-  static const amber = Color(0xFFFFAB40);
-  static const pink = Color(0xFFFF4081);
-  static const textPrimary = Colors.white;
-  static const textSecondary = Color(0xFF8892B0);
-  static const textMuted = Color(0xFF4A5580);
-}
+// class AppColors {
+//   static const bg = Color(0xFF080C2A);
+//   static const card = Color(0xFF0F1540);
+//   static const cardBorder = Color(0xFF1E2660);
+//   static const green = Color(0xFF00E676);
+//   static const greenDark = Color(0xFF00C853);
+//   static const purple = Color(0xFF7C4DFF);
+//   static const cyan = Color(0xFF00E5FF);
+//   static const amber = Color(0xFFFFAB40);
+//   static const pink = Color(0xFFFF4081);
+//   static const textPrimary = Colors.white;
+//   static const textSecondary = Color(0xFF8892B0);
+//   static const textMuted = Color(0xFF4A5580);
+// }
 
 // ─── Main Screen ────────────────────────────────────────────────────────────
 class OptimizationResultScreen extends StatefulWidget {
@@ -69,72 +76,67 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bg,
+      appBar: CustomAppBar(title: AppText.optimizationResult),
+      backgroundColor: AppColors.allscreenBackgroundColor,
+      bottomNavigationBar: ResultActionButtonsWidget(
+        onViewDetails: () {},
+        onDone: () {
+          context.go('/home');
+        },
+        onCleanAgain: () {},
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildAppBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 8),
-                    Image(
-                      image: AssetImage(AppImages.optimizationComplete),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildSummaryCard(),
-                    const SizedBox(height: 16),
-                    _buildPerformanceCard(),
-                    const SizedBox(height: 16),
-                    _buildRecommendations(),
-                    const SizedBox(height: 100),
-                  ],
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: getWidth(16)),
+          child: Column(
+            children: [
+              SizedBox(height: getHeight(20)),
+
+              // ── Top image + text ──
+              Image(
+                image: AssetImage(AppImages.optimizationComplete),
+                height: getHeight(149),
+                fit: BoxFit.contain,
+              ),
+              SizedBox(height: getHeight(4)),
+              Text(
+                AppText.optimizationComplete,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: getFont(16),
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF55D0FF),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomBar(),
-    );
-  }
+              SizedBox(height: getHeight(2)),
+              Text(
+                AppText.yourdeviceisnowoptimized,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: getFont(12),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
 
-  // ── App Bar ──────────────────────────────────────────────────────────────
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.maybePop(context),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: const Icon(Icons.chevron_left,
-                  color: Colors.white, size: 22),
-            ),
+              SizedBox(height: getHeight(10)),
+
+              // ── Summary Card ──
+              _buildSummaryCard(),
+
+              SizedBox(height: getHeight(10)),
+
+              // ── Performance Card ──
+              _buildPerformanceCard(),
+
+              SizedBox(height: getHeight(10)),
+
+              // ── Recommendations ──
+              _buildRecommendations(),
+
+              SizedBox(height: getHeight(6)),
+            ],
           ),
-          Expanded(
-            child: Text(
-              'Optimization Result',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: getFont(18),
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(width: 36),
-        ],
+        ),
       ),
     );
   }
@@ -143,47 +145,49 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
   Widget _buildSummaryCard() {
     final items = [
       _SummaryItem(
-        icon: Icons.battery_charging_full_outlined,
-        color: AppColors.green,
+        iconsvg: AppIcons.optimizebattery,
+        color: const Color(0xFF00FF09),
+        valueColor: const Color(0xFF00FF09),
         label: 'Battery Saved',
         value: '+2h 30m',
         sub: 'Extended',
       ),
       _SummaryItem(
-        icon: Icons.memory_outlined,
-        color: AppColors.purple,
+        iconsvg: AppIcons.optimizeram,
+        color: const Color(0xFF9A3CFF),
+        valueColor: const Color(0xFF9A3CFF),
         label: 'RAM Freed',
         value: '+1.2 GB',
         sub: 'Memory Cleared',
       ),
       _SummaryItem(
-        icon: Icons.delete_sweep_outlined,
-        color: AppColors.cyan,
+        iconsvg: AppIcons.optimizedelete,
+        color: const Color(0xFF55D0FF),
+        valueColor: const Color(0xFF55D0FF),
         label: 'Junk Cleaned',
         value: '850 MB',
         sub: 'Space Freed',
       ),
       _SummaryItem(
-        icon: Icons.thermostat_outlined,
-        color: AppColors.amber,
-        label: 'Temp Reduced',
+        iconsvg: AppIcons.optimizetemp,
+        color: const Color(0xFFED6D09),
+        valueColor: const Color(0xFFED6D09),
+        label: 'Temperature Reduced',
         value: '-4°C',
         sub: 'Device Cooled',
       ),
     ];
 
     return _CardWrapper(
-      title: 'Optimization Summary',
+      title: AppText.optimizationSummary,
       child: SizedBox(
-        height: getHeight(110),
+        height: getHeight(82),
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           itemCount: items.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 10),
-          itemBuilder: (context, index) {
-            return _SummaryTile(item: items[index]);
-          },
+          separatorBuilder: (_, __) => SizedBox(width: getWidth(8)),
+          itemBuilder: (context, index) => _SummaryTile(item: items[index]),
         ),
       ),
     );
@@ -192,67 +196,81 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
   // ── Performance Card ─────────────────────────────────────────────────────
   Widget _buildPerformanceCard() {
     return _CardWrapper(
-      title: 'Performance Improvement',
+      title: AppText.performanceImprovement,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Left: Performance Score
           Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Performance Score',
+                  AppText.performanceScore,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: getFont(11),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: getFont(10),
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: getHeight(8)),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Before',
+                          AppText.before,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: getFont(11),
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: getFont(10),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         AnimatedBuilder(
                           animation: _scoreBefore,
                           builder: (_, __) => _ScoreRing(
                             score: _scoreBefore.value,
                             max: 100,
-                            color: AppColors.purple,
-                            size: getWidth(64),
+                            color: AppColors.criclecolor,
+                            size: getWidth(48),
                           ),
                         ),
                       ],
                     ),
+                    SizedBox(width: getWidth(6)),
                     Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: Icon(Icons.arrow_forward,
-                          color: AppColors.textSecondary, size: 18),
+                      padding: EdgeInsets.only(top: getHeight(18)),
+                      child: const Icon(
+                        Icons.arrow_forward,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
+                    SizedBox(width: getWidth(6)),
                     Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'After',
+                         AppText.after,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                            fontSize: getFont(11),
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                            fontSize: getFont(10),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         AnimatedBuilder(
                           animation: _scoreAfter,
                           builder: (_, __) => _ScoreRing(
                             score: _scoreAfter.value,
                             max: 100,
-                            color: AppColors.green,
-                            size: getWidth(64),
+                            color: const Color(0xFF00FF09),
+                            size: getWidth(48),
                           ),
                         ),
                       ],
@@ -262,43 +280,41 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
               ],
             ),
           ),
+
+          // Divider
           Container(
             width: 1,
-            height: 90,
-            color: AppColors.cardBorder,
-            margin: const EdgeInsets.symmetric(horizontal: 12),
+            height: getHeight(72),
+            color: const Color(0xFF838283),
+            margin: EdgeInsets.symmetric(horizontal: getWidth(12)),
           ),
+
+          // Right: Battery Health
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  'Battery Health',
+                  AppText.batteryHealth,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: getFont(11),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: getFont(10),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  width: getWidth(52),
-                  height: getHeight(52),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.green.withOpacity(0.12),
-                    border: Border.all(
-                      color: AppColors.green.withOpacity(0.4),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: const Icon(Icons.monitor_heart_outlined,
-                      color: AppColors.green, size: 26),
+                SizedBox(height: getHeight(6)),
+                SvgPicture.asset(
+                  AppIcons.hearticon,
+                  width: getWidth(26),
+                  height: getHeight(26),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: getHeight(5)),
                 Text(
-                  'Improved',
+                  AppText.improved,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.green,
-                    fontSize: getFont(13),
+                    color: const Color(0xFF00FF09),
+                    fontSize: getFont(10),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -314,106 +330,37 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
   Widget _buildRecommendations() {
     final recs = [
       _RecItem(
-        icon: Icons.bolt,
-        color: AppColors.green,
-        title: 'Enable Auto Optimize',
-        sub: 'Automatically optimize your device regularly',
-      ),
-      _RecItem(
-        icon: Icons.battery_saver_outlined,
-        color: AppColors.pink,
-        title: 'Turn On Battery Saver',
-        sub: 'Save more power and extend battery life',
-      ),
-      _RecItem(
-        icon: Icons.cleaning_services_outlined,
-        color: AppColors.cyan,
-        title: 'Clean Apps Regularly',
-        sub: 'Keep your device fast and smooth',
-      ),
+  icon: Icons.bolt,
+  color: AppColors.backgroundApps,
+  title: AppText.enableAutoOptimize,
+  sub: AppText.enableAutoOptimizeSub,
+),
+_RecItem(
+  icon: Icons.battery_saver_outlined,
+  color: AppColors.backgroundApps,
+  title: AppText.turnOnBatterySaver,
+  sub: AppText.turnOnBatterySaverSub,
+),
+_RecItem(
+  icon: Icons.cleaning_services_outlined,
+  color: AppColors.backgroundApps,
+  title: AppText.cleanAppsRegularly,
+  sub: AppText.cleanAppsRegularlySub,
+),
     ];
 
     return _CardWrapper(
-      title: 'Recommendations',
+      title: AppText.recommendations,
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: recs.length,
-        separatorBuilder: (_, __) => Divider(
-          color: AppColors.cardBorder,
+        separatorBuilder: (_, __) => const Divider(
+          color: Color(0xFF838283),
           height: 1,
           thickness: 0.5,
         ),
         itemBuilder: (context, index) => _RecTile(item: recs[index]),
-      ),
-    );
-  }
-
-  // ── Bottom Bar ───────────────────────────────────────────────────────────
-  Widget _buildBottomBar() {
-    return Container(
-      padding: EdgeInsets.fromLTRB(16, 12, 16, getHeight(24)),
-      decoration: BoxDecoration(
-        color: AppColors.bg,
-        border: Border(
-          top: BorderSide(color: AppColors.cardBorder, width: 0.5),
-        ),
-      ),
-      child: Row(
-        children: [
-          _BottomBtn(
-            icon: Icons.bar_chart,
-            label: 'View Details',
-            color: const Color(0xFF55D0FF),
-            flex: 2,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            flex: 3,
-            child: GestureDetector(
-              onTap: () {},
-              child: Container(
-                height: getHeight(52),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.green, Color(0xFF00BFA5)],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.green.withOpacity(0.35),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.home_rounded,
-                        color: Colors.white, size: 20),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Back to Home',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: getFont(14),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          _BottomBtn(
-            icon: Icons.rocket_launch_outlined,
-            label: 'Boost Again',
-            color: const Color(0xFF55D0FF),
-            flex: 2,
-          ),
-        ],
       ),
     );
   }
@@ -432,24 +379,34 @@ class _CardWrapper extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.card,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.cardBorder, width: 0.8),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF232C6D),
+            Color(0xFF1B2153),
+            Color(0xFF13173A),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF4103AC)),
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(
+        horizontal: getWidth(12),
+        vertical: getHeight(10),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontSize: getFont(14),
+              fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: getHeight(8)),
           child,
         ],
       ),
@@ -459,16 +416,18 @@ class _CardWrapper extends StatelessWidget {
 
 // ─── Summary Item Model ──────────────────────────────────────────────────────
 class _SummaryItem {
-  final IconData icon;
+  final String iconsvg;
   final Color color;
   final String label, value, sub;
+  final Color valueColor;
 
   const _SummaryItem({
-    required this.icon,
     required this.color,
     required this.label,
     required this.value,
     required this.sub,
+    required this.iconsvg,
+    required this.valueColor,
   });
 }
 
@@ -480,54 +439,67 @@ class _SummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fixed width per tile so they show evenly in horizontal scroll
-    return Container(
-      width: getWidth(78),
-      decoration: BoxDecoration(
-        color: item.color.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color:Color(0xFF4103AC), width: 0.8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Icon(item.icon, color: item.color, size: 22),
-          const SizedBox(height: 4),
-          Text(
-            item.label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(9),
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 8.0,top: 0),
+        child: Container(
+          width: getWidth(78),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [
+              Color(0xFF1B235C),
+              Color(0xFF1B2153),
+              Color(0xFF13173A),
+            ]),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: const Color(0xFF4103AC), width: 0.5),
           ),
-          const SizedBox(height: 3),
-          Text(
-            item.value,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(11),
-              fontWeight: FontWeight.w700,
-              color:Color(0xFF00FF09),
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SvgPicture.asset(
+                item.iconsvg,
+                width: getWidth(20),
+                height: getHeight(20),
+                colorFilter: ColorFilter.mode(item.color, BlendMode.srcIn),
+              ),
+              SizedBox(height: getHeight(3)),
+              Text(
+                item.label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontSize: getFont(8),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: getHeight(2)),
+              Text(
+                item.value,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontSize: getFont(12),
+                  fontWeight: FontWeight.w600,
+                  color: item.valueColor,
+                ),
+              ),
+              SizedBox(height: getHeight(3)),
+              Text(
+                item.sub,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontSize: getFont(8),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            item.sub,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(8),
-              color:Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -555,9 +527,7 @@ class _ScoreRing extends StatelessWidget {
         child: Center(
           child: Text(
             score.toInt().toString(),
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(15)
-            )
+            style: AppTextStyles.bodyMedium.copyWith(fontSize: getFont(13)),
           ),
         ),
       ),
@@ -578,15 +548,15 @@ class _RingPainter extends CustomPainter {
     final r = (size.width - 8) / 2;
 
     final trackPaint = Paint()
-      ..color = AppColors.cardBorder
+      ..color = Color(0xFF232C6D)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
+      ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 
     final arcPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
+      ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;
 
     canvas.drawCircle(Offset(cx, cy), r, trackPaint);
@@ -626,21 +596,21 @@ class _RecTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 11),
+      padding: EdgeInsets.symmetric(vertical: getHeight(6)),
       child: Row(
         children: [
           Container(
-            width: getWidth(40),
-            height: getHeight(40),
+            width: getWidth(34),
+            height: getHeight(34),
             decoration: BoxDecoration(
               color: item.color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(11),
-              border:
-                  Border.all(color: item.color.withOpacity(0.3), width: 0.8),
+              shape: BoxShape.circle,
+              border: Border.all(
+                  color: item.color.withOpacity(0.3), width: 0.8),
             ),
-            child: Icon(item.icon, color: item.color, size: 20),
+            child: Icon(item.icon, color: item.color, size: 16),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: getWidth(8)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -648,16 +618,16 @@ class _RecTile extends StatelessWidget {
                 Text(
                   item.title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(12),
+                    fontSize: getFont(11),
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 1),
                 Text(
                   item.sub,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(10),
+                    fontSize: getFont(9),
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFFD9D9D9),
                   ),
@@ -666,61 +636,8 @@ class _RecTile extends StatelessWidget {
             ),
           ),
           const Icon(Icons.chevron_right,
-              color: Color(0xFF989CDF), size: 20),
+              color: Color(0xFF989CDF), size: 18),
         ],
-      ),
-    );
-  }
-}
-
-// ─── Bottom Btn ───────────────────────────────────────────────────────────────
-class _BottomBtn extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final int flex;
-
-  const _BottomBtn({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.flex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: GestureDetector(
-        onTap: () {},
-        child: Container(
-          height: getHeight(52),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF5C0EE3), width: 1),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  label,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  softWrap: false,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(11),
-                    color: color,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -3,7 +3,9 @@
 // ─────────────────────────────────────────────
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
+
 
 class PhoneOptimizerDrawer extends StatelessWidget {
   final String selectedItem;
@@ -16,30 +18,30 @@ class PhoneOptimizerDrawer extends StatelessWidget {
   });
 
   static final List<_DrawerItem> _mainItems = [
-    _DrawerItem('Home', Icons.home_rounded, Color(0xFF9A3CFF).withOpacity(0.20)),
-    _DrawerItem('Junk Cleaner', Icons.delete_outline_rounded, Color(0xFF2FE55D).withOpacity(0.20)),
-    _DrawerItem('Phone Boost', Icons.bolt_rounded, Color(0xFF55D0FF).withOpacity(0.20)),
-    _DrawerItem('Battery Saver', Icons.battery_charging_full_rounded, Color(0xFF00FF09).withOpacity(0.20)),
-    _DrawerItem('CPU Cooler', Icons.thermostat_rounded, Color(0xFF1F8EFF).withOpacity(0.20)),
-    _DrawerItem('Security Scan', Icons.shield_outlined, Color(0xFF69FF89).withOpacity(0.20)),
-    _DrawerItem('Notification Cleaner', Icons.notifications_none_rounded, Color(0xFF891BFF).withOpacity(0.20)),
-    _DrawerItem('Apps Manager', Icons.apps_rounded, Color(0xFF37C8FF).withOpacity(0.20)),
-    _DrawerItem('File Manager', Icons.folder_open_rounded, Color(0xFFF3D917).withOpacity(0.20)),
-    _DrawerItem('Data Usage', Icons.bar_chart_rounded, Color(0xFF27C3FE).withOpacity(0.20)),
+    _DrawerItem('Home', "assets/images/home/menuhome.png", Color(0xFF9A3CFF).withOpacity(0.20)),
+    _DrawerItem('Junk Cleaner', AppImages.menujunk,Color(0xFF2FE55D).withOpacity(0.20)),
+    _DrawerItem('Phone Boost', AppImages.menuphoneboost, Color(0xFF55D0FF).withOpacity(0.20)),
+    _DrawerItem('Battery Saver', AppImages.menubatterysaver, Color(0xFF00FF09).withOpacity(0.20)),
+    _DrawerItem('CPU Cooler', AppImages.menuCPUCooler, Color(0xFF1F8EFF).withOpacity(0.20)),
+    _DrawerItem('Security Scan', AppImages.menusecurityscan, Color(0xFF69FF89).withOpacity(0.20)),
+    _DrawerItem('Notification Cleaner', AppImages.menunotificationcleaner, Color(0xFF891BFF).withOpacity(0.20)),
+    _DrawerItem('Apps Manager', AppImages.menuappsmanager, Color(0xFF37C8FF).withOpacity(0.20)),
+    _DrawerItem('File Manager', AppImages.menufilemanager, Color(0xFFF3D917).withOpacity(0.20)),
+    _DrawerItem('Data Usage', AppImages.menudatausage, Color(0xFF27C3FE).withOpacity(0.20)),
   ];
 
   static final List<_DrawerItem> _bottomItems = [
-    _DrawerItem('Settings', Icons.settings_outlined, Color(0xFF989CDF).withOpacity(0.20)),
-    _DrawerItem('Feedback', Icons.chat_bubble_outline_rounded, Color(0xFF7075C9).withOpacity(0.20)),
-    _DrawerItem('Rate Us', Icons.star_outline_rounded, Color(0xFFFFDD55).withOpacity(0.20)),
-    _DrawerItem('Share App', Icons.share_rounded, Color(0xFF989CDF).withOpacity(0.20)),
-    _DrawerItem('Privacy Policy', Icons.security_rounded, Color(0xFF878DF1).withOpacity(0.20)),
+    _DrawerItem('Settings', AppImages.menusettings, Color(0xFF989CDF).withOpacity(0.20)),
+    _DrawerItem('Feedback',AppImages.menufeedback, Color(0xFF7075C9).withOpacity(0.20)),
+    _DrawerItem('Rate Us', AppImages.menurateus, Color(0xFFFFDD55).withOpacity(0.20)),
+    _DrawerItem('Share App', AppImages.menushareapp, Color(0xFF989CDF).withOpacity(0.20)),
+    _DrawerItem('Privacy Policy', AppImages.menuprivacyPolicy, Color(0xFF878DF1).withOpacity(0.20)),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      width: 280,
+      width: 220,
 
       // ✔️ ONLY CHANGE: BACKGROUND GRADIENT ADDED
       child: Container(
@@ -212,20 +214,16 @@ class _DrawerTile extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: getWidth(24),
+                  height: getHeight(24),
                   decoration: BoxDecoration(
                     color: item.iconColor.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    item.icon,
-                    color: item.iconColor,
-                    size: 20,
-                  ),
+                  child:Image.asset(item.imagepath)
                 ),
 
-                const SizedBox(width: 14),
+                 SizedBox(width: getWidth(10)),
 
                 Expanded(
                   child: Text(
@@ -255,8 +253,8 @@ class _DrawerTile extends StatelessWidget {
 // ─────────────────────────────────────────────
 class _DrawerItem {
   final String label;
-  final IconData icon;
+  final String imagepath;
   final Color iconColor;
 
-  const _DrawerItem(this.label, this.icon, this.iconColor);
+  const _DrawerItem(this.label, this.imagepath, this.iconColor);
 }

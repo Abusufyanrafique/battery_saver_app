@@ -2,6 +2,7 @@ import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/profile/account_settings_widget.dart';
 import 'package:battery_saver_app/widgets/profile/battery_summary_widget.dart';
 import 'package:battery_saver_app/widgets/profile/premium_banner_widget.dart';
@@ -17,7 +18,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: AppBar(
-        title: Text("Profile",
+        title: Text(AppText.profile,
         style: AppTextStyles.bodySmall.copyWith(
           fontSize: getFont(24),
           color: Colors.white,
