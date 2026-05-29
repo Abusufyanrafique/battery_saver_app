@@ -42,7 +42,7 @@ class _ScanStatusWidgetState extends State<ScanStatusWidget>
         child: Text(
           widget.scanningText,
           style: const TextStyle(
-            color: Color(0xFF00E5CC),
+            color: Color(0xFFD9D9D9),
             fontSize: 13,
             fontWeight: FontWeight.w500,
             letterSpacing: 0.3,

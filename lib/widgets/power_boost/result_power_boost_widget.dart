@@ -51,7 +51,7 @@ class ResultPowerBoostWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
           gradient: const LinearGradient(
           begin: Alignment.topCenter,
@@ -93,7 +93,7 @@ class _StatusRow extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 13),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
               // SVG ICON

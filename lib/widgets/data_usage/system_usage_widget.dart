@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -72,7 +73,7 @@ class SystemUsageWidget extends StatelessWidget {
         chartColors: [const Color(0xFF1E88E5), const Color(0xFF0D47A1)],
       ),
       SystemUsageItem(
-        imagepath: '',
+        imagepath: AppImages.time,
         iconColor: const Color(0xFFE040FB),
         label: 'Charge Cycles',
         value: '$chargeCycles',
@@ -109,7 +110,7 @@ class SystemUsageWidget extends StatelessWidget {
         children: [
           // ───────── HEADING ─────────
           Text(
-            'System Usage',
+            AppText.systemUsage,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(12),
               fontWeight: FontWeight.w600,

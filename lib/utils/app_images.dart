@@ -101,4 +101,10 @@ static const String menurateus = "assets/images/home/menurateus.png";
 static const String menushareapp = "assets/images/home/menushareapp.png";
 static const String menuprivacyPolicy ="assets/images/home/menuprivacyPolicy.png";
 static const String daimond = "assets/images/home/daimond.png";
+// junkscreen image=====================
+static const String junkcleanerglow = "assets/images/junk_cleaner/junkcleanerglow.png";
+static const String containeroptimizeimage ="assets/images/home/containeroptimizeimage.png";
+static const String containeroptimizebattery = "assets/images/home/containeroptimizebattery.png";
+static const String containeroptimizeappmanage = "assets/images/home/containeroptimizeappmanage.png";
+// static const String time = "assets/images/data_usage/Time.png";
 } 

@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/security_scan/security_scan_widget.dart';
@@ -17,7 +18,7 @@ class SecurityScanScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F1633),
 
       //  inside Scaffold (removes white flash)
-      appBar: CustomAppBar(title: 'Security Scan'),
+      appBar: CustomAppBar(title: AppText.securityScan),
 
       body: Container(
         width: double.infinity,
@@ -74,7 +75,7 @@ class SecurityScanScreen extends StatelessWidget {
 
                 Center(
                   child: Text(
-                    "safe",
+                   AppText.safe,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(14),
                       color: const Color(0xFFD9D9D9),
@@ -85,7 +86,7 @@ class SecurityScanScreen extends StatelessWidget {
 
                 Center(
                   child: Text(
-                    "No threats found",
+                    AppText.nothreatsfound,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       color: const Color(0xFF2FE55D),
@@ -94,7 +95,7 @@ class SecurityScanScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: getHeight(70)),
+                SizedBox(height: getHeight(99)),
 
                 // ───── SCAN LIST ─────
                 const SecurityScanWidget(
@@ -106,15 +107,15 @@ class SecurityScanScreen extends StatelessWidget {
                   ],
                 ),
 
-                SizedBox(height: getHeight(50)),
+                SizedBox(height: getHeight(64)),
 
                 // ───── BUTTON ─────
                 CleanButtonWidget(
-                  text: "Scan Again",
+                  text: AppText.scanAgain,
                   onPressed: () {},
                 ),
 
-                SizedBox(height: getHeight(20)),
+                // SizedBox(height: getHeight(20)),
               ],
             ),
           ),

@@ -1,7 +1,9 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/router.dart';
+import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,45 +23,58 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Battery Saver App',
-
-      routerConfig: router,
-
-      // IMPORTANT FIX: global background (fix white flash)
-      builder: (context, child) {
-        return ColoredBox(
-          color: AppColors.allscreenBackgroundColor,
-          child: child ?? const SizedBox(),
-        );
-      },
-
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.allscreenBackgroundColor,
-
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => BatterySaverBloc(),
         ),
 
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          surfaceTintColor: Colors.transparent,
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
+        // 👉 ADD MORE BLOCS HERE
+        // BlocProvider(
+        //   create: (_) => AuthBloc(),
+        // ),
+        // BlocProvider(
+        //   create: (_) => ThemeBloc(),
+        // ),
+      ],
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Battery Saver App',
+
+        routerConfig: router,
+
+        builder: (context, child) {
+          return ColoredBox(
+            color: AppColors.allscreenBackgroundColor,
+            child: child ?? const SizedBox(),
+          );
+        },
+
+        theme: ThemeData(
+          scaffoldBackgroundColor: AppColors.allscreenBackgroundColor,
+
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.deepPurple,
+            brightness: Brightness.dark,
           ),
-        ),
 
-        // removes default white page transitions
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: {
-            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          },
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
+            systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
+            ),
+          ),
+
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: {
+              TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+              TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+            },
+          ),
         ),
       ),
     );

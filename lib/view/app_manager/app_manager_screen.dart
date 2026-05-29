@@ -6,6 +6,7 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_list_container.dart';
 import 'package:battery_saver_app/widgets/app_manager/app_manager_tabBar.dart';
 import 'package:battery_saver_app/widgets/app_manager/stats_card.dart';
+import 'package:battery_saver_app/widgets/app_manager/action_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,6 @@ class AppManagerScreen extends StatefulWidget {
 class _AppManagerScreenState extends State<AppManagerScreen> {
   int _selectedTabIndex = 0;
 
-  // Sample data - in real app, fetch from device
   final List<AppModel> _apps = [
     AppModel(name: AppText.whatapp, iconAsset: AppIcons.whatsappicon, sizeMB: 452),
     AppModel(name: AppText.facebook, iconAsset: AppIcons.facebookicon, sizeMB: 412),
@@ -29,7 +29,6 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
     AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 234),
   ];
 
-  // APK Files list — same structure, just different data
   final List<AppModel> _apkFiles = [
     AppModel(name: AppText.whatapp, iconAsset: AppIcons.whatsappicon, sizeMB: 52.4),
     AppModel(name: AppText.facebook, iconAsset: AppIcons.facebookicon, sizeMB: 62.7),
@@ -37,7 +36,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
     AppModel(name: AppText.youTube, iconAsset: AppIcons.youtubeicon, sizeMB: 4.8),
     AppModel(name: AppText.telegram, iconAsset: AppIcons.telegram, sizeMB: 91.7),
     AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 58.6),
-    // AppModel(name: AppText.threads, iconAsset: AppIcons.threads, sizeMB: 40.4),
+    AppModel(name: AppText.threads, iconAsset: AppIcons.spotify, sizeMB: 58.6),
   ];
 
   List<AppModel> get _currentList =>
@@ -54,51 +53,61 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
     });
   }
 
+  bool get _isApkMode => _selectedTabIndex == 1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.appManager),
-      body: Column(
-        children: [
-          // ── Scrollable Content ───────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+      body: Padding(
+        padding: const EdgeInsets.only(left: 16.0,right: 16),
+        child: Column(
+          children: [
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 16),
+                   SizedBox(height: getHeight(16)),
                   AppManagerTabBar(
                     selectedIndex: _selectedTabIndex,
                     onTabChanged: (i) =>
                         setState(() => _selectedTabIndex = i),
                   ),
                   SizedBox(height: getHeight(16)),
-                  // Stats Card
                   StatsCard(
                     totalApps: _currentList.length,
                     totalSizeGB: _totalSizeGB,
                   ),
                   SizedBox(height: getHeight(20)),
-
-                  // App List — switches based on selected tab
                   AppListContainer(
-                 apps: _currentList,
-                 onToggle: _toggleApp,
-                 isApkMode: _selectedTabIndex == 1, // ← bas yeh add karo
-                 ),
-                  SizedBox(height: getHeight(200)),
-             CleanButtonWidget(
-                text: "Uninstall (0)",
-                onPressed: () {},
-              ),
-               
+                    apps: _currentList,
+                    onToggle: _toggleApp,
+                    isApkMode: _isApkMode,
+                  ),
+                  SizedBox(height: getHeight(120)),
+              
+                  // APK mode → ActionBarWidget, Apps mode → CleanButtonWidget
+                  _isApkMode
+                      ? Padding(
+                        padding: const EdgeInsets.only(left:0.0,right: 0),
+                        child: ActionBarWidget(
+                            onShare: () {},
+                            onDelete: () {}, 
+                            // svgicon: '',
+                          ),
+                      )
+                      : CleanButtonWidget(
+                          text: AppText.uninstall,
+                          onPressed: () {},
+                        ),
+              
+                  // SizedBox(height: getHeight(20)),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

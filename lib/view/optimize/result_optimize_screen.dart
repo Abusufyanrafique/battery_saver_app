@@ -11,21 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
-// ─── Colors ────────────────────────────────────────────────────────────────
-// class AppColors {
-//   static const bg = Color(0xFF080C2A);
-//   static const card = Color(0xFF0F1540);
-//   static const cardBorder = Color(0xFF1E2660);
-//   static const green = Color(0xFF00E676);
-//   static const greenDark = Color(0xFF00C853);
-//   static const purple = Color(0xFF7C4DFF);
-//   static const cyan = Color(0xFF00E5FF);
-//   static const amber = Color(0xFFFFAB40);
-//   static const pink = Color(0xFFFF4081);
-//   static const textPrimary = Colors.white;
-//   static const textSecondary = Color(0xFF8892B0);
-//   static const textMuted = Color(0xFF4A5580);
-// }
 
 // ─── Main Screen ────────────────────────────────────────────────────────────
 class OptimizationResultScreen extends StatefulWidget {
@@ -78,24 +63,18 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
     return Scaffold(
       appBar: CustomAppBar(title: AppText.optimizationResult),
       backgroundColor: AppColors.allscreenBackgroundColor,
-      bottomNavigationBar: ResultActionButtonsWidget(
-        onViewDetails: () {},
-        onDone: () {
-          context.go('/home');
-        },
-        onCleanAgain: () {},
-      ),
+
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: getWidth(16)),
           child: Column(
             children: [
-              SizedBox(height: getHeight(20)),
+            
 
               // ── Top image + text ──
               Image(
                 image: AssetImage(AppImages.optimizationComplete),
-                height: getHeight(149),
+                height: getHeight(160),
                 fit: BoxFit.contain,
               ),
               SizedBox(height: getHeight(4)),
@@ -132,7 +111,14 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
 
               // ── Recommendations ──
               _buildRecommendations(),
-
+                SizedBox(height: getHeight(10)),
+               ResultActionButtonsWidget(
+        onViewDetails: () {},
+        onDone: () {
+          context.go('/home');
+        },
+        onCleanAgain: () {},
+      ),
               SizedBox(height: getHeight(6)),
             ],
           ),
@@ -202,91 +188,100 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
         children: [
           // Left: Performance Score
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  AppText.performanceScore,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: getFont(10),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppText.performanceScore,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: getFont(10),
+                    ),
                   ),
-                ),
-                SizedBox(height: getHeight(8)),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          AppText.before,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            fontSize: getFont(10),
-                          ),
+                  SizedBox(height: getHeight(8)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 0.0,right: 0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              AppText.before,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                                fontSize: getFont(10),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            AnimatedBuilder(
+                              animation: _scoreBefore,
+                              builder: (_, __) => _ScoreRing(
+                                score: _scoreBefore.value,
+                                max: 100,
+                                color: AppColors.criclecolor,
+                                size: getWidth(48),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 6),
-                        AnimatedBuilder(
-                          animation: _scoreBefore,
-                          builder: (_, __) => _ScoreRing(
-                            score: _scoreBefore.value,
-                            max: 100,
-                            color: AppColors.criclecolor,
-                            size: getWidth(48),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: getWidth(6)),
-                    Padding(
-                      padding: EdgeInsets.only(top: getHeight(18)),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        color: Colors.white,
-                        size: 14,
                       ),
-                    ),
-                    SizedBox(width: getWidth(6)),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                         AppText.after,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w500,
-                            fontSize: getFont(10),
-                          ),
+                      SizedBox(width: getWidth(6)),
+                      Padding(
+                        padding: EdgeInsets.only(top: getHeight(18)),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 14,
                         ),
-                        const SizedBox(height: 6),
-                        AnimatedBuilder(
-                          animation: _scoreAfter,
-                          builder: (_, __) => _ScoreRing(
-                            score: _scoreAfter.value,
-                            max: 100,
-                            color: const Color(0xFF00FF09),
-                            size: getWidth(48),
+                      ),
+                      SizedBox(width: getWidth(6)),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                           AppText.after,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: getFont(10),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+                          const SizedBox(height: 6),
+                          AnimatedBuilder(
+                            animation: _scoreAfter,
+                            builder: (_, __) => _ScoreRing(
+                              score: _scoreAfter.value,
+                              max: 100,
+                              color: const Color(0xFF00FF09),
+                              size: getWidth(48),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
           // Divider
-          Container(
-            width: 1,
-            height: getHeight(72),
-            color: const Color(0xFF838283),
-            margin: EdgeInsets.symmetric(horizontal: getWidth(12)),
+          Padding(
+            padding: const EdgeInsets.only(left: 40,top: 10),
+            child: Container(
+              width: 1,
+              height: getHeight(72),
+              color: const Color(0xFF838283),
+              margin: EdgeInsets.symmetric(horizontal: getWidth(12)),
+            ),
           ),
 
           // Right: Battery Health
@@ -330,19 +325,19 @@ class _OptimizationResultScreenState extends State<OptimizationResultScreen>
   Widget _buildRecommendations() {
     final recs = [
       _RecItem(
-  icon: Icons.bolt,
+  imagepath:AppImages.containeroptimizeimage,
   color: AppColors.backgroundApps,
   title: AppText.enableAutoOptimize,
   sub: AppText.enableAutoOptimizeSub,
 ),
 _RecItem(
-  icon: Icons.battery_saver_outlined,
+  imagepath:AppImages.containeroptimizebattery ,
   color: AppColors.backgroundApps,
   title: AppText.turnOnBatterySaver,
   sub: AppText.turnOnBatterySaverSub,
 ),
 _RecItem(
-  icon: Icons.cleaning_services_outlined,
+  imagepath: AppImages.containeroptimizeappmanage,
   color: AppColors.backgroundApps,
   title: AppText.cleanAppsRegularly,
   sub: AppText.cleanAppsRegularlySub,
@@ -575,12 +570,12 @@ class _RingPainter extends CustomPainter {
 
 // ─── Rec Item Model ───────────────────────────────────────────────────────────
 class _RecItem {
-  final IconData icon;
+  final String imagepath;
   final Color color;
   final String title, sub;
 
   const _RecItem({
-    required this.icon,
+    required this.imagepath,
     required this.color,
     required this.title,
     required this.sub,
@@ -608,7 +603,12 @@ class _RecTile extends StatelessWidget {
               border: Border.all(
                   color: item.color.withOpacity(0.3), width: 0.8),
             ),
-            child: Icon(item.icon, color: item.color, size: 16),
+           child: Image.asset(
+           item.imagepath,
+           width: 16,
+           height: 16,
+           fit: BoxFit.contain,
+),
           ),
           SizedBox(width: getWidth(8)),
           Expanded(
@@ -623,7 +623,7 @@ class _RecTile extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 1),
+                 SizedBox(height: getHeight(1)),
                 Text(
                   item.sub,
                   style: AppTextStyles.bodyMedium.copyWith(

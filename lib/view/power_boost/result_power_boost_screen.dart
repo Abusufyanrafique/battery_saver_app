@@ -43,7 +43,7 @@ class ResultPowerBoostScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: getHeight(40)),
+              SizedBox(height: getHeight(70)),
 
               // Title
               Center(
@@ -58,7 +58,7 @@ class ResultPowerBoostScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: getHeight(6)),
+              SizedBox(height: getHeight(24)),
 
               // Subtitle
               Center(
@@ -78,7 +78,7 @@ class ResultPowerBoostScreen extends StatelessWidget {
               // Result Widget
               ResultPowerBoostWidget(),
 
-              SizedBox(height: getHeight(30)),
+              SizedBox(height: getHeight(38)),
 
               // Button
               CleanButtonWidget(
@@ -89,7 +89,7 @@ class ResultPowerBoostScreen extends StatelessWidget {
                 },
               ),
 
-              SizedBox(height: getHeight(20)),
+              // SizedBox(height: getHeight(20)),
             ],
           ),
         ),

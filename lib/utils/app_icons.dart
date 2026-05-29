@@ -75,4 +75,11 @@ class AppIcons {
   static const String filledusage = "assets/icons/home/filledusage.svg";
   static const String filledTools = "assets/icons/home/filledTools.svg";
   static const String filledprofile= "assets/icons/home/filledprofile.svg";
+  static const String powersavemode = "assets/icons/battery_saver/powersavemode.svg";
+  static const String supersavingmode = "assets/icons/battery_saver/supersavingmode.svg";
+  static const String custommode = "assets/icons/battery_saver/custommode.svg";
+  static const String shareicon = "assets/icons/battery_saver/shareicon.svg";
+  static const String appmanagerdeleteicon = "assets/icons/battery_saver/appmanagerdeleteicon.svg";
+  static const String roboticon ="assets/icons/battery_saver/roboticon.svg";
+  static const String chargecycleicon ="assets/icons/optimize/chargecycleicon.svg";
     } 

@@ -2,6 +2,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/models/junk/junk_item.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/junk_list_widget.dart';
@@ -16,7 +17,7 @@ class JunkCleanerScreen extends StatefulWidget {
 }
 
 class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
-  final List<JunkItem> junkItems =  [
+  final List<JunkItem> junkItems = [
     JunkItem(label: 'Cache Junk', size: '1.25 GB', isChecked: true),
     JunkItem(label: 'Residual Junk', size: '456 MB', isChecked: true),
     JunkItem(label: 'Ad Junk', size: '342 MB', isChecked: true),
@@ -29,8 +30,8 @@ class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050D2D), 
-      appBar: CustomAppBar(title: 'Junk Cleaner'),
+      backgroundColor: const Color(0xFF050D2D),
+      appBar: CustomAppBar(title: AppText.appBarTitle),
 
       body: Container(
         decoration: const BoxDecoration(
@@ -51,18 +52,20 @@ class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
-                const SizedBox(height: 24),
+                SizedBox(height: getHeight(24)),
 
                 Image(
                   height: getHeight(226),
-                  image: AssetImage(AppImages.junkcleanscreenimage),
+                  image: AssetImage(AppImages.junkcleanerglow),
                 ),
+
+                SizedBox(height: getHeight(51)),
 
                 RichText(
                   text: TextSpan(
                     children: [
                       TextSpan(
-                        text: '2.34 ',
+                        text: AppText.junkSizeValue,
                         style: AppTextStyles.displayMedium.copyWith(
                           fontSize: getFont(30),
                           fontWeight: FontWeight.w600,
@@ -70,7 +73,7 @@ class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
                         ),
                       ),
                       TextSpan(
-                        text: 'GB',
+                        text: AppText.junkSizeUnit,
                         style: AppTextStyles.displayMedium.copyWith(
                           fontSize: getFont(24),
                           fontWeight: FontWeight.w600,
@@ -82,31 +85,29 @@ class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
                 ),
 
                 Text(
-                  "Junk Found",
+                  AppText.junkFoundLabel,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(14),
                     color: const Color(0xFFD9D9D9),
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                SizedBox(height: getHeight(51)),
 
-                const ScanStatusWidget(
-                  scanningText: 'Scanning: com.whatsapp...',
+                ScanStatusWidget(
+                  scanningText: AppText.scanningStatus,
                 ),
 
-                const SizedBox(height: 12),
+                SizedBox(height: getHeight(12)),
 
                 JunkListWidget(items: junkItems),
 
-                const SizedBox(height: 28),
+                SizedBox(height: getHeight(24)),
 
                 CleanButtonWidget(
-                  text: "Clean Now",
+                  text: AppText.cleanButtonText,
                   onPressed: () {},
                 ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),

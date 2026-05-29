@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/phone_boost/phone_boost_list_widget.dart';
@@ -15,7 +16,7 @@ class PhoneBoostScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1633),
-      appBar: CustomAppBar(title: 'Phone Boost'),
+      appBar: CustomAppBar(title: AppText.phoneBoost),
 
       body: Container(
         width: double.infinity,
@@ -60,7 +61,7 @@ class PhoneBoostScreen extends StatelessWidget {
                 // ───── TITLE ─────
                 Center(
                   child: Text(
-                    "Memory Used",
+                    AppText.memoryUsed,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(14),
                       color: Colors.white,
@@ -76,7 +77,7 @@ class PhoneBoostScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Running Processes",
+                      AppText.runningProcesses,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(20),
                         color: const Color(0xFFD9D9D9),
@@ -103,7 +104,7 @@ class PhoneBoostScreen extends StatelessWidget {
 
                 // ───── BUTTON ─────
                 CleanButtonWidget(
-                  text: "Boost Now",
+                  text: AppText.boostNow1,
                   onPressed: () {},
                 ),
               ],

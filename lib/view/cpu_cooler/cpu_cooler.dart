@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/cpu_cooler/cpu_cooler_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
@@ -15,9 +16,7 @@ class CpuCoolerScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0E112F),
-
-      // AppBar inside Scaffold (avoid white flash)
-      appBar: CustomAppBar(title: 'CPU Cooler'),
+      appBar: CustomAppBar(title: AppText.cooler),
 
       body: Container(
         width: double.infinity,
@@ -65,7 +64,7 @@ class CpuCoolerScreen extends StatelessWidget {
                 // ───── STATUS TEXT ─────
                 Center(
                   child: Text(
-                    "Cooling down...",
+                    AppText.coolingdown,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: getFont(14),
@@ -74,7 +73,7 @@ class CpuCoolerScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: getHeight(120)),
+                SizedBox(height: getHeight(150)),
 
                 // ───── CPU INFO WIDGET ─────
                 CpuCoolerWidget(
@@ -97,15 +96,15 @@ class CpuCoolerScreen extends StatelessWidget {
                   ],
                 ),
 
-                SizedBox(height: getHeight(50)),
+                SizedBox(height: getHeight(120)),
 
                 // ───── BUTTON ─────
                 CleanButtonWidget(
-                  text: "Cool Down",
+                  text: AppText.coolDown,
                   onPressed: () {},
                 ),
 
-                SizedBox(height: getHeight(20)),
+                // SizedBox(height: getHeight(20)),
               ],
             ),
           ),

@@ -62,7 +62,7 @@ class _OptimizeScreenState extends State<OptimizeScreen> {
                   ),
                 ),
               ),
-              // SizedBox(height: getHeight(6),),
+              SizedBox(height: getHeight(6),),
               Center(
                 child: Text(
                   AppText.scanningdeviceandoptimizingperformance,
@@ -74,7 +74,7 @@ class _OptimizeScreenState extends State<OptimizeScreen> {
                   ),
                 ),
               ),
-          SizedBox(height: getHeight(6),),
+          SizedBox(height: getHeight(16),),
              
           OptimizationWidget(),
                 SizedBox(height: getHeight(20),),

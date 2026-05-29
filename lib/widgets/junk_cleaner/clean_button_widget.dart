@@ -24,7 +24,7 @@ class CleanButtonWidget extends StatelessWidget {
           gradient: const LinearGradient(
             colors: [
               Color(0xFF55D0FF), // Left
-              Color(0xFF226883), // Right
+              Color(0xFF0E5AA7), // Right
             ],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,

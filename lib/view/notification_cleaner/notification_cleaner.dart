@@ -1,6 +1,8 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -27,26 +29,26 @@ class SocialStatItem {
 class NotificationCleanerScreen extends StatelessWidget {
   const NotificationCleanerScreen({super.key});
 
-  static const List<SocialStatItem> _items = [
+  static  final List<SocialStatItem> _items = [
     SocialStatItem(
       label: 'WhatsApp',
       count: 45,
-      svgAssetPath: 'assets/icons/notification_cleaner/Whatsappicon.svg',
+      svgAssetPath: AppIcons.whatsappicon,
     ),
     SocialStatItem(
       label: 'Facebook',
       count: 32,
-      svgAssetPath: 'assets/icons/notification_cleaner/facebookicon.svg',
+      svgAssetPath: AppIcons.facebookicon,
     ),
     SocialStatItem(
       label: 'Instagram',
       count: 21,
-      svgAssetPath: 'assets/icons/notification_cleaner/instagramicon.svg',
+      svgAssetPath: AppIcons.instagramicon,
     ),
     SocialStatItem(
       label: 'YouTube',
       count: 16,
-      svgAssetPath: 'assets/icons/notification_cleaner/youtubeicon.svg',
+      svgAssetPath:AppIcons.youtubeicon,
     ),
     SocialStatItem(
       label: 'Others',
@@ -63,7 +65,7 @@ class NotificationCleanerScreen extends StatelessWidget {
       backgroundColor: const Color(0xFF0F1633),
 
       //  AppBar inside Scaffold (avoid white flash)
-      appBar: CustomAppBar(title: 'Notification Cleaner'),
+      appBar: CustomAppBar(title:AppText.notificationCleaner),
 
       body: Container(
         width: double.infinity,
@@ -122,7 +124,7 @@ class NotificationCleanerScreen extends StatelessWidget {
 
                 Center(
                   child: Text(
-                    "Notifications",
+                    AppText.notifications,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(16),
                       color: Colors.white70,
@@ -132,7 +134,7 @@ class NotificationCleanerScreen extends StatelessWidget {
 
                 Center(
                   child: Text(
-                    "Found in 8 apps",
+                   AppText.foundinapps,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(18),
                       color: const Color(0xFF55D0FF),
@@ -141,7 +143,7 @@ class NotificationCleanerScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: getHeight(50)),
+                SizedBox(height: getHeight(94)),
 
                 // ───── LIST ─────
                 SocialStatsWidget(items: _items),
@@ -150,7 +152,7 @@ class NotificationCleanerScreen extends StatelessWidget {
 
                 // ───── BUTTON ─────
                 CleanButtonWidget(
-                  text: "Clean Now",
+                  text: AppText.cleanNow,
                   onPressed: () {},
                 ),
 
@@ -261,8 +263,8 @@ class _SocialStatRow extends StatelessWidget {
           // CHECK ICON
           if (item.isChecked)
             Container(
-              width: getWidth(14),
-              height: getHeight(14),
+              width: getWidth(20),
+              height: getHeight(20),
               decoration: BoxDecoration(
                 color: const Color(0xFF1C2A8F),
                 borderRadius: BorderRadius.circular(4),

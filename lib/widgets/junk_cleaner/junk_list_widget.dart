@@ -65,14 +65,14 @@ class JunkItemTile extends StatelessWidget {
         children: [
           // Left checkbox
           _CheckCircle(isChecked: item.isChecked),
-          const SizedBox(width: 14),
+           SizedBox(width: getWidth(14)),
 
           // Label
           Expanded(
             child: Text(
               item.label,
               style: AppTextStyles.bodyMedium.copyWith(
-                fontSize: 14,
+                fontSize: getFont(14),
                 color: Colors.white,
                 fontWeight: FontWeight.w500
               )
@@ -84,16 +84,16 @@ class JunkItemTile extends StatelessWidget {
             item.size,
             style: TextStyle(
               color: Color(0xFFD9D9D9),
-              fontSize: 12,
+              fontSize: getFont(12),
               fontWeight: FontWeight.w400,
             ),
           ),
-          const SizedBox(width: 10),
+           SizedBox(width: getWidth(10)),
 
           // Right checkmark
          Container(
-  width: 22,
-  height: 22,
+  width: getWidth(22),
+  height: getHeight(22),
   decoration: BoxDecoration(
     color: const Color(0xFF1C2A8F),
     borderRadius: BorderRadius.circular(6),

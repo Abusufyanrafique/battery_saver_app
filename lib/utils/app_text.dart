@@ -111,6 +111,31 @@ static const String recommendations = 'Recommendations';
 static const String  quickWidgets =  'Quick Widgets';
 static const String profile = "Profile";
 static const String batteryUsage ="Battery Usage";
-
-
+// junk cleaner file '''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+  static const String appBarTitle = 'Junk Cleaner';
+  static const String junkSizeValue = '2.34 ';
+  static const String junkSizeUnit = 'GB';
+  static const String junkFoundLabel = 'Junk Found';
+  static const String scanningStatus = 'Scanning: com.whatsapp...';
+  static const String cleanButtonText = 'Clean Now';
+  static const String phoneBoost = 'Phone Boost';
+  static const String memoryUsed = "Memory Used";
+  static const String runningProcesses = "Running Processes";
+  static const String boostNow1 = "Boost Now";
+  static const String coolDown = "Cool Down";
+  static const String coolingdown = "Cooling down...";
+  static const String cooler  = 'CPU Cooler';
+  static const String securityScan = 'Security Scan';
+  static const String  safe =  "safe";
+  static const String nothreatsfound = "No threats found";
+  static const String scanAgain = "Scan Again";
+  static const String notifications = "Notifications";
+  static const String  foundinapps =  "Found in 8 apps";
+  static const String notificationCleaner = 'Notification Cleaner';
+  static const String uninstall ="Uninstall (0)";
+  static const String threads = "Threads";
+  static const String clean = "Clean";
+  static const String delete = "Delete";
+  static const String  share =  "Share";
+  static const String systemUsage ='System Usage';
 }

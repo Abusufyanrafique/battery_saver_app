@@ -77,7 +77,7 @@ class ResultBatterySaverScreen extends StatelessWidget {
               // Widget
               BatteryLifeWidget(),
 
-              SizedBox(height: getHeight(16)),
+              SizedBox(height: getHeight(24)),
 
               // Button
               CleanButtonWidget(

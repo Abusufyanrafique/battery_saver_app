@@ -1,5 +1,9 @@
-import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 class PhoneBoostListWidget extends StatelessWidget {
   const PhoneBoostListWidget({super.key});
@@ -28,16 +32,16 @@ class PhoneBoostListWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: Column(
           mainAxisSize: MainAxisSize.min, //  Content ke mutabiq shrink ho
-          children: const [
-            PhoneBoostTile(title: "WhatsApp",       status: "128 MB",   image:AppImages.whatsapp),
+          children:  [
+            PhoneBoostTile(title: "WhatsApp",       status: "128 MB",  svgicon: AppIcons.whatsappicon,),
             Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "Facebook",     status: "96 MB", image: AppImages.facebook),
+            PhoneBoostTile(title: "Facebook",     status: "96 MB", svgicon: AppIcons.facebookicon,),
             Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "Instagram",        status: "72 MB",      image:AppImages.instagram),
+            PhoneBoostTile(title: "Instagram",        status: "72 MB",      svgicon:AppIcons.instagramicon ,),
             Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "YouTube",    status: "64 MB",     image: AppImages.youtube),
+            PhoneBoostTile(title: "YouTube",    status: "64 MB",svgicon: AppIcons.youtubeicon,),
             Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "Others",  status: "256 MB",    image: AppImages.others),
+            PhoneBoostTile(title: "Others",  status: "256 MB", svgicon:"AppIcons.i ",),
           ],
         ),
       ),
@@ -50,13 +54,13 @@ class PhoneBoostListWidget extends StatelessWidget {
 class PhoneBoostTile extends StatelessWidget {
   final String title;
   final String status;
-  final String image;
+  final String svgicon;
 
   const PhoneBoostTile({
     super.key,
     required this.title,
     required this.status,
-    required this.image,
+    required this.svgicon,
   });
 
   @override
@@ -66,61 +70,56 @@ class PhoneBoostTile extends StatelessWidget {
       child: Row(
         children: [
 
-          // 👉 SINGLE IMAGE (FIXED)
+          //  SINGLE IMAGE (FIXED)
           SizedBox(
-            width: 26,
-            height: 26,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white,
-                  width: 1,
-                ),
-                image: DecorationImage(
-                  image: AssetImage(image),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
+  width: getWidth(26),
+  height: getHeight(26),
+  child: Container(
+    child: SvgPicture.asset(
+      svgicon,
+      // fit: BoxFit.cover,
+    ),
+  ),
+),
 
-          const SizedBox(width: 12),
 
-          // 👉 TITLE + STATUS
+           SizedBox(width: getWidth(12)),
+
+          //  TITLE + STATUS
           Expanded(
             child: Row(
               children: [
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(14),
                       fontWeight: FontWeight.w500,
-                    ),
+                      color: AppColors.textwhitecolor
+                    )
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                 SizedBox(width: getWidth(8)),
 
                 Text(
                   status,
-                  style: const TextStyle(
-                    color: Color(0xFFD9D9D9),
-                    fontSize: 12,
-                  ),
+                  style:AppTextStyles.bodySmall.copyWith(
+                    fontSize: getFont(12),
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.allsmalltextcolor
+                  )
                 ),
               ],
             ),
           ),
 
-          const SizedBox(width: 12),
+           SizedBox(width: getWidth(12)),
 
-          // 👉 CHECK BUTTON
+          //  CHECK BUTTON
           Container(
-            width: 24,
-            height: 24,
+            width: getWidth(24),
+            height: getHeight(24),
             decoration: BoxDecoration(
               color: const Color(0xFF1C2A8F),
               borderRadius: BorderRadius.circular(6),

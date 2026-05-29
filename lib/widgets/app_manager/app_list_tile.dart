@@ -46,7 +46,7 @@ class AppListTile extends StatelessWidget {
                     child: const Icon(
                       Icons.apps,
                       size: 18,
-                      color: Colors.grey,
+                      // color: Colors.grey,
                     ),
                   ),
                 ),
@@ -71,7 +71,7 @@ class AppListTile extends StatelessWidget {
 
                     SizedBox(height: getHeight(2)),
 
-                    // ✅ ONLY SHOW IN APK MODE
+                    //  ONLY SHOW IN APK MODE
                     if (isApkMode)
                       Row(
                         children: [
@@ -154,7 +154,7 @@ class AppListTile extends StatelessWidget {
                     height: getHeight(20),
                     decoration: BoxDecoration(
                       color: app.isSelected
-                          ? Color(0xFF838283)
+                          ? Color(0xFF232C6D)
                           : Colors.transparent,
                       border: Border.all(
                         color: Color(0xFF838283),

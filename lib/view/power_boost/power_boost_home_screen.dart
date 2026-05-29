@@ -42,7 +42,7 @@ class PowerBoostHomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 16),
+               SizedBox(height: getHeight(30)),
 
               // Title 1 (Blue Gradient)
               Center(
@@ -88,7 +88,7 @@ class PowerBoostHomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 10),
+               SizedBox(height: getHeight(10)),
 
               // Description
               Center(
@@ -102,12 +102,12 @@ class PowerBoostHomeScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: getHeight(40)),
+              SizedBox(height: getHeight(60)),
 
               // System Widget
               SystemOptimizeWidget(),
 
-              SizedBox(height: getHeight(24)),
+              SizedBox(height: getHeight(38)),
 
               // Button
               CleanButtonWidget(
@@ -117,7 +117,7 @@ class PowerBoostHomeScreen extends StatelessWidget {
                 },
               ),
 
-              SizedBox(height: getHeight(20)),
+              // SizedBox(height: getHeight(20)),
             ],
           ),
         ),

@@ -31,7 +31,7 @@ const _kInactiveRadio = Color(0xFF4A4F8A);
 
 // ─── OPTIONS ────────────────────────────────────────────────────────────────
 
- List<SaverOption> _options = [
+List<SaverOption> _options = [
   SaverOption(
     mode: SaverMode.smart,
     title: 'Smart Saver',
@@ -101,12 +101,12 @@ class BatterySaverModeCard extends StatelessWidget {
             ),
           ),
           const Divider(
-            color:Color(0xFF838283), 
-            thickness: 1, 
+            color: Color(0xFF838283),
+            thickness: 1,
             height: 1,
             endIndent: 16,
             indent: 16,
-            ),
+          ),
 
           ...List.generate(_options.length, (index) {
             final option = _options[index];
@@ -121,12 +121,12 @@ class BatterySaverModeCard extends StatelessWidget {
                 ),
                 if (!isLast)
                   const Divider(
-                    color:Color(0xFF838283),
-                     thickness: 1, 
-                     height: 1,
-                     endIndent: 16,
-                     indent: 16,
-                     ),
+                    color: Color(0xFF838283),
+                    thickness: 1,
+                    height: 1,
+                    endIndent: 16,
+                    indent: 16,
+                  ),
               ],
             );
           }),
@@ -153,6 +153,10 @@ class _SaverOptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final radioColor = isSelected ? _kActiveRadio : _kInactiveRadio;
 
+    // Icon container colors
+    final iconBgColor = isSelected ? const Color(0xFFC563A9) : const Color(0xFF232C6D);
+    final iconBorderColor = isSelected ? const Color(0xFFFE39C6) : const Color(0xFF4103AC);
+
     return InkWell(
       onTap: onTap,
       child: AnimatedContainer(
@@ -161,13 +165,14 @@ class _SaverOptionTile extends StatelessWidget {
         child: Row(
           children: [
             // ── SVG ICON ─────────────────────────────
-            Container(
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
               width: getWidth(40),
               height: getHeight(40),
               decoration: BoxDecoration(
-                color: const Color(0xFFC563A9),
+                color: iconBgColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFFE39C6)),
+                border: Border.all(color: iconBorderColor),
               ),
               child: Center(
                 child: SvgPicture.asset(
@@ -175,7 +180,7 @@ class _SaverOptionTile extends StatelessWidget {
                   width: getWidth(20),
                   height: getHeight(20),
                   colorFilter: ColorFilter.mode(
-                    isSelected ? _kActiveIcon : Color(0xFF989CDF),
+                    isSelected ? _kActiveIcon : const Color(0xFF989CDF),
                     BlendMode.srcIn,
                   ),
                 ),
