@@ -1,51 +1,31 @@
+import 'package:battery_saver_app/bloc/file_manager/file_manager_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/data/repositories/file_manager_repository.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
-import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-// ─── DATA MODELS ─────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────
+// ENTRY POINT
+// ──────────────────────────────────────────────────────────────────────────────
 
-class FileCategory {
-  final String name;
-  final String size;
-  final String imagePath;
-  final Color iconColor;
-  final Color iconBg;
+class FileManagerPage extends StatelessWidget {
+  const FileManagerPage({super.key});
 
-  const FileCategory({
-    required this.name,
-    required this.size,
-   
-    required this.iconColor,
-    required this.iconBg, 
-    required this.imagePath,
-  });
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => FileManagerBloc()..add(const FileManagerLoadEvent()),
+      child: const FileManagerScreen(),
+    );
+  }
 }
 
-class StorageDevice {
-  final String name;
-  final double used;
-  final double total;
-  final String usedLabel;
-  final String totalLabel;
-   final String iconPath;  
-  final Color progressColor;
-
-  const StorageDevice({
-    required this.name,
-    required this.used,
-    required this.total,
-    required this.usedLabel,
-    required this.totalLabel,
-     required this.iconPath,
-    required this.progressColor,
-  });
-}
-
-// ─── MAIN SCREEN ─────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────────────────────
+// MAIN SCREEN
+// ──────────────────────────────────────────────────────────────────────────────
 
 class FileManagerScreen extends StatefulWidget {
   const FileManagerScreen({super.key});
@@ -57,98 +37,20 @@ class FileManagerScreen extends StatefulWidget {
 class _FileManagerScreenState extends State<FileManagerScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
-  late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
-
+  late Animation<double>   _fadeAnim;
+  late Animation<Offset>   _slideAnim;
   final TextEditingController _searchController = TextEditingController();
-
-  final List<FileCategory> _categories =  [
-    FileCategory(
-      name: 'Images',
-      size: '1.28 GB',
-      imagePath: AppImages.filemanagerimages,
-      iconColor: Color(0xFFFF6B6B),
-      iconBg: Color(0xFF2A1A1A),
-    ),
-    FileCategory(
-      name: 'Videos',
-      size: '2.35 GB',
-      imagePath: AppImages.filemanagervideos,
-      iconColor: Color(0xFF4ECDC4),
-      iconBg: Color(0xFF0F2A29),
-    ),
-    FileCategory(
-      name: 'Audio',
-      size: '320 MB',
-      imagePath: AppImages.filemanageraudio,
-      iconColor: Color(0xFFFF6B9D),
-      iconBg: Color(0xFF2A0F1E),
-    ),
-    FileCategory(
-      name: 'Documents',
-      size: '245 MB',
-      imagePath:AppImages.filemanagernotes,
-      iconColor: Color(0xFF74B9FF),
-      iconBg: Color(0xFF0F1E2A),
-    ),
-    FileCategory(
-      name: 'Downloads',
-      size: '512 MB',
-      imagePath: AppImages.filemanagerdownload,
-      iconColor: Color(0xFF55EFC4),
-      iconBg: Color(0xFF0A2A1E),
-    ),
-    FileCategory(
-      name: 'APKs',
-      size: '156 MB',
-      imagePath: AppImages.filemanagerapk,
-      iconColor: Color(0xFFA29BFE),
-      iconBg: Color(0xFF1A0F2A),
-    ),
-  ];
-
-  final List<StorageDevice> _storages = const [
-    StorageDevice(
-      name: 'Internal Storage',
-      used: 91.2,
-      total: 128,
-      usedLabel: '91.2 GB',
-      totalLabel: '128 GB',
-      iconPath: AppIcons.internalstorage,
-      progressColor: Color(0xFF6C63FF),
-    ),
-    StorageDevice(
-      name: 'SD Card',
-      used: 12.7,
-      total: 32,
-      usedLabel: '12.7 GB',
-      totalLabel: '32 GB',
-      iconPath: AppIcons.card,
-      progressColor: Color(0xFF00B4D8),
-    ),
-  ];
 
   @override
   void initState() {
     super.initState();
-
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
-
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
-
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.08),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
-
+    _fadeAnim  = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _animController.forward();
   }
 
@@ -159,381 +61,449 @@ class _FileManagerScreenState extends State<FileManagerScreen>
     super.dispose();
   }
 
-  // ─── UI ─────────────────────────────────────────────
+  // ── BUILD ──────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => FileManagerBloc()..add(const FileManagerLoadEvent()),
+      child: Builder(builder: (ctx) => _buildContent(ctx)),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     return Scaffold(
-      backgroundColor:AppColors.allscreenBackgroundColor,
+      backgroundColor: AppColors.allscreenBackgroundColor,
       body: Stack(
         children: [
-          _buildBackground(),
+          _background(),
           SafeArea(
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: SlideTransition(
-                position: _slideAnim,
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 24),
+            child: BlocConsumer<FileManagerBloc, FileManagerState>(
+              listener: (_, state) {
+                if (state is FileManagerLoadedState && !state.isRefreshing) {
+                  _animController.forward(from: 0);
+                }
+              },
+              builder: (ctx, state) {
+                if (state is FileManagerLoadingState)        return _loadingView();
+                if (state is FileManagerPermissionDeniedState) return _permissionView(ctx, state.message);
+                if (state is FileManagerErrorState)          return _errorView(ctx, state.message);
+                if (state is FileManagerLoadedState)         return _loadedView(ctx, state);
+                return const SizedBox.shrink();
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                      _buildSearchBar(),
-                      const SizedBox(height: 24),
+  // ── BACKGROUND ─────────────────────────────────────────────────────────────
 
-                      _buildCategoryGrid(),
-                      const SizedBox(height: 24),
+  Widget _background() => Positioned.fill(
+    child: CustomPaint(painter: _BgPainter()),
+  );
 
-                      _buildStorageCards(),
-                      const SizedBox(height: 32),
-                    ],
+  // ── HEADER ─────────────────────────────────────────────────────────────────
+
+  Widget _header({bool showMore = true}) => Row(
+    children: [
+      _GlassBtn(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.of(context).maybePop()),
+      Expanded(
+        child: Center(
+          child: Text(
+            'File Manager',
+            style: AppTextStyles.bodyLarge.copyWith(
+              fontSize: getFont(24),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ),
+      showMore
+          ? _GlassBtn(icon: Icons.more_vert, onTap: () {})
+          : const SizedBox(width: 40),
+    ],
+  );
+
+  // ── SEARCH ─────────────────────────────────────────────────────────────────
+
+  Widget _searchBar(BuildContext context, FileManagerLoadedState state) => Container(
+    height: getHeight(40),
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFF232C6D), Color(0xFF13173A)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: const Color(0xFF4103AC), width: 1),
+    ),
+    child: Row(
+      children: [
+        const Icon(Icons.search, color: Color(0xFFD9D9D9)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: TextField(
+            controller: _searchController,
+            style: const TextStyle(color: Colors.white),
+            onChanged: (q) =>
+                context.read<FileManagerBloc>().add(FileManagerSearchEvent(q)),
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Search files...',
+              hintStyle: TextStyle(color: Color(0xFFD9D9D9)),
+            ),
+          ),
+        ),
+        if (state.searchQuery.isNotEmpty)
+          Text(
+            '${state.filteredCategories.length}',
+            style: const TextStyle(color: Color(0xFF6C63FF), fontSize: 13),
+          ),
+      ],
+    ),
+  );
+
+  // ── LOADING ────────────────────────────────────────────────────────────────
+
+  Widget _loadingView() => Column(
+    children: [
+      Padding(padding: const EdgeInsets.all(24), child: _header(showMore: false)),
+      const Expanded(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: Color(0xFF6C63FF)),
+              SizedBox(height: 16),
+              Text('Scanning files...', style: TextStyle(color: Colors.white70, fontSize: 14)),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+
+  // ── PERMISSION ─────────────────────────────────────────────────────────────
+
+  Widget _permissionView(BuildContext context, String message) => Column(
+    children: [
+      Padding(padding: const EdgeInsets.all(24), child: _header(showMore: false)),
+      Expanded(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.folder_off, color: Colors.white38, size: 64),
+                const SizedBox(height: 16),
+                Text(message, textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 15)),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      context.read<FileManagerBloc>().add(const FileManagerRetryEvent()),
+                  icon: const Icon(Icons.security),
+                  label: const Text('Grant Permission'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6C63FF),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─── BACKGROUND ─────────────────────────────────────────────
-
-  Widget _buildBackground() {
-    return Positioned.fill(
-      child: CustomPaint(
-        painter: _BackgroundPainter(),
-      ),
-    );
-  }
-
-  // ─── HEADER ─────────────────────────────────────────────
-
-  Widget _buildHeader() {
-    return Row(
-      children: [
-        _GlassIconButton(icon: Icons.arrow_back_ios_new, onTap: () {}),
-         Expanded(
-          child: Center(
-            child: Text(
-              'File Manager',
-              style:AppTextStyles.bodyLarge.copyWith(
-                fontSize: getFont(24),
-                fontWeight: FontWeight.w700,
-              )
+              ],
             ),
           ),
         ),
-        _GlassIconButton(icon: Icons.more_vert, onTap: () {}),
-      ],
-    );
-  }
-
-  // ─── SEARCH ─────────────────────────────────────────────
-
-  Widget _buildSearchBar() {
-    return Container(
-      height: getHeight(40),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF232C6D), Color(0xFF13173A)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border:Border.all(
-          color:Color(0xFF4103AC),
-          width: 1,
-        )
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: Color(0xFFD9D9D9)),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              controller: _searchController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Search files...',
-                hintStyle: TextStyle(color: Color(0xFFD9D9D9)),
+    ],
+  );
+
+  // ── ERROR ──────────────────────────────────────────────────────────────────
+
+  Widget _errorView(BuildContext context, String message) => Column(
+    children: [
+      Padding(padding: const EdgeInsets.all(24), child: _header(showMore: false)),
+      Expanded(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
+              const SizedBox(height: 12),
+              Text(message, textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white60, fontSize: 14)),
+              const SizedBox(height: 20),
+              TextButton(
+                onPressed: () =>
+                    context.read<FileManagerBloc>().add(const FileManagerRetryEvent()),
+                child: const Text('Retry', style: TextStyle(color: Color(0xFF6C63FF))),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+
+  // ── LOADED ─────────────────────────────────────────────────────────────────
+
+  Widget _loadedView(BuildContext context, FileManagerLoadedState state) =>
+      FadeTransition(
+        opacity: _fadeAnim,
+        child: SlideTransition(
+          position: _slideAnim,
+          child: RefreshIndicator(
+            color: const Color(0xFF6C63FF),
+            backgroundColor: const Color(0xFF13173A),
+            onRefresh: () async {
+              context.read<FileManagerBloc>().add(const FileManagerRefreshEvent());
+              await Future.doWhile(() async {
+                await Future.delayed(const Duration(milliseconds: 200));
+                final s = context.read<FileManagerBloc>().state;
+                return s is FileManagerLoadedState && s.isRefreshing;
+              });
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _header(),
+                  const SizedBox(height: 24),
+                  _searchBar(context, state),
+                  const SizedBox(height: 24),
+                  _categoryGrid(state),
+                  const SizedBox(height: 24),
+                  _StorageCard(storage: state.internalStorage),
+                  const SizedBox(height: 32),
+                ],
               ),
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
 
-  // ─── CATEGORY GRID ─────────────────────────────────────────────
+  // ── CATEGORY GRID ──────────────────────────────────────────────────────────
 
-  Widget _buildCategoryGrid() {
+  Widget _categoryGrid(FileManagerLoadedState state) {
+    if (state.filteredCategories.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Text('No categories found', style: TextStyle(color: Colors.white54)),
+        ),
+      );
+    }
     return Wrap(
       spacing: 10,
       runSpacing: 10,
-      children: _categories.map((c) {
-        return SizedBox(
-          width: (MediaQuery.of(context).size.width - 72) / 3,
-          child: _CategoryCard(category: c, delay: 0),
-        );
-      }).toList(),
-    );
-  }
-
-  // ─── STORAGE ─────────────────────────────────────────────
-
-  Widget _buildStorageCards() {
-    return Column(
-      children: _storages
-          .map(
-            (s) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: _StorageCard(storage: s),
-            ),
-          )
-          .toList(),
+      children: state.filteredCategories.map((c) => SizedBox(
+        width: (MediaQuery.of(context).size.width - 72) / 3,
+        child: _CategoryCard(category: c),
+      )).toList(),
     );
   }
 }
 
-// ─── CATEGORY CARD ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// CATEGORY CARD
+// ══════════════════════════════════════════════════════════════════════════════
 
-class _CategoryCard extends StatefulWidget {
-  final FileCategory category;
-  final int delay;
+class _CategoryCard extends StatelessWidget {
+  final FileCategoryModel category;
+  const _CategoryCard({required this.category});
 
-  const _CategoryCard({required this.category, required this.delay});
-
-  @override
-  State<_CategoryCard> createState() => _CategoryCardState();
-}
-
-class _CategoryCardState extends State<_CategoryCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
       height: getHeight(126),
       width: getWidth(120),
       decoration: BoxDecoration(
-       gradient: const LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Color(0xFF4103AC),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF4103AC), width: 1),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-         Image.asset(
-         widget.category.imagePath,
-         width: getWidth(40),
-         height: getHeight(40),
-         fit: BoxFit.contain,
-),
-           SizedBox(height:getHeight(8)),
-          Text(widget.category.name,
-                 style: AppTextStyles.bodyMedium.copyWith(
-                fontSize:getFont(16),
-                color:Color(0xFFFFFFFF),
-                fontWeight: FontWeight.w600,
-              )
-              
-              ),
-          Text(widget.category.size,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontSize: getFont(16),
-                color: Color(0xFFD9D9D9),
-                fontWeight: FontWeight.w500
-
-              )),
+          Image.asset(
+            category.imagePath,
+            width: getWidth(40),
+            height: getHeight(40),
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) =>
+                const Icon(Icons.folder, color: Colors.white54, size: 36),
+          ),
+          SizedBox(height: getHeight(8)),
+          Text(
+            category.name,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: getFont(16),
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Text(
+            category.size,
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: getFont(16),
+              color: const Color(0xFFD9D9D9),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-// ─── STORAGE CARD ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// STORAGE CARD  (sirf Internal Storage)
+// ══════════════════════════════════════════════════════════════════════════════
 
 class _StorageCard extends StatelessWidget {
-  final StorageDevice storage;
-
+  final StorageDeviceModel storage;
   const _StorageCard({required this.storage});
+
+  Color get _barColor {
+    if (storage.percentage > 0.9) return Colors.redAccent;
+    if (storage.percentage > 0.7) return const Color(0xFFFFB300);
+    return const Color(0xFF1F8EFF);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pct = storage.used / storage.total;
-
     return Container(
-      padding:  EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
         ),
         borderRadius: BorderRadius.circular(12),
-         border:Border.all(
-          color:Color(0xFF4103AC)
-        )
+        border: Border.all(color: const Color(0xFF4103AC)),
       ),
-      child: Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
+      child: Row(
+        children: [
+          // Icon
+          SvgPicture.asset(
+            storage.iconPath,
+            width: getWidth(32),
+            height: getHeight(32),
+            placeholderBuilder: (_) =>
+                const Icon(Icons.storage, color: Colors.white70, size: 32),
+          ),
+          SizedBox(width: getWidth(12)),
 
-    Row(
-      children: [
-
-        //  Left Image
-  SvgPicture.asset(
-  storage.iconPath,
-  width: getWidth(32),
-  height: getHeight(32),
-),
-
-        SizedBox(width: getWidth(12)),
-
-        //  Text + Progress Area
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              //  Top Row
-              Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                children: [
-
-                  Text(
-                    storage.name,
-                    style:
-                        AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(16),
-                      color: AppColors.textwhitecolor,
-                      fontWeight: FontWeight.w500,
+          // Info + progress
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      storage.name,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontSize: getFont(16),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-
-                  RichText(
-                    text: TextSpan(
-                      children: [
-
+                    RichText(
+                      text: TextSpan(children: [
                         TextSpan(
                           text: storage.usedLabel,
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(
+                          style: AppTextStyles.bodyMedium.copyWith(
                             fontSize: getFont(18),
-                            fontWeight:
-                                FontWeight.w700,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                         ),
-
                         TextSpan(
-                          text: " / ",
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(
-                            fontSize: getFont(14),
-                            color: Colors.white70,
-                          ),
+                          text: ' / ',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontSize: getFont(14), color: Colors.white70),
                         ),
-
                         TextSpan(
                           text: storage.totalLabel,
-                          style: AppTextStyles.bodyMedium
-                              .copyWith(
-                            fontSize: getFont(13),
-                            color: Colors.white54,
-                          ),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontSize: getFont(13), color: Colors.white54),
                         ),
-                      ],
+                      ]),
+                    ),
+                  ],
+                ),
+                SizedBox(height: getHeight(10)),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: storage.percentage),
+                  duration: const Duration(milliseconds: 1200),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, v, __) => ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: LinearProgressIndicator(
+                      minHeight: getHeight(6),
+                      value: v,
+                      color: _barColor,
+                      backgroundColor: const Color(0xFF232C6D),
                     ),
                   ),
-                ],
-              ),
-
-              SizedBox(height: getHeight(10)),
-
-              //  Progress Bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: LinearProgressIndicator(
-                  minHeight: getHeight(6),
-                  value: pct,
-                  color:Color(0xFF1F8EFF),
-                  backgroundColor: Color(0xFF232C6D),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  ],
-)
-    );
-  }
-}
-
-// ─── GLASS BUTTON ─────────────────────────────────────────────
-
-class _GlassIconButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _GlassIconButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: getWidth(40),
-        height: getHeight(40),
-        decoration: BoxDecoration(
-          // color: Colors.white12,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: Colors.white),
+        ],
       ),
     );
   }
 }
 
-// ─── BACKGROUND ─────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// GLASS BUTTON
+// ══════════════════════════════════════════════════════════════════════════════
 
-class _BackgroundPainter extends CustomPainter {
+class _GlassBtn extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _GlassBtn({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: getWidth(40),
+      height: getHeight(40),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+      child: Icon(icon, color: Colors.white),
+    ),
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BACKGROUND PAINTER
+// ══════════════════════════════════════════════════════════════════════════════
+
+class _BgPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-
-    paint.shader = RadialGradient(
-      colors: [Colors.blueAccent.withOpacity(0.2), Colors.transparent],
-    ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-
-    canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.width, size.height), paint);
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [Colors.blueAccent.withOpacity(0.2), Colors.transparent],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(CustomPainter _) => false;
 }

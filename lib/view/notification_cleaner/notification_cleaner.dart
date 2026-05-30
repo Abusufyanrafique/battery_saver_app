@@ -22,6 +22,15 @@ class SocialStatItem {
     required this.svgAssetPath,
     this.isChecked = true,
   });
+
+  SocialStatItem copyWith({bool? isChecked}) {
+    return SocialStatItem(
+      label: label,
+      count: count,
+      svgAssetPath: svgAssetPath,
+      isChecked: isChecked ?? this.isChecked,
+    );
+  }
 }
 
 // ─── SCREEN ───────────────────────────────

@@ -1,3 +1,5 @@
+import 'package:battery_saver_app/bloc/phone_boost/phone_boost_bloc.dart';
+
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -5,11 +7,31 @@ import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
+// Known app icon map — package name → SVG asset path
+const _knownIcons = <String, String>{
+  'com.whatsapp':                   AppIcons.whatsappicon,
+  'com.facebook.katana':            AppIcons.facebookicon,
+  'com.instagram.android':          AppIcons.instagramicon,
+  'com.google.android.youtube':     AppIcons.youtubeicon,
+};
+
 class PhoneBoostListWidget extends StatelessWidget {
-  const PhoneBoostListWidget({super.key});
+  final List<RunningAppInfo> apps;
+
+  const PhoneBoostListWidget({super.key, required this.apps});
 
   @override
   Widget build(BuildContext context) {
+    if (apps.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('No running apps found',
+              style: TextStyle(color: Colors.white54)),
+        ),
+      );
+    }
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -23,100 +45,85 @@ class PhoneBoostListWidget extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF4103AC),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF4103AC), width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Column(
-          mainAxisSize: MainAxisSize.min, //  Content ke mutabiq shrink ho
-          children:  [
-            PhoneBoostTile(title: "WhatsApp",       status: "128 MB",  svgicon: AppIcons.whatsappicon,),
-            Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "Facebook",     status: "96 MB", svgicon: AppIcons.facebookicon,),
-            Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "Instagram",        status: "72 MB",      svgicon:AppIcons.instagramicon ,),
-            Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "YouTube",    status: "64 MB",svgicon: AppIcons.youtubeicon,),
-            Divider(color: Color(0xFF373C62), height: 1),
-            PhoneBoostTile(title: "Others",  status: "256 MB", svgicon:"AppIcons.i ",),
-          ],
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(apps.length, (i) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                PhoneBoostTile(app: apps[i]),
+                if (i != apps.length - 1)
+                  const Divider(
+                      color: Color(0xFF373C62), height: 1, thickness: 1),
+              ],
+            );
+          }),
         ),
       ),
     );
   }
 }
 
-
-
 class PhoneBoostTile extends StatelessWidget {
-  final String title;
-  final String status;
-  final String svgicon;
+  final RunningAppInfo app;
 
-  const PhoneBoostTile({
-    super.key,
-    required this.title,
-    required this.status,
-    required this.svgicon,
-  });
+  const PhoneBoostTile({super.key, required this.app});
 
   @override
   Widget build(BuildContext context) {
+    final svgPath = _knownIcons[app.packageName];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
 
-          //  SINGLE IMAGE (FIXED)
+          // ── App icon (SVG if known, else letter avatar) ──────────────────
           SizedBox(
-  width: getWidth(26),
-  height: getHeight(26),
-  child: Container(
-    child: SvgPicture.asset(
-      svgicon,
-      // fit: BoxFit.cover,
-    ),
-  ),
-),
+            width: getWidth(26),
+            height: getHeight(26),
+            child: svgPath != null
+                ? SvgPicture.asset(svgPath)
+                : _LetterAvatar(name: app.name),
+          ),
 
+          SizedBox(width: getWidth(12)),
 
-           SizedBox(width: getWidth(12)),
-
-          //  TITLE + STATUS
+          // ── Name + MB ────────────────────────────────────────────────────
           Expanded(
             child: Row(
               children: [
                 Expanded(
                   child: Text(
-                    title,
+                    app.name,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(14),
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textwhitecolor
-                    )
+                      color: AppColors.textwhitecolor,
+                    ),
                   ),
                 ),
-
-                 SizedBox(width: getWidth(8)),
-
+                SizedBox(width: getWidth(8)),
                 Text(
-                  status,
-                  style:AppTextStyles.bodySmall.copyWith(
+                  '${app.memoryMb} MB',
+                  style: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w500,
-                    color: AppColors.allsmalltextcolor
-                  )
+                    color: AppColors.allsmalltextcolor,
+                  ),
                 ),
               ],
             ),
           ),
 
-           SizedBox(width: getWidth(12)),
+          SizedBox(width: getWidth(12)),
 
-          //  CHECK BUTTON
+          // ── Check badge ──────────────────────────────────────────────────
           Container(
             width: getWidth(24),
             height: getHeight(24),
@@ -124,13 +131,40 @@ class PhoneBoostTile extends StatelessWidget {
               color: const Color(0xFF1C2A8F),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(
-              Icons.check,
-              size: 14,
-              color: Color(0xFF55D0FF),
-            ),
+            child: const Icon(Icons.check, size: 14, color: Color(0xFF55D0FF)),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Fallback when no SVG icon available — colored circle with first letter
+class _LetterAvatar extends StatelessWidget {
+  final String name;
+  const _LetterAvatar({required this.name});
+
+  static const _colors = [
+    Color(0xFF6C63FF),
+    Color(0xFF00C6AE),
+    Color(0xFFFF6584),
+    Color(0xFFFFAA00),
+    Color(0xFF55D0FF),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _colors[name.codeUnitAt(0) % _colors.length];
+    return Container(
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      alignment: Alignment.center,
+      child: Text(
+        name.isNotEmpty ? name[0].toUpperCase() : '?',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

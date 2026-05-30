@@ -2,16 +2,20 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
 
-// Model
+// ── Model ────────────────────────────────────────────────────────────────────
 class SecurityScanItem {
   final String title;
+  final bool isCompleted;
+  final bool isScanning; // ye item abhi scan ho rahi hai
 
   const SecurityScanItem({
     required this.title,
+    this.isCompleted = false,
+    this.isScanning = false,
   });
 }
 
-// Main Widget
+// ── Main Widget ───────────────────────────────────────────────────────────────
 class SecurityScanWidget extends StatelessWidget {
   final List<SecurityScanItem> items;
 
@@ -35,10 +39,7 @@ class SecurityScanWidget extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFF4103AC),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFF4103AC), width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -64,14 +65,11 @@ class SecurityScanWidget extends StatelessWidget {
   }
 }
 
-// Tile
+// ── Tile ─────────────────────────────────────────────────────────────────────
 class SecurityScanTile extends StatelessWidget {
   final SecurityScanItem item;
 
-  const SecurityScanTile({
-    super.key,
-    required this.item,
-  });
+  const SecurityScanTile({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -79,24 +77,15 @@ class SecurityScanTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
-          //  Left green circle check
-          Container(
-            width: getWidth(20),
-            height: getHeight(20),
-            decoration: const BoxDecoration(
-              color: Color(0xFF00FF09),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 12,
-            ),
+          // ── Left indicator ──────────────────────────────────────────────
+          _LeftIndicator(
+            isCompleted: item.isCompleted,
+            isScanning: item.isScanning,
           ),
 
           const SizedBox(width: 14),
 
-          // Title
+          // ── Title ───────────────────────────────────────────────────────
           Expanded(
             child: Text(
               item.title,
@@ -107,24 +96,88 @@ class SecurityScanTile extends StatelessWidget {
               ),
             ),
           ),
-          
 
-          //  Right green rounded square check
-          Container(
-            width: getWidth(20),
-            height: getHeight(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2FE55D),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Icon(
-              Icons.check,
-              color: Colors.white,
-              size: 12,
-            ),
+          // ── Right indicator ─────────────────────────────────────────────
+          _RightIndicator(
+            isCompleted: item.isCompleted,
+            isScanning: item.isScanning,
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Left green circle / spinner ───────────────────────────────────────────────
+class _LeftIndicator extends StatelessWidget {
+  final bool isCompleted;
+  final bool isScanning;
+
+  const _LeftIndicator({required this.isCompleted, required this.isScanning});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isScanning) {
+      return SizedBox(
+        width: getWidth(20),
+        height: getHeight(20),
+        child: const CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Color(0xFF00FF09),
+        ),
+      );
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: getWidth(20),
+      height: getHeight(20),
+      decoration: BoxDecoration(
+        color: isCompleted
+            ? const Color(0xFF00FF09)
+            : const Color(0xFF373C62), // grey when pending
+        shape: BoxShape.circle,
+      ),
+      child: isCompleted
+          ? const Icon(Icons.check, color: Colors.white, size: 12)
+          : null,
+    );
+  }
+}
+
+// ── Right rounded square / spinner ───────────────────────────────────────────
+class _RightIndicator extends StatelessWidget {
+  final bool isCompleted;
+  final bool isScanning;
+
+  const _RightIndicator({required this.isCompleted, required this.isScanning});
+
+  @override
+  Widget build(BuildContext context) {
+    if (isScanning) {
+      return SizedBox(
+        width: getWidth(20),
+        height: getHeight(20),
+        child: const CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Color(0xFF2FE55D),
+        ),
+      );
+    }
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: getWidth(20),
+      height: getHeight(20),
+      decoration: BoxDecoration(
+        color: isCompleted
+            ? const Color(0xFF2FE55D)
+            : const Color(0xFF373C62), // grey when pending
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: isCompleted
+          ? const Icon(Icons.check, color: Colors.white, size: 12)
+          : null,
     );
   }
 }

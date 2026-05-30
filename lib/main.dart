@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
           create: (_) => BatterySaverBloc(),
         ),
 
-        // 👉 ADD MORE BLOCS HERE
+        //  ADD MORE BLOCS HERE
         // BlocProvider(
         //   create: (_) => AuthBloc(),
         // ),

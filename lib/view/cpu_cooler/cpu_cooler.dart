@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -6,9 +7,35 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/cpu_cooler/cpu_cooler_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class CpuCoolerScreen extends StatelessWidget {
   const CpuCoolerScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => CpuCoolerBloc()
+        ..add(const CpuCoolerStartMonitoring()),
+      child: const _CpuCoolerView(),
+    );
+  }
+}
+
+class _CpuCoolerView extends StatefulWidget {
+  const _CpuCoolerView();
+
+  @override
+  State<_CpuCoolerView> createState() => _CpuCoolerViewState();
+}
+
+class _CpuCoolerViewState extends State<_CpuCoolerView> {
+  @override
+  void dispose() {
+    // Tell the BLoC to cancel its timer when the screen is popped
+    context.read<CpuCoolerBloc>().add(const CpuCoolerStopMonitoring());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +44,9 @@ class CpuCoolerScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF0E112F),
       appBar: CustomAppBar(title: AppText.cooler),
-
       body: Container(
         width: double.infinity,
         height: double.infinity,
-
-        //  stable gradient background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -34,82 +58,232 @@ class CpuCoolerScreen extends StatelessWidget {
             ],
           ),
         ),
-
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: BlocBuilder<CpuCoolerBloc, CpuCoolerState>(
+            builder: (context, state) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: getHeight(30)),
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+                    // ───── CIRCULAR GAUGE / IMAGE ─────
+                    _CpuGauge(temperature: state.temperature),
 
-                SizedBox(height: getHeight(30)),
+                    SizedBox(height: getHeight(40)),
 
-                // ───── IMAGE ─────
-                Container(
-                  height: getHeight(200),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: const DecorationImage(
-                      image: AssetImage(AppImages.cpucoolerimage),
-                      fit: BoxFit.contain,
+                    // ───── STATUS TEXT ─────
+                    Center(
+                      child: state.isCoolingDown
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF55D0FF),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  state.statusMessage,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: getFont(14),
+                                    color: const Color(0xFF55D0FF),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(
+                              state.statusMessage,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: getFont(14),
+                                color: state.status == CpuCoolerStatus.cooled
+                                    ? Colors.greenAccent
+                                    : const Color(0xFF55D0FF),
+                              ),
+                            ),
                     ),
-                  ),
-                ),
 
-                SizedBox(height: getHeight(40)),
+                    SizedBox(height: getHeight(150)),
 
-                // ───── STATUS TEXT ─────
-                Center(
-                  child: Text(
-                    AppText.coolingdown,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: getFont(14),
-                      color: const Color(0xFF55D0FF),
+                    // ───── CPU INFO WIDGET ─────
+                    CpuCoolerWidget(
+                      items: [
+                        CpuInfoItem(
+                          imagePath: AppImages.cpuusage,
+                          title: "CPU Usage",
+                          value: state.cpuUsage == 0.0
+                              ? '--'
+                              : '${state.cpuUsage.toStringAsFixed(1)}%',
+                        ),
+                        CpuInfoItem(
+                          imagePath: AppImages.cpumangerimage,
+                          title: "Running Apps",
+                          value: state.runningApps == 0
+                              ? '--'
+                              : '${state.runningApps}',
+                        ),
+                        CpuInfoItem(
+                          imagePath: AppImages.temperature,
+                          title: "Temperature",
+                          value: state.temperature == 0.0
+                              ? '--'
+                              : '${state.temperature.toStringAsFixed(1)}°C',
+                        ),
+                      ],
                     ),
-                  ),
-                ),
 
-                SizedBox(height: getHeight(150)),
+                    SizedBox(height: getHeight(120)),
 
-                // ───── CPU INFO WIDGET ─────
-                CpuCoolerWidget(
-                  items: [
-                    CpuInfoItem(
-                      imagePath: AppImages.cpuusage,
-                      title: "CPU Usage",
-                      value: "38%",
-                    ),
-                    CpuInfoItem(
-                      imagePath: AppImages.cpumangerimage,
-                      title: "Running Apps",
-                      value: "24",
-                    ),
-                    CpuInfoItem(
-                      imagePath: AppImages.temperature,
-                      title: "Temperature",
-                      value: "38°C",
+                    // ───── BUTTON ─────
+                    CleanButtonWidget(
+                      text: state.isCoolingDown
+                          ? 'Cooling...'
+                          : AppText.coolDown,
+                      onPressed: state.isCoolingDown
+                          ? null // disabled while running
+                          : () => context
+                              .read<CpuCoolerBloc>()
+                              .add(const CpuCoolerCoolDownRequested()),
                     ),
                   ],
                 ),
-
-                SizedBox(height: getHeight(120)),
-
-                // ───── BUTTON ─────
-                CleanButtonWidget(
-                  text: AppText.coolDown,
-                  onPressed: () {},
-                ),
-
-                // SizedBox(height: getHeight(20)),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Animated CPU gauge — replaces the static image with a live temperature ring
+// ─────────────────────────────────────────────────────────────────────────────
+class _CpuGauge extends StatelessWidget {
+  final double temperature;
+
+  const _CpuGauge({required this.temperature});
+
+  Color get _tempColor {
+    if (temperature == 0) return const Color(0xFF55D0FF);
+    if (temperature < 50) return const Color(0xFF00E5FF);
+    if (temperature < 70) return const Color(0xFFFFAA00);
+    return const Color(0xFFFF4444);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: getHeight(200),
+      width: double.infinity,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Glow ring using CustomPaint
+          CustomPaint(
+            size: Size(getHeight(180), getHeight(180)),
+            painter: _GaugePainter(
+              value: temperature == 0 ? 0.38 : (temperature / 100).clamp(0.0, 1.0),
+              color: _tempColor,
+            ),
+          ),
+
+          // Inner content
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // CPU chip icon
+              Image.asset(
+                AppImages.cpucoolerimage,
+                width: getHeight(48),
+                height: getHeight(48),
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.memory,
+                  size: getHeight(48),
+                  color: const Color(0xFF55D0FF),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                temperature == 0
+                    ? '--°C'
+                    : '${temperature.toStringAsFixed(0)}°C',
+                style: TextStyle(
+                  fontSize: getFont(28),
+                  fontWeight: FontWeight.bold,
+                  color: _tempColor,
+                ),
+              ),
+              Text(
+                'CPU Temperature',
+                style: TextStyle(
+                  fontSize: getFont(11),
+                  color: Colors.white54,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GaugePainter extends CustomPainter {
+  final double value; // 0.0 – 1.0
+  final Color color;
+
+  _GaugePainter({required this.value, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 8;
+
+    // Track
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.white12
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 8,
+    );
+
+    // Arc
+    final rect = Rect.fromCircle(center: center, radius: radius);
+    canvas.drawArc(
+      rect,
+      -3.14 / 2,           // start at top
+      2 * 3.14159 * value, // sweep
+      false,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 8
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // Outer glow ring
+    canvas.drawCircle(
+      center,
+      radius + 12,
+      Paint()
+        ..color = color.withOpacity(0.15)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 20,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_GaugePainter old) =>
+      old.value != value || old.color != color;
 }
