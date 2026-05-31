@@ -1,8 +1,6 @@
 import 'package:battery_saver_app/data/repositories/data_usage_repository.dart';
 import 'package:battery_saver_app/models/data_usage/data_usage_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'data_usage_event.dart';
 import 'data_usage_state.dart';
 
 class DataUsageCubit extends Cubit<DataUsageState> {
@@ -18,19 +16,23 @@ class DataUsageCubit extends Cubit<DataUsageState> {
     emit(DataUsageLoading(period: period));
 
     try {
-      // Request usage stats permission (Android)
-      final status = await Permission.manageExternalStorage.request();
-      // Note: usage_stats needs special permission — guide user if denied
-      
+      // Permission check — async
+      final permitted = await _repository.hasPermission();
+      if (!permitted!) {
+        _repository.requestPermission();
+        // User ko permission dene ka waqt do
+        await Future.delayed(const Duration(seconds: 3));
+      }
+
       final data = await _repository.getUsage(period);
       emit(DataUsageLoaded(data));
     } catch (e) {
-      emit(DataUsageError('Failed to load data: $e'));
+      emit(DataUsageError('Something went wrong: $e'));
     }
   }
 
   Future<void> togglePeriod(UsagePeriod newPeriod) async {
-    if (newPeriod == _currentPeriod) return;
+    if (newPeriod == _currentPeriod && state is DataUsageLoaded) return;
     await loadUsage(period: newPeriod);
   }
 

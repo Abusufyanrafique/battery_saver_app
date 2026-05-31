@@ -50,7 +50,7 @@ dependencies:
   flutter_notification_listener: ^1.4.0
   connectivity_plus: ^6.0.3
   network_info_plus: ^5.0.0
-  data_usage: ^1.0.3 
+  usage_stats: ^1.2.0
    
 
 
