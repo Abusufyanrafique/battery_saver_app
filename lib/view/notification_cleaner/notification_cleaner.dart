@@ -1,3 +1,6 @@
+import 'package:battery_saver_app/bloc/notification_cleaner/notification_bloc.dart';
+import 'package:battery_saver_app/bloc/notification_cleaner/notification_event.dart';
+import 'package:battery_saver_app/bloc/notification_cleaner/notification_state.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
@@ -5,11 +8,12 @@ import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 
-// ─── DATA MODEL ───────────────────────────────
-
+/// ─────────────────────────────────────────────
+/// DATA MODEL
 class SocialStatItem {
   final String label;
   final int count;
@@ -23,48 +27,37 @@ class SocialStatItem {
     this.isChecked = true,
   });
 
-  SocialStatItem copyWith({bool? isChecked}) {
+  SocialStatItem copyWith({
+    String? label,
+    int? count,
+    String? svgAssetPath,
+    bool? isChecked,
+  }) {
     return SocialStatItem(
-      label: label,
-      count: count,
-      svgAssetPath: svgAssetPath,
+      label: label ?? this.label,
+      count: count ?? this.count,
+      svgAssetPath: svgAssetPath ?? this.svgAssetPath,
       isChecked: isChecked ?? this.isChecked,
     );
   }
 }
 
-// ─── SCREEN ───────────────────────────────
-
+/// ─────────────────────────────────────────────
+/// SCREEN
 class NotificationCleanerScreen extends StatelessWidget {
   const NotificationCleanerScreen({super.key});
 
-  static  final List<SocialStatItem> _items = [
-    SocialStatItem(
-      label: 'WhatsApp',
-      count: 45,
-      svgAssetPath: AppIcons.whatsappicon,
-    ),
-    SocialStatItem(
-      label: 'Facebook',
-      count: 32,
-      svgAssetPath: AppIcons.facebookicon,
-    ),
-    SocialStatItem(
-      label: 'Instagram',
-      count: 21,
-      svgAssetPath: AppIcons.instagramicon,
-    ),
-    SocialStatItem(
-      label: 'YouTube',
-      count: 16,
-      svgAssetPath:AppIcons.youtubeicon,
-    ),
-    SocialStatItem(
-      label: 'Others',
-      count: 12,
-      svgAssetPath: 'assets/icons/others.svg',
-    ),
-  ];
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => NotificationBloc()..add(LoadNotifications()),
+      child: const _NotificationCleanerView(),
+    );
+  }
+}
+
+class _NotificationCleanerView extends StatelessWidget {
+  const _NotificationCleanerView();
 
   @override
   Widget build(BuildContext context) {
@@ -72,15 +65,10 @@ class NotificationCleanerScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F1633),
-
-      //  AppBar inside Scaffold (avoid white flash)
-      appBar: CustomAppBar(title:AppText.notificationCleaner),
-
+      appBar: CustomAppBar(title: AppText.notificationCleaner),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-
-        //  stable gradient background
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -92,82 +80,135 @@ class NotificationCleanerScreen extends StatelessWidget {
             ],
           ),
         ),
-
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(16.0),
+          child: BlocBuilder<NotificationBloc, NotificationState>(
+            builder: (context, state) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
 
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-
-                // ───── IMAGE ─────
-                Container(
-                  height: getHeight(200),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: const DecorationImage(
-                      image: AssetImage(AppImages.notificationcleanerimage),
-                      fit: BoxFit.contain,
+                    /// ── IMAGE
+                    Container(
+                      height: getHeight(200),
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        image: const DecorationImage(
+                          image: AssetImage(AppImages.notificationcleanerimage),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-                const SizedBox(height: 16),
+                    SizedBox(height: getHeight(16)),
 
-                // ───── TITLE ─────
-                Center(
-                  child: Text(
-                    "126",
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: getFont(32),
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+                    /// ── TOTAL COUNT
+                    Center(
+                      child: Text(
+                        state.status == NotificationStatus.loading
+                            ? '...'
+                            : '${state.totalCount}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontSize: getFont(32),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-                SizedBox(height: getHeight(6)),
+                    SizedBox(height: getHeight(6)),
 
-                Center(
-                  child: Text(
-                    AppText.notifications,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(16),
-                      color: Colors.white70,
+                    Center(
+                      child: Text(
+                        AppText.notifications,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontSize: getFont(16),
+                          color: Colors.white70,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-                Center(
-                  child: Text(
-                   AppText.foundinapps,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(18),
-                      color: const Color(0xFF55D0FF),
-                      fontWeight: FontWeight.w600,
+                    Center(
+                      child: Text(
+                        state.status == NotificationStatus.cleaned
+                            ? 'Cleaned Successfully!'
+                            : AppText.foundinapps,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontSize: getFont(18),
+                          color: state.status == NotificationStatus.cleaned
+                              ? Colors.greenAccent
+                              : const Color(0xFF55D0FF),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
-                  ),
+
+                    SizedBox(height: getHeight(24)),
+
+                    /// ── PERMISSION
+                    if (state.status == NotificationStatus.permissionDenied)
+                      _PermissionCard(
+                        onTap: () => context
+                            .read<NotificationBloc>()
+                            .add(RequestPermissionEvent()),
+                      ),
+
+                    /// ── LOADING (UPDATED)
+                    if (state.status == NotificationStatus.loading)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              CircularProgressIndicator(
+                                color: Color(0xFF55D0FF),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Scanning notifications...',
+                                style: TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                    /// ── LIST
+                    if (state.items.isNotEmpty)
+                      SocialStatsWidget(
+                        items: state.items,
+                        onToggle: (index) => context
+                            .read<NotificationBloc>()
+                            .add(ToggleItemEvent(index)),
+                      ),
+
+                    SizedBox(height: getHeight(24)),
+
+                    /// ── CLEAN BUTTON
+                    CleanButtonWidget(
+                      text: state.status == NotificationStatus.cleaning
+                          ? 'Cleaning...'
+                          : state.status == NotificationStatus.cleaned
+                              ? 'Done ✓'
+                              : AppText.cleanNow,
+                      onPressed: state.status == NotificationStatus.loaded
+                          ? () => context
+                              .read<NotificationBloc>()
+                              .add(CleanNotificationsEvent())
+                          : null,
+                    ),
+
+                    SizedBox(height: getHeight(20)),
+                  ],
                 ),
-
-                SizedBox(height: getHeight(94)),
-
-                // ───── LIST ─────
-                SocialStatsWidget(items: _items),
-
-                SizedBox(height: getHeight(24)),
-
-                // ───── BUTTON ─────
-                CleanButtonWidget(
-                  text: AppText.cleanNow,
-                  onPressed: () {},
-                ),
-
-                SizedBox(height: getHeight(20)),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -175,14 +216,66 @@ class NotificationCleanerScreen extends StatelessWidget {
   }
 }
 
-// ─── LIST WIDGET ───────────────────────────────
+/// ─────────────────────────────────────────────
+/// PERMISSION CARD
+class _PermissionCard extends StatelessWidget {
+  final VoidCallback onTap;
+  const _PermissionCard({required this.onTap});
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1B2153),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF55D0FF)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.notifications_off,
+              color: Color(0xFF55D0FF), size: 40),
+          const SizedBox(height: 12),
+          const Text(
+            'Notification Access Required',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Allow notification access to see real notification counts.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white60, fontSize: 13),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: onTap,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF55D0FF),
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Grant Permission'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ─────────────────────────────────────────────
+/// LIST WIDGET
 class SocialStatsWidget extends StatelessWidget {
   final List<SocialStatItem> items;
+  final void Function(int index) onToggle;
 
   const SocialStatsWidget({
     super.key,
     required this.items,
+    required this.onToggle,
   });
 
   @override
@@ -190,8 +283,6 @@ class SocialStatsWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
           colors: [
             Color(0xFF232C6D),
             Color(0xFF1B2153),
@@ -199,22 +290,18 @@ class SocialStatsWidget extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4103AC), width: 1),
       ),
       child: Column(
         children: List.generate(items.length, (index) {
           final item = items[index];
-          final isLast = index == items.length - 1;
-
           return Column(
             children: [
-              _SocialStatRow(item: item),
-              if (!isLast)
-                const Divider(
-                  height: 1,
-                  thickness: 1,
-                  color: Color(0xFF373C62),
-                ),
+              GestureDetector(
+                onTap: () => onToggle(index),
+                child: _SocialStatRow(item: item),
+              ),
+              if (index != items.length - 1)
+                const Divider(height: 1, color: Color(0xFF373C62)),
             ],
           );
         }),
@@ -223,11 +310,10 @@ class SocialStatsWidget extends StatelessWidget {
   }
 }
 
-// ─── ROW ───────────────────────────────
-
+/// ─────────────────────────────────────────────
+/// ROW
 class _SocialStatRow extends StatelessWidget {
   final SocialStatItem item;
-
   const _SocialStatRow({required this.item});
 
   @override
@@ -236,54 +322,18 @@ class _SocialStatRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-
-          // SVG ICON
-          SvgPicture.asset(
-            item.svgAssetPath,
-            width: getWidth(20),
-            height: getHeight(20),
-          ),
-
+          SvgPicture.asset(item.svgAssetPath, width: 20, height: 20),
           const SizedBox(width: 14),
-
-          // LABEL
-          Expanded(
-            child: Text(
-              item.label,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontSize: getFont(14),
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-          ),
-
-          // COUNT
-          Text(
-            '${item.count}',
-            style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(12),
-              color: const Color(0xFFD9D9D9),
-            ),
-          ),
-
+          Expanded(child: Text(item.label,
+              style: const TextStyle(color: Colors.white))),
+          Text('${item.count}',
+              style: const TextStyle(color: Colors.white70)),
           const SizedBox(width: 12),
-
-          // CHECK ICON
-          if (item.isChecked)
-            Container(
-              width: getWidth(20),
-              height: getHeight(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1C2A8F),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const Icon(
-                Icons.check,
-                color: Color(0xFF55D0FF),
-                size: 12,
-              ),
-            ),
+          Icon(
+            item.isChecked ? Icons.check : Icons.circle_outlined,
+            color: const Color(0xFF55D0FF),
+            size: 16,
+          )
         ],
       ),
     );

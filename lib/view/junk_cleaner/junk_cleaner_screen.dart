@@ -1,5 +1,7 @@
+import 'package:battery_saver_app/bloc/junk_cleaner/junk_bloc.dart';
+import 'package:battery_saver_app/bloc/junk_cleaner/junk_event.dart';
+import 'package:battery_saver_app/bloc/junk_cleaner/junk_state.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
-import 'package:battery_saver_app/models/junk/junk_item.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
@@ -8,22 +10,22 @@ import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart'
 import 'package:battery_saver_app/widgets/junk_cleaner/junk_list_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/scan_status_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class JunkCleanerScreen extends StatefulWidget {
+class JunkCleanerScreen extends StatelessWidget {
   const JunkCleanerScreen({super.key});
 
   @override
-  State<JunkCleanerScreen> createState() => _JunkCleanerScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => JunkBloc()..add(StartScanEvent()),
+      child: const _JunkCleanerView(),
+    );
+  }
 }
 
-class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
-  final List<JunkItem> junkItems = [
-    JunkItem(label: 'Cache Junk', size: '1.25 GB', isChecked: true),
-    JunkItem(label: 'Residual Junk', size: '456 MB', isChecked: true),
-    JunkItem(label: 'Ad Junk', size: '342 MB', isChecked: true),
-    JunkItem(label: 'APK Junk', size: '201 MB', isChecked: true),
-    JunkItem(label: 'Memory Junk', size: '82 MB', isChecked: true),
-  ];
+class _JunkCleanerView extends StatelessWidget {
+  const _JunkCleanerView();
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,6 @@ class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF050D2D),
       appBar: CustomAppBar(title: AppText.appBarTitle),
-
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -45,71 +46,107 @@ class _JunkCleanerScreenState extends State<JunkCleanerScreen> {
             ],
           ),
         ),
-
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                SizedBox(height: getHeight(24)),
+          child: BlocBuilder<JunkBloc, JunkState>(
+            builder: (context, state) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    SizedBox(height: getHeight(24)),
 
-                Image(
-                  height: getHeight(226),
-                  image: AssetImage(AppImages.junkcleanerglow),
-                ),
+                    Image(
+                      height: getHeight(226),
+                      image: AssetImage(AppImages.junkcleanerglow),
+                    ),
 
-                SizedBox(height: getHeight(51)),
+                    SizedBox(height: getHeight(51)),
 
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: AppText.junkSizeValue,
-                        style: AppTextStyles.displayMedium.copyWith(
-                          fontSize: getFont(30),
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                    // Dynamic total size
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: state.totalJunkDisplay.split(' ')[0],
+                            style: AppTextStyles.displayMedium.copyWith(
+                              fontSize: getFont(30),
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' ${state.totalJunkDisplay.contains(' ')
+                                ? state.totalJunkDisplay.split(' ')[1]
+                                : ''}',
+                            style: AppTextStyles.displayMedium.copyWith(
+                              fontSize: getFont(24),
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFFD9D9D9),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Text(
+                      state.phase == ScanPhase.cleaned
+                          ? 'Cleaned Successfully!'
+                          : AppText.junkFoundLabel,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: getFont(14),
+                        color: state.phase == ScanPhase.cleaned
+                            ? const Color(0xFF55D0FF)
+                            : const Color(0xFFD9D9D9),
+                      ),
+                    ),
+
+                    SizedBox(height: getHeight(51)),
+
+                    ScanStatusWidget(
+                      phase: state.phase,
+                      currentPackage: state.currentPackage,
+                    ),
+
+                    SizedBox(height: getHeight(12)),
+
+                    // Scanning loader
+                    if (state.phase == ScanPhase.scanning)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: LinearProgressIndicator(
+                          backgroundColor: Color(0xFF1B2153),
+                          color: Color(0xFF55D0FF),
                         ),
                       ),
-                      TextSpan(
-                        text: AppText.junkSizeUnit,
-                        style: AppTextStyles.displayMedium.copyWith(
-                          fontSize: getFont(24),
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFD9D9D9),
-                        ),
-                      ),
-                    ],
-                  ),
+
+                    JunkListWidget(
+                      items: state.items,
+                      onToggle: (index) => context
+                          .read<JunkBloc>()
+                          .add(ToggleJunkItemEvent(index)),
+                    ),
+
+                    SizedBox(height: getHeight(24)),
+
+                    CleanButtonWidget(
+                      text: state.phase == ScanPhase.cleaning
+                          ? 'Cleaning...'
+                          : state.phase == ScanPhase.cleaned
+                              ? 'Done ✓'
+                              : AppText.cleanButtonText,
+                      onPressed: state.phase == ScanPhase.done
+                          ? () => context
+                              .read<JunkBloc>()
+                              .add(CleanJunkEvent())
+                          : null,
+                    ),
+
+                    SizedBox(height: getHeight(24)),
+                  ],
                 ),
-
-                Text(
-                  AppText.junkFoundLabel,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(14),
-                    color: const Color(0xFFD9D9D9),
-                  ),
-                ),
-
-                SizedBox(height: getHeight(51)),
-
-                ScanStatusWidget(
-                  scanningText: AppText.scanningStatus,
-                ),
-
-                SizedBox(height: getHeight(12)),
-
-                JunkListWidget(items: junkItems),
-
-                SizedBox(height: getHeight(24)),
-
-                CleanButtonWidget(
-                  text: AppText.cleanButtonText,
-                  onPressed: () {},
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

@@ -1,9 +1,15 @@
+import 'package:battery_saver_app/bloc/junk_cleaner/junk_state.dart';
 import 'package:flutter/material.dart';
 
 class ScanStatusWidget extends StatefulWidget {
-  final String scanningText;
+  final ScanPhase phase;
+  final String currentPackage;
 
-  const ScanStatusWidget({super.key, required this.scanningText});
+  const ScanStatusWidget({
+    super.key,
+    required this.phase,
+    required this.currentPackage,
+  });
 
   @override
   State<ScanStatusWidget> createState() => _ScanStatusWidgetState();
@@ -35,12 +41,23 @@ class _ScanStatusWidgetState extends State<ScanStatusWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.phase == ScanPhase.cleaning ||
+        widget.phase == ScanPhase.cleaned) {
+      return const SizedBox.shrink();
+    }
+
+    final text = widget.phase == ScanPhase.scanning
+        ? 'Scanning: ${widget.currentPackage}...'
+        : 'Scan Complete';
+
     return Align(
       alignment: Alignment.centerLeft,
       child: FadeTransition(
-        opacity: _fadeAnimation,
+        opacity: widget.phase == ScanPhase.scanning
+            ? _fadeAnimation
+            : const AlwaysStoppedAnimation(1.0),
         child: Text(
-          widget.scanningText,
+          text,
           style: const TextStyle(
             color: Color(0xFFD9D9D9),
             fontSize: 13,

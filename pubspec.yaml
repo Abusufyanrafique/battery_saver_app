@@ -47,6 +47,7 @@ dependencies:
   disk_space_plus: ^0.2.0
   path_provider: ^2.1.5
   external_path: ^2.2.0
+  flutter_notification_listener: ^1.4.0
   
    
 

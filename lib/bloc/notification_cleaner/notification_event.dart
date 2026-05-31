@@ -18,3 +18,5 @@ class ToggleItemEvent extends NotificationEvent {
 }
 
 class CleanNotificationsEvent extends NotificationEvent {}
+
+class RequestPermissionEvent extends NotificationEvent {}
