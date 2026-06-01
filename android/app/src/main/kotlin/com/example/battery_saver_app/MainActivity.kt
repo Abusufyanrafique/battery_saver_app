@@ -4,6 +4,8 @@ import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.app.usage.NetworkStats
 import android.app.usage.NetworkStatsManager
+import android.app.usage.UsageEvents
+import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -21,7 +23,7 @@ class MainActivity : FlutterActivity() {
 
     private val CPU_CHANNEL = "com.example.battery_saver_app/cpu_info"
     private val BOOST_CHANNEL = "com.example.battery_saver_app/phone_boost"
-    private val NETWORK_CHANNEL = "com.battery_saver/network_stats" // NEW
+    private val NETWORK_CHANNEL = "com.battery_saver/network_stats"
 
     private var lastCpuNanos = 0L
     private var lastWallNanos = 0L
@@ -91,7 +93,7 @@ class MainActivity : FlutterActivity() {
         }
 
         // ─────────────────────────────────────────────
-        // NETWORK STATS CHANNEL (NEW)
+        // NETWORK STATS CHANNEL
         // ─────────────────────────────────────────────
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -236,60 +238,67 @@ class MainActivity : FlutterActivity() {
             val nsm = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
             val pm = packageManager
 
+            val uidToPackage = mutableMapOf<Int, String>()
             for (pkgName in packageNames) {
-                var rxBytes = 0L
-                var txBytes = 0L
-
                 try {
                     val uid = pm.getApplicationInfo(pkgName, 0).uid
-
-                    // Mobile
-                    val mobileStats = nsm.queryDetailsForUid(
-                        ConnectivityManager.TYPE_MOBILE,
-                        null,
-                        startTime,
-                        endTime,
-                        uid
-                    )
-                    val mobileBucket = NetworkStats.Bucket()
-                    while (mobileStats.hasNextBucket()) {
-                        mobileStats.getNextBucket(mobileBucket)
-                        rxBytes += mobileBucket.rxBytes
-                        txBytes += mobileBucket.txBytes
-                    }
-                    mobileStats.close()
-
-                    // WiFi
-                    val wifiStats = nsm.queryDetailsForUid(
-                        ConnectivityManager.TYPE_WIFI,
-                        null,
-                        startTime,
-                        endTime,
-                        uid
-                    )
-                    val wifiBucket = NetworkStats.Bucket()
-                    while (wifiStats.hasNextBucket()) {
-                        wifiStats.getNextBucket(wifiBucket)
-                        rxBytes += wifiBucket.rxBytes
-                        txBytes += wifiBucket.txBytes
-                    }
-                    wifiStats.close()
-
+                    uidToPackage[uid] = pkgName
+                    android.util.Log.d("NET_DEBUG", "📦 $pkgName => UID $uid")
                 } catch (e: Exception) {
-                    // App not installed — 0 rakhte hain
+                    android.util.Log.d("NET_DEBUG", "❌ $pkgName not installed: ${e.message}")
                 }
+            }
 
+            val rxMap = mutableMapOf<String, Long>()
+            val txMap = mutableMapOf<String, Long>()
+            for (pkg in packageNames) {
+                rxMap[pkg] = 0L
+                txMap[pkg] = 0L
+            }
+
+            fun scanNetwork(networkType: Int, subscriberId: String?) {
+                try {
+                    val stats = nsm.querySummary(networkType, subscriberId, startTime, endTime)
+                    val bucket = NetworkStats.Bucket()
+                    while (stats.hasNextBucket()) {
+                        stats.getNextBucket(bucket)
+                        val pkg = uidToPackage[bucket.uid] ?: continue
+                        rxMap[pkg] = (rxMap[pkg] ?: 0L) + bucket.rxBytes
+                        txMap[pkg] = (txMap[pkg] ?: 0L) + bucket.txBytes
+                    }
+                    stats.close()
+                } catch (e: Exception) {
+                    android.util.Log.e("NET_DEBUG", "scanNetwork error ($networkType): ${e.message}")
+                }
+            }
+
+            val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val subscriberId = try {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    @Suppress("DEPRECATION", "MissingPermission")
+                    tm.subscriberId
+                } else null
+            } catch (e: Exception) { null }
+
+            scanNetwork(ConnectivityManager.TYPE_MOBILE, subscriberId)
+            scanNetwork(ConnectivityManager.TYPE_WIFI, null)
+
+            for (pkg in packageNames) {
+                val rx = rxMap[pkg] ?: 0L
+                val tx = txMap[pkg] ?: 0L
+                android.util.Log.d("NET_DEBUG", "✅ $pkg => RX:$rx TX:$tx Total:${rx + tx}")
                 result.add(
                     mapOf(
-                        "packageName" to pkgName,
-                        "rx" to rxBytes,
-                        "tx" to txBytes,
-                        "total" to (rxBytes + txBytes)
+                        "packageName" to pkg,
+                        "rx" to rx,
+                        "tx" to tx,
+                        "total" to (rx + tx)
                     )
                 )
             }
             result
         } catch (e: Exception) {
+            android.util.Log.e("NET_DEBUG", "getAppNetworkData crash: ${e.message}")
             result
         }
     }
@@ -444,25 +453,146 @@ class MainActivity : FlutterActivity() {
 
     // ─────────────────────────────────────────────
     // RUNNING APPS
+    //
+    // Android 8+ par getRunningAppProcesses() sirf apna process deta
+    // hai (always 1) — Google restriction.
+    //
+    // FINAL FIX — 3 layer approach:
+    //   Layer 1: UsageEvents MOVE_TO_FOREGROUND — jo apps abhi bhi
+    //            foreground/active state mein hain (last 8 hours)
+    //   Layer 2: getRunningServices() — background services
+    //   Layer 3: getRunningTasks() — visible tasks
+    //   Fallback: Android < 8 old method
     // ─────────────────────────────────────────────
+    @Suppress("DEPRECATION")
     private fun getRunningApps(): Int {
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+
+        // ── Android 8+ ────────────────────────────────────────────────────
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val runningPackages = mutableSetOf<String>()
+
+            // Layer 1: UsageEvents — sabse accurate
+            // Jin apps ka last event MOVE_TO_FOREGROUND tha woh abhi active hain
+            if (hasUsagePermission()) {
+                try {
+                    val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val now   = System.currentTimeMillis()
+                    val start = now - 8 * 60 * 60 * 1000L  // last 8 hours
+
+                    val events    = usm.queryEvents(start, now)
+                    val event     = UsageEvents.Event()
+                    // Har app ka last event track karo
+                    val lastEvent = mutableMapOf<String, Int>()
+
+                    while (events.hasNextEvent()) {
+                        events.getNextEvent(event)
+                        when (event.eventType) {
+                            UsageEvents.Event.MOVE_TO_FOREGROUND,
+                            UsageEvents.Event.ACTIVITY_RESUMED ->
+                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_FOREGROUND
+                            UsageEvents.Event.MOVE_TO_BACKGROUND,
+                            UsageEvents.Event.ACTIVITY_PAUSED ->
+                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
+                        }
+                    }
+
+                    // Sirf wo apps jo abhi FOREGROUND state mein hain
+                    lastEvent.forEach { (pkg, type) ->
+                        if (type == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                            runningPackages.add(pkg)
+                        }
+                    }
+                    android.util.Log.d("CPU_DEBUG", "UsageEvents foreground: ${runningPackages.size}")
+                } catch (e: Exception) {
+                    android.util.Log.e("CPU_DEBUG", "UsageEvents error: ${e.message}")
+                }
+            }
+
+            // Layer 2: getRunningServices() — background services wali apps
+            try {
+                am.getRunningServices(200).forEach { si ->
+                    runningPackages.add(si.service.packageName)
+                }
+                android.util.Log.d("CPU_DEBUG", "After services: ${runningPackages.size}")
+            } catch (e: Exception) {
+                android.util.Log.e("CPU_DEBUG", "getRunningServices error: ${e.message}")
+            }
+
+            // Layer 3: getRunningTasks() — foreground/visible tasks
+            try {
+                am.getRunningTasks(20).forEach { task ->
+                    task.topActivity?.packageName?.let { runningPackages.add(it) }
+                }
+            } catch (_: Exception) {}
+
+            android.util.Log.d("CPU_DEBUG", "Total running: ${runningPackages.size}")
+            return runningPackages.size
+        }
+
+        // ── Android < 8 — purana reliable method ─────────────────────────
         return try {
-            val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
             am.runningAppProcesses?.size ?: 0
         } catch (_: Exception) { 0 }
     }
 
     // ─────────────────────────────────────────────
-    // COOL DOWN
+    // COOL DOWN — UsageEvents se background apps kill
     // ─────────────────────────────────────────────
+    @Suppress("DEPRECATION")
     private fun killBackgroundApps() {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        am.runningAppProcesses
-            ?.filter { it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED }
-            ?.flatMap { it.pkgList?.toList() ?: emptyList() }
-            ?.forEach { pkg ->
-                if (pkg != packageName) am.killBackgroundProcesses(pkg)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // UsageEvents se background state wali apps nikaalo
+            if (hasUsagePermission()) {
+                try {
+                    val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val now   = System.currentTimeMillis()
+                    val start = now - 8 * 60 * 60 * 1000L
+                    val events    = usm.queryEvents(start, now)
+                    val event     = UsageEvents.Event()
+                    val lastEvent = mutableMapOf<String, Int>()
+
+                    while (events.hasNextEvent()) {
+                        events.getNextEvent(event)
+                        when (event.eventType) {
+                            UsageEvents.Event.MOVE_TO_FOREGROUND,
+                            UsageEvents.Event.ACTIVITY_RESUMED ->
+                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_FOREGROUND
+                            UsageEvents.Event.MOVE_TO_BACKGROUND,
+                            UsageEvents.Event.ACTIVITY_PAUSED ->
+                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
+                        }
+                    }
+
+                    lastEvent.forEach { (pkg, type) ->
+                        if (type == UsageEvents.Event.MOVE_TO_BACKGROUND && pkg != packageName) {
+                            try { am.killBackgroundProcesses(pkg) } catch (_: Exception) {}
+                        }
+                    }
+                } catch (_: Exception) {}
             }
+
+            // Services bhi kill karo
+            try {
+                am.getRunningServices(200).forEach { si ->
+                    val pkg = si.service.packageName
+                    if (pkg != packageName) {
+                        try { am.killBackgroundProcesses(pkg) } catch (_: Exception) {}
+                    }
+                }
+            } catch (_: Exception) {}
+
+        } else {
+            // Android < 8
+            am.runningAppProcesses
+                ?.filter { it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED }
+                ?.flatMap { it.pkgList?.toList() ?: emptyList() }
+                ?.forEach { pkg ->
+                    if (pkg != packageName) am.killBackgroundProcesses(pkg)
+                }
+        }
     }
 
     // ─────────────────────────────────────────────

@@ -104,9 +104,10 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
     try {
       final data = await _fetchRealData();
 
-      final cpu = (data['cpuUsage'] as num?)?.toDouble() ?? 0.0;
+      final cpu  = (data['cpuUsage']    as num?)?.toDouble() ?? 0.0;
       final temp = (data['temperature'] as num?)?.toDouble() ?? 0.0;
-      final apps = (data['runningApps'] as num?)?.toInt() ?? 0;
+      // ✅ Fix: cast safely — native may return Int or Long
+      final apps = (data['runningApps'] as num?)?.toInt()   ?? 0;
 
       emit(state.copyWith(
         status: status,
@@ -114,7 +115,7 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
         temperature: temp,
         runningApps: apps,
         statusMessage: statusMessage ??
-            (temp > 60 ? 'CPU is running hot!' : 'Cooling down...'),
+            (temp > 60 ? 'CPU is running hot!' : 'Monitoring...'),
       ));
     } catch (e) {
       emit(state.copyWith(

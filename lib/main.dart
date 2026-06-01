@@ -1,3 +1,5 @@
+import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
+import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/router.dart';
 import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
@@ -27,17 +29,20 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => BatterySaverBloc(),
+        BlocProvider<BatterySaverBloc>(
+          create: (_) => BatterySaverBloc()
+            ..add(const BatterySaverInitialized()),
         ),
 
+
         //  ADD MORE BLOCS HERE
-        // BlocProvider(
-        //   create: (_) => AuthBloc(),
-        // ),
-        // BlocProvider(
-        //   create: (_) => ThemeBloc(),
-        // ),
+       BlocProvider<BatterySaverHomeBloc>(
+          create: (_) => BatterySaverHomeBloc(),
+        ),
+          BlocProvider<CpuCoolerBloc>(
+      create: (_) => CpuCoolerBloc()
+        ..add(CpuCoolerStartMonitoring()),
+    ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

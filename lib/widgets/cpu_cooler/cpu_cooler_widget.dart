@@ -2,9 +2,8 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
 
-// Model — icon hata, imagePath add
 class CpuInfoItem {
-  final String imagePath; //  IconData hata, imagePath add
+  final String imagePath;
   final String title;
   final String value;
 
@@ -15,7 +14,6 @@ class CpuInfoItem {
   });
 }
 
-// Main Widget
 class CpuCoolerWidget extends StatelessWidget {
   final List<CpuInfoItem> items;
 
@@ -42,7 +40,7 @@ class CpuCoolerWidget extends StatelessWidget {
         border: Border.all(
           color: Color(0xFF4103AC),
           width: 1,
-        )
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -68,7 +66,6 @@ class CpuCoolerWidget extends StatelessWidget {
   }
 }
 
-// Tile
 class CpuCoolerTile extends StatelessWidget {
   final CpuInfoItem item;
 
@@ -80,21 +77,15 @@ class CpuCoolerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16, 
-        vertical: 12
-        ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          //  Icon hata, Image.asset lagaya
           Image.asset(
             item.imagePath,
             width: 24,
             height: 24,
           ),
-
           const SizedBox(width: 16),
-
           Expanded(
             child: Text(
               item.title,
@@ -105,7 +96,6 @@ class CpuCoolerTile extends StatelessWidget {
               ),
             ),
           ),
-
           Text(
             item.value,
             style: AppTextStyles.displayMedium.copyWith(

@@ -30,7 +30,7 @@ class DataUsageRepository {
       final result =
           await _channel.invokeMethod<bool>('hasPermission');
 
-      debugPrint('📡 [DATA_USAGE] Permission result: $result');
+      debugPrint(' [DATA_USAGE] Permission result: $result');
 
       return result ?? false;
     } catch (e) {

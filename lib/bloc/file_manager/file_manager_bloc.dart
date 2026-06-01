@@ -52,6 +52,7 @@ class FileManagerLoadedState extends FileManagerState {
   final List<FileCategoryModel>  categories;
   final List<FileCategoryModel>  filteredCategories;
   final StorageDeviceModel       internalStorage;
+  final StorageDeviceModel?      sdCardStorage;
   final bool                     isRefreshing;
   final String                   searchQuery;
 
@@ -59,6 +60,7 @@ class FileManagerLoadedState extends FileManagerState {
     required this.categories,
     required this.filteredCategories,
     required this.internalStorage,
+    this.sdCardStorage,
     this.isRefreshing = false,
     this.searchQuery  = '',
   });
@@ -67,19 +69,22 @@ class FileManagerLoadedState extends FileManagerState {
     List<FileCategoryModel>? categories,
     List<FileCategoryModel>? filteredCategories,
     StorageDeviceModel?      internalStorage,
+    StorageDeviceModel?      sdCardStorage,
     bool?                    isRefreshing,
     String?                  searchQuery,
   }) => FileManagerLoadedState(
     categories:         categories         ?? this.categories,
     filteredCategories: filteredCategories ?? this.filteredCategories,
     internalStorage:    internalStorage    ?? this.internalStorage,
+    sdCardStorage:      sdCardStorage      ?? this.sdCardStorage,
     isRefreshing:       isRefreshing       ?? this.isRefreshing,
     searchQuery:        searchQuery        ?? this.searchQuery,
   );
 
   @override
   List<Object?> get props => [
-    categories, filteredCategories, internalStorage, isRefreshing, searchQuery,
+    categories, filteredCategories, internalStorage,
+    sdCardStorage, isRefreshing, searchQuery,
   ];
 }
 
@@ -134,19 +139,21 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         return;
       }
 
-      // Parallel fetch — faster
       final results = await Future.wait([
         _repo.fetchFileCategories(),
         _repo.fetchInternalStorage(),
+        _repo.fetchSdCardStorage(),
       ]);
 
       final categories = results[0] as List<FileCategoryModel>;
       final storage    = results[1] as StorageDeviceModel;
+      final sdCard     = results[2] as StorageDeviceModel?;
 
       emit(FileManagerLoadedState(
         categories:         categories,
         filteredCategories: categories,
         internalStorage:    storage,
+        sdCardStorage:      sdCard,
       ));
     } catch (e) {
       emit(FileManagerErrorState('Error: ${e.toString()}'));

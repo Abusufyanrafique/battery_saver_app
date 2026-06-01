@@ -5,7 +5,6 @@ import 'package:battery_saver_app/data/repositories/file_manager_repository.dart
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // ENTRY POINT
@@ -61,8 +60,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
     super.dispose();
   }
 
-  // ── BUILD ──────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -85,10 +82,10 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                 }
               },
               builder: (ctx, state) {
-                if (state is FileManagerLoadingState)        return _loadingView();
+                if (state is FileManagerLoadingState)          return _loadingView();
                 if (state is FileManagerPermissionDeniedState) return _permissionView(ctx, state.message);
-                if (state is FileManagerErrorState)          return _errorView(ctx, state.message);
-                if (state is FileManagerLoadedState)         return _loadedView(ctx, state);
+                if (state is FileManagerErrorState)            return _errorView(ctx, state.message);
+                if (state is FileManagerLoadedState)           return _loadedView(ctx, state);
                 return const SizedBox.shrink();
               },
             ),
@@ -279,7 +276,16 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                   const SizedBox(height: 24),
                   _categoryGrid(state),
                   const SizedBox(height: 24),
+
+                  // Internal Storage
                   _StorageCard(storage: state.internalStorage),
+
+                  // SD Card — sirf tab show hoga jab SD card ho
+                  if (state.sdCardStorage != null) ...[
+                    const SizedBox(height: 12),
+                    _StorageCard(storage: state.sdCardStorage!),
+                  ],
+
                   const SizedBox(height: 32),
                 ],
               ),
@@ -367,7 +373,7 @@ class _CategoryCard extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// STORAGE CARD  (sirf Internal Storage)
+// STORAGE CARD
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _StorageCard extends StatelessWidget {
@@ -376,7 +382,7 @@ class _StorageCard extends StatelessWidget {
 
   Color get _barColor {
     if (storage.percentage > 0.9) return Colors.redAccent;
-    if (storage.percentage > 0.7) return const Color(0xFFFFB300);
+    if (storage.percentage > 0.7) return Colors.orangeAccent;
     return const Color(0xFF1F8EFF);
   }
 
@@ -395,17 +401,14 @@ class _StorageCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icon
-          SvgPicture.asset(
-            storage.iconPath,
-            width: getWidth(32),
-            height: getHeight(32),
-            placeholderBuilder: (_) =>
-                const Icon(Icons.storage, color: Colors.white70, size: 32),
+          // Material Icon — no SVG asset needed
+          Icon(
+            storage.isSdCard ? Icons.sd_card : Icons.storage,
+            color: Colors.white70,
+            size: 32,
           ),
           SizedBox(width: getWidth(12)),
 
-          // Info + progress
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

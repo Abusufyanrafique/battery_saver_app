@@ -15,8 +15,7 @@ class CpuCoolerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CpuCoolerBloc()
-        ..add(const CpuCoolerStartMonitoring()),
+      create: (_) => CpuCoolerBloc()..add(const CpuCoolerStartMonitoring()),
       child: const _CpuCoolerView(),
     );
   }
@@ -32,7 +31,6 @@ class _CpuCoolerView extends StatefulWidget {
 class _CpuCoolerViewState extends State<_CpuCoolerView> {
   @override
   void dispose() {
-    // Tell the BLoC to cancel its timer when the screen is popped
     context.read<CpuCoolerBloc>().add(const CpuCoolerStopMonitoring());
     super.dispose();
   }
@@ -69,7 +67,7 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                   children: [
                     SizedBox(height: getHeight(30)),
 
-                    // ───── CIRCULAR GAUGE / IMAGE ─────
+                    // ───── CIRCULAR GAUGE ─────
                     _CpuGauge(temperature: state.temperature),
 
                     SizedBox(height: getHeight(40)),
@@ -126,6 +124,7 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                         CpuInfoItem(
                           imagePath: AppImages.cpumangerimage,
                           title: "Running Apps",
+                          // ✅ Show real count
                           value: state.runningApps == 0
                               ? '--'
                               : '${state.runningApps}',
@@ -148,7 +147,7 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                           ? 'Cooling...'
                           : AppText.coolDown,
                       onPressed: state.isCoolingDown
-                          ? null // disabled while running
+                          ? null
                           : () => context
                               .read<CpuCoolerBloc>()
                               .add(const CpuCoolerCoolDownRequested()),
@@ -165,7 +164,7 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Animated CPU gauge — replaces the static image with a live temperature ring
+// Animated CPU gauge
 // ─────────────────────────────────────────────────────────────────────────────
 class _CpuGauge extends StatelessWidget {
   final double temperature;
@@ -187,20 +186,18 @@ class _CpuGauge extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Glow ring using CustomPaint
           CustomPaint(
             size: Size(getHeight(180), getHeight(180)),
             painter: _GaugePainter(
-              value: temperature == 0 ? 0.38 : (temperature / 100).clamp(0.0, 1.0),
+              value: temperature == 0
+                  ? 0.38
+                  : (temperature / 100).clamp(0.0, 1.0),
               color: _tempColor,
             ),
           ),
-
-          // Inner content
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // CPU chip icon
               Image.asset(
                 AppImages.cpucoolerimage,
                 width: getHeight(48),
@@ -238,7 +235,7 @@ class _CpuGauge extends StatelessWidget {
 }
 
 class _GaugePainter extends CustomPainter {
-  final double value; // 0.0 – 1.0
+  final double value;
   final Color color;
 
   _GaugePainter({required this.value, required this.color});
@@ -262,8 +259,8 @@ class _GaugePainter extends CustomPainter {
     final rect = Rect.fromCircle(center: center, radius: radius);
     canvas.drawArc(
       rect,
-      -3.14 / 2,           // start at top
-      2 * 3.14159 * value, // sweep
+      -3.14 / 2,
+      2 * 3.14159 * value,
       false,
       Paint()
         ..color = color

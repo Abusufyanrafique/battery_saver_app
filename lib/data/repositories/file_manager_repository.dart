@@ -23,13 +23,13 @@ class StorageDeviceModel {
   final String name;
   final double usedGB;
   final double totalGB;
-  final String iconPath;
+  final bool   isSdCard;
 
   const StorageDeviceModel({
     required this.name,
     required this.usedGB,
     required this.totalGB,
-    required this.iconPath,
+    this.isSdCard = false,
   });
 
   String get usedLabel  => _fmt(usedGB);
@@ -72,18 +72,11 @@ class FileManagerRepository {
     'APKs':      'assets/images/tools/filemanagerapk.png',
   };
 
-  static const String _storageIcon =
-      'assets/icons/tools_screen/internalstorage.svg';
-
-  // ─── PERMISSION ─────────────────────────────────────────────────────────
+  // ─── PERMISSION ───────────────────────────────────────────────────────────
 
   Future<bool> requestStoragePermission() async {
-    print(" Requesting storage permission...");
-
-    if (!Platform.isAndroid) {
-      print("Not Android → skipping permission");
-      return true;
-    }
+    print("Requesting storage permission...");
+    if (!Platform.isAndroid) return true;
 
     if (await Permission.manageExternalStorage.isGranted) {
       print("✅ Manage external storage already granted");
@@ -91,78 +84,165 @@ class FileManagerRepository {
     }
 
     final storage = await Permission.storage.request();
-    print("📦 Storage permission result: ${storage.isGranted}");
-
     if (storage.isGranted) return true;
 
     final manage = await Permission.manageExternalStorage.request();
-    print("🛠 Manage external storage result: ${manage.isGranted}");
-
     return manage.isGranted;
   }
 
-  // ─── INTERNAL STORAGE ───────────────────────────────────────────────────
+  // ─── INTERNAL STORAGE ─────────────────────────────────────────────────────
 
   Future<StorageDeviceModel> fetchInternalStorage() async {
-    print("📊 Fetching internal storage info...");
-
+    print("📊 Fetching internal storage...");
     try {
       final diskSpace = DiskSpacePlus();
       final totalMB = await diskSpace.getTotalDiskSpace ?? 0.0;
       final freeMB  = await diskSpace.getFreeDiskSpace  ?? 0.0;
       final usedMB  = totalMB - freeMB;
-
-      print("💾 Total MB: $totalMB");
-      print("💾 Free MB: $freeMB");
-      print("💾 Used MB: $usedMB");
-
+      print("💾 Total: $totalMB MB, Free: $freeMB MB, Used: $usedMB MB");
       return StorageDeviceModel(
-        name:     'Internal Storage',
-        usedGB:   usedMB  / 1024,
-        totalGB:  totalMB / 1024,
-        iconPath: _storageIcon,
+        name:    'Internal Storage',
+        usedGB:  usedMB  / 1024,
+        totalGB: totalMB / 1024,
+        isSdCard: false,
       );
     } catch (e) {
-      print("❌ Storage fetch error: $e");
-
+      print("❌ Internal storage error: $e");
       return const StorageDeviceModel(
         name: 'Internal Storage',
         usedGB: 0,
         totalGB: 0,
-        iconPath: _storageIcon,
+        isSdCard: false,
       );
     }
   }
 
-  // ─── FILE CATEGORIES ────────────────────────────────────────────────────
+  // ─── SD CARD STORAGE ──────────────────────────────────────────────────────
+
+  Future<StorageDeviceModel?> fetchSdCardStorage() async {
+    print("📊 Fetching SD card storage...");
+    if (!Platform.isAndroid) return null;
+
+    try {
+      // getExternalStorageDirectories — most reliable method
+      final dirs = await getExternalStorageDirectories();
+      print("📂 External dirs: ${dirs?.map((d) => d.path).toList()}");
+
+      if (dirs != null && dirs.length > 1) {
+        final sdDir = dirs[1];
+        print("✅ SD card dir: ${sdDir.path}");
+
+        // Root path: /storage/XXXX-XXXX
+        final segments = sdDir.path.split('/');
+        final sdRoot = segments.length >= 3
+            ? '/${segments[1]}/${segments[2]}'
+            : sdDir.path;
+        print("📂 SD root: $sdRoot");
+
+        final result = await Process.run('df', ['-k', sdRoot]);
+        print("df exit: ${result.exitCode}, stdout: ${result.stdout}");
+
+        if (result.exitCode == 0) {
+          final lines = (result.stdout as String).trim().split('\n');
+          if (lines.length >= 2) {
+            final parts = lines[1].trim().split(RegExp(r'\s+'));
+            print("df parts: $parts");
+            if (parts.length >= 3) {
+              final totalKB = double.tryParse(parts[1]) ?? 0;
+              final usedKB  = double.tryParse(parts[2]) ?? 0;
+              print("💾 SD total KB: $totalKB, used KB: $usedKB");
+
+              if (totalKB > 0) {
+                return StorageDeviceModel(
+                  name:     'SD Card',
+                  usedGB:   usedKB  / (1024 * 1024),
+                  totalGB:  totalKB / (1024 * 1024),
+                  isSdCard: true,
+                );
+              }
+            }
+          }
+        }
+
+        // df kaam na kare to StatFs alternative
+        print("⚠️ df failed, trying stat...");
+        try {
+          final stat = await FileStat.stat(sdRoot);
+          print("stat: $stat");
+        } catch (_) {}
+
+        // SD card exist karta hai lekin size nahi mila — phir bhi show karein
+        return const StorageDeviceModel(
+          name:     'SD Card',
+          usedGB:   0,
+          totalGB:  0,
+          isSdCard: true,
+        );
+      }
+
+      // Fallback: common paths check karein
+      final possiblePaths = [
+        '/storage/sdcard1',
+        '/storage/extSdCard',
+        '/storage/external_SD',
+        '/storage/ext_sd',
+        '/mnt/extSdCard',
+        '/mnt/sdcard1',
+      ];
+
+      for (final path in possiblePaths) {
+        if (await Directory(path).exists()) {
+          print("✅ SD card found at fallback path: $path");
+          final result = await Process.run('df', ['-k', path]);
+          if (result.exitCode == 0) {
+            final lines = (result.stdout as String).trim().split('\n');
+            if (lines.length >= 2) {
+              final parts = lines[1].trim().split(RegExp(r'\s+'));
+              if (parts.length >= 3) {
+                final totalKB = double.tryParse(parts[1]) ?? 0;
+                final usedKB  = double.tryParse(parts[2]) ?? 0;
+                if (totalKB > 0) {
+                  return StorageDeviceModel(
+                    name:     'SD Card',
+                    usedGB:   usedKB  / (1024 * 1024),
+                    totalGB:  totalKB / (1024 * 1024),
+                    isSdCard: true,
+                  );
+                }
+              }
+            }
+          }
+          return const StorageDeviceModel(
+            name: 'SD Card', usedGB: 0, totalGB: 0, isSdCard: true,
+          );
+        }
+      }
+
+      print("ℹ️ No SD card found");
+      return null;
+    } catch (e) {
+      print("❌ SD card error: $e");
+      return null;
+    }
+  }
+
+  // ─── FILE CATEGORIES ──────────────────────────────────────────────────────
 
   Future<List<FileCategoryModel>> fetchFileCategories() async {
     print("📂 Starting file category scan...");
-
     final allFiles = await _safeScan(Directory(_root));
     print("📁 Total scanned files: ${allFiles.length}");
 
     final dlFiles = <File>[];
-
     for (final name in ['Download', 'Downloads']) {
       final dir = Directory('$_root/$name');
-      if (await dir.exists()) {
-        print("📥 Scanning downloads folder: $name");
-        dlFiles.addAll(await _safeScan(dir));
-      }
+      if (await dir.exists()) dlFiles.addAll(await _safeScan(dir));
     }
 
-    print("📥 Total download files: ${dlFiles.length}");
-
     final categories = <FileCategoryModel>[];
-
     for (final cat in ['Images','Videos','Audio','Documents','Downloads','APKs']) {
-      print("🔍 Processing category: $cat");
-
       if (cat == 'Downloads') {
         final bytes = await _totalBytes(dlFiles);
-        print("📦 Downloads bytes: $bytes");
-
         categories.add(FileCategoryModel(
           name: 'Downloads',
           size: _fmtBytes(bytes),
@@ -171,18 +251,12 @@ class FileManagerRepository {
         ));
         continue;
       }
-
       final exts = _exts[cat]!;
       final matched = allFiles.where((f) {
         if (!f.path.contains('.')) return false;
         return exts.contains(f.path.split('.').last.toLowerCase());
       }).toList();
-
-      print("📌 $cat matched files: ${matched.length}");
-
       final bytes = await _totalBytes(matched);
-      print("📦 $cat bytes: $bytes");
-
       categories.add(FileCategoryModel(
         name: cat,
         size: _fmtBytes(bytes),
@@ -190,62 +264,40 @@ class FileManagerRepository {
         fileCount: matched.length,
       ));
     }
-
-    print("✅ File categories ready: ${categories.length}");
     return categories;
   }
 
-  // ─── SAFE SCAN ──────────────────────────────────────────────────────────
+  // ─── SAFE SCAN ────────────────────────────────────────────────────────────
 
   Future<List<File>> _safeScan(Directory dir) async {
-    print("🔎 Scanning: ${dir.path}");
-
     final files = <File>[];
-
-    if (_isBlocked(dir.path)) {
-      print("⛔ Blocked folder skipped: ${dir.path}");
-      return files;
-    }
-
+    if (_isBlocked(dir.path)) return files;
     try {
       await for (final entity in dir.list(followLinks: false)) {
         if (entity is File) {
           files.add(entity);
-        } else if (entity is Directory) {
-          if (!_isBlocked(entity.path)) {
-            files.addAll(await _safeScan(entity));
-          } else {
-            print("⛔ Skipping blocked subfolder: ${entity.path}");
-          }
+        } else if (entity is Directory && !_isBlocked(entity.path)) {
+          files.addAll(await _safeScan(entity));
         }
       }
     } catch (e) {
-      print("⚠️ Permission denied or error in: ${dir.path} → $e");
+      print("⚠️ Scan error: ${dir.path} → $e");
     }
-
     return files;
   }
 
   bool _isBlocked(String path) {
-    for (final blocked in _blockedFolders) {
-      if (path == blocked || path.startsWith('$blocked/')) return true;
+    for (final b in _blockedFolders) {
+      if (path == b || path.startsWith('$b/')) return true;
     }
     return false;
   }
 
-  // ─── HELPERS ────────────────────────────────────────────────────────────
-
   Future<int> _totalBytes(List<File> files) async {
     int total = 0;
-
     for (final f in files) {
-      try {
-        total += await f.length();
-      } catch (e) {
-        print("⚠️ File read error: ${f.path} → $e");
-      }
+      try { total += await f.length(); } catch (_) {}
     }
-
     return total;
   }
 

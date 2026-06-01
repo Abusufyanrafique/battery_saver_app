@@ -4,9 +4,9 @@ enum CpuCoolerStatus { initial, monitoring, coolingDown, cooled, error }
 
 class CpuCoolerState extends Equatable {
   final CpuCoolerStatus status;
-  final double cpuUsage;       // 0–100 percent
+  final double cpuUsage;     // 0–100 percent
   final int runningApps;
-  final double temperature;    // Celsius
+  final double temperature;  // Celsius
   final String statusMessage;
   final String? errorMessage;
 

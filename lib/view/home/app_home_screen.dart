@@ -1,9 +1,12 @@
+import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
+import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_drawer/phone_optimizer_drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 
@@ -150,97 +153,126 @@ class _BatteryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 10, 16, 24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFFFF0EBA),
-            Color(0xFF5C0EE3),
-          ],
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                AppText.batteryLevel,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontSize: getFont(16),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      '72%',
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontSize: getFont(32),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: 6),
-                    Icon(Icons.bolt, color: Colors.white, size: 28),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Container(
-                      width: getWidth(12),
-                      height: getHeight(12),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF00FF09),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      AppText.charging,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontSize: getFont(16),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Icon(Icons.favorite_border, color: Colors.white70, size: 16),
-                    SizedBox(width: 6),
-                    Text(
-                      AppText.goodHealth,
-                      style: AppTextStyles.bodyLarge.copyWith(
-                        fontSize: getFont(16),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+    return BlocBuilder<BatterySaverBloc, BatterySaverState>(
+      builder: (context, state) {
+        final int battery = state.batteryLevel;
+        final String healthStatus =
+            state.healthStatus?.toString() ?? "Unknown";
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(19, 10, 16, 24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFF0EBA),
+                Color(0xFF5C0EE3),
               ],
             ),
           ),
-          SizedBox(
-            width: 110,
-            height: 120,
-            child: Image.asset(
-              AppImages.bigbattery,
-              fit: BoxFit.contain,
-            ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppText.batteryLevel,
+                      style: AppTextStyles.bodyLarge.copyWith(
+                        fontSize: getFont(16),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // 🔋 REAL BATTERY
+                    Row(
+                      children: [
+                        Text(
+                          battery == 0 ? "--" : "$battery%",
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontSize: getFont(32),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.bolt,
+                          color: state.isCharging
+                              ? Colors.white
+                              : Colors.white54,
+                          size: 28,
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // ⚡ CHARGING
+                    Row(
+                      children: [
+                        Container(
+                          width: getWidth(12),
+                          height: getHeight(12),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: state.isCharging
+                                ? const Color(0xFF00FF09)
+                                : Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          state.isCharging ? "Charging" : "Not Charging",
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontSize: getFont(16),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // 💚 HEALTH
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.favorite_border,
+                          color: Colors.white70,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          healthStatus,
+                          style: AppTextStyles.bodyLarge.copyWith(
+                            fontSize: getFont(16),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              SizedBox(
+                width: 110,
+                height: 120,
+                child: Image.asset(
+                  AppImages.bigbattery,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -253,42 +285,56 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF181C3B),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF414669), width: 1),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _StatItem(
-            iconPath: AppImages.remaining,
-            iconColor: Color(0xFFFF6B9D),
-            value: '12 h 45 m',
-            label: 'Remaining',
+    return BlocBuilder<CpuCoolerBloc, CpuCoolerState>(
+      builder: (context, state) {
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF181C3B),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF414669), width: 1),
           ),
-          _StatDivider(),
-          _StatItem(
-            iconPath: "assets/images/home/temp.png",
-            iconColor: Color(0xFFFF9800),
-            value: '32°C',
-            label: 'Temperature',
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // 🔋 Remaining (optional fallback)
+              _StatItem(
+                iconPath: AppImages.remaining,
+                iconColor: const Color(0xFFFF6B9D),
+                value: state.cpuUsage == 0
+                    ? 'Calculating...'
+                    : '${(100 - state.cpuUsage).toStringAsFixed(0)}%',
+                label: 'Remaining',
+              ),
+
+              const _StatDivider(),
+
+              // 🌡 REAL CPU TEMPERATURE
+              _StatItem(
+                iconPath: "assets/images/home/temp.png",
+                iconColor: const Color(0xFFFF9800),
+                value: state.temperature == 0
+                    ? 'N/A'
+                    : '${state.temperature.toStringAsFixed(1)}°C',
+                label: 'Temperature',
+              ),
+
+              const _StatDivider(),
+
+              // 💚 CPU STATUS (optional mapping)
+              _StatItem(
+                iconPath: AppImages.goodhe,
+                iconColor: const Color(0xFF4A8EFF),
+                value: state.statusMessage,
+                label: 'Health',
+              ),
+            ],
           ),
-          _StatDivider(),
-          _StatItem(
-            iconPath: AppImages.goodhe,
-            iconColor: Color(0xFF4A8EFF),
-            value: 'Good',
-            label: 'Health',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
-
 class _StatItem extends StatelessWidget {
   final String iconPath;
   final Color iconColor;
