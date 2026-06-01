@@ -1,10 +1,12 @@
 // ─────────────────────────────────────────────
 //  MAIN DRAWER WIDGET
 // ─────────────────────────────────────────────
+import 'package:battery_saver_app/configs/routes/app_routes.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 
 class PhoneOptimizerDrawer extends StatelessWidget {
@@ -17,30 +19,188 @@ class PhoneOptimizerDrawer extends StatelessWidget {
     required this.onItemSelected,
   });
 
-  static final List<_DrawerItem> _mainItems = [
-    _DrawerItem('Home', "assets/images/home/menuhome.png", Color(0xFF9A3CFF).withOpacity(0.20)),
-    _DrawerItem('Junk Cleaner', AppImages.menujunk,Color(0xFF2FE55D).withOpacity(0.20)),
-    _DrawerItem('Phone Boost', AppImages.menuphoneboost, Color(0xFF55D0FF).withOpacity(0.20)),
-    _DrawerItem('Battery Saver', AppImages.menubatterysaver, Color(0xFF00FF09).withOpacity(0.20)),
-    _DrawerItem('CPU Cooler', AppImages.menuCPUCooler, Color(0xFF1F8EFF).withOpacity(0.20)),
-    _DrawerItem('Security Scan', AppImages.menusecurityscan, Color(0xFF69FF89).withOpacity(0.20)),
-    _DrawerItem('Notification Cleaner', AppImages.menunotificationcleaner, Color(0xFF891BFF).withOpacity(0.20)),
-    _DrawerItem('Apps Manager', AppImages.menuappsmanager, Color(0xFF37C8FF).withOpacity(0.20)),
-    _DrawerItem('File Manager', AppImages.menufilemanager, Color(0xFFF3D917).withOpacity(0.20)),
-    _DrawerItem('Data Usage', AppImages.menudatausage, Color(0xFF27C3FE).withOpacity(0.20)),
-  ];
+//   static final List<_DrawerItem> _mainItems = [
+//     _DrawerItem(
+//       'Home', "assets/images/home/menuhome.png", 
+//       Color(0xFF9A3CFF).withOpacity(0.20),
+//       onTap: () {
+//   // context.push(AppRoutes.home);
+// }
+      
+//       ),
+//     _DrawerItem(
+//       'Junk Cleaner', AppImages.menujunk,
+//       Color(0xFF2FE55D).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Phone Boost', AppImages.menuphoneboost, 
+//       Color(0xFF55D0FF).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Battery Saver', AppImages.menubatterysaver, 
+//       Color(0xFF00FF09).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'CPU Cooler', AppImages.menuCPUCooler, 
+//       Color(0xFF1F8EFF).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Security Scan', AppImages.menusecurityscan, 
+//       Color(0xFF69FF89).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Notification Cleaner', AppImages.menunotificationcleaner, 
+//       Color(0xFF891BFF).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Apps Manager', AppImages.menuappsmanager, 
+//       Color(0xFF37C8FF).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'File Manager', AppImages.menufilemanager, 
+//       Color(0xFFF3D917).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Data Usage', AppImages.menudatausage, 
+//       Color(0xFF27C3FE).withOpacity(0.20)
+//       ),
+//   ];
 
-  static final List<_DrawerItem> _bottomItems = [
-    _DrawerItem('Settings', AppImages.menusettings, Color(0xFF989CDF).withOpacity(0.20)),
-    // ignore: deprecated_member_use
-    _DrawerItem('Feedback',AppImages.menufeedback, Color(0xFF7075C9).withOpacity(0.20)),
-    _DrawerItem('Rate Us', AppImages.menurateus, Color(0xFFFFDD55).withOpacity(0.20)),
-    _DrawerItem('Share App', AppImages.menushareapp, Color(0xFF989CDF).withOpacity(0.20)),
-    _DrawerItem('Privacy Policy', AppImages.menuprivacyPolicy, Color(0xFF878DF1).withOpacity(0.20)),
-  ];
+//   static final List<_DrawerItem> _bottomItems = [
+//     _DrawerItem(
+//       'Settings', AppImages.menusettings, 
+//       Color(0xFF989CDF).withOpacity(0.20)
+//       ),
+//     // ignore: deprecated_member_use
+//     _DrawerItem(
+//       'Feedback',AppImages.menufeedback, 
+//       Color(0xFF7075C9).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Rate Us', AppImages.menurateus, 
+//       Color(0xFFFFDD55).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Share App', AppImages.menushareapp, 
+//       Color(0xFF989CDF).withOpacity(0.20)
+//       ),
+//     _DrawerItem(
+//       'Privacy Policy', AppImages.menuprivacyPolicy, 
+//       Color(0xFF878DF1).withOpacity(0.20)
+//       ),
+//   ];
 
   @override
   Widget build(BuildContext context) {
+     final List<_DrawerItem> _mainItems = [
+    _DrawerItem(
+      'Home', "assets/images/home/menuhome.png", 
+      Color(0xFF9A3CFF).withOpacity(0.20),
+      onTap: () {
+  context.push(AppRoutes.home);
+}
+      
+      ),
+    _DrawerItem(
+      'Junk Cleaner', AppImages.menujunk,
+      Color(0xFF2FE55D).withOpacity(0.20),
+        onTap: () {
+          print("push to junk clesner ");
+  context.push(AppRoutes.junkCleanerScreen);
+}
+      ),
+    _DrawerItem(
+      'Phone Boost', AppImages.menuphoneboost, 
+      Color(0xFF55D0FF).withOpacity(0.20),
+       onTap: () {
+          print("push to phone boost ");
+  context.push(AppRoutes.phoneBoostScreen);
+}
+      ),
+    _DrawerItem(
+      'Battery Saver', AppImages.menubatterysaver, 
+      Color(0xFF00FF09).withOpacity(0.20),
+        onTap: () {
+          print("push to battery saver ");
+  context.push(AppRoutes.batterySaverScreen);
+}
+      ),
+    _DrawerItem(
+      'CPU Cooler', AppImages.menuCPUCooler, 
+      Color(0xFF1F8EFF).withOpacity(0.20),
+      onTap: () {
+          print("push to cpu cooler ");
+  context.push(AppRoutes.cpuCoolerScreen);
+}
+      ),
+    _DrawerItem(
+      'Security Scan', AppImages.menusecurityscan, 
+      Color(0xFF69FF89).withOpacity(0.20),
+       onTap: () {
+          print("push to phone boost ");
+  context.push(AppRoutes.securityScanScreen);
+}
+      ),
+    _DrawerItem(
+      'Notification Cleaner', AppImages.menunotificationcleaner, 
+      Color(0xFF891BFF).withOpacity(0.20),
+       onTap: () {
+          print("push to phone boost ");
+  context.push(AppRoutes.notificationCleanerScreen);
+}
+      ),
+    _DrawerItem(
+      'Apps Manager', AppImages.menuappsmanager, 
+      Color(0xFF37C8FF).withOpacity(0.20),
+       onTap: () {
+          print("push to phone boost ");
+  context.push(AppRoutes.appManagerScreen);
+}
+      ),
+    _DrawerItem(
+      'File Manager', AppImages.menufilemanager, 
+      Color(0xFFF3D917).withOpacity(0.20),
+       onTap: () {
+          print("push to phone boost ");
+  context.push(AppRoutes.fileManagerScreen);
+}
+      ),
+    _DrawerItem(
+      'Data Usage', AppImages.menudatausage, 
+      Color(0xFF27C3FE).withOpacity(0.20),
+       onTap: () {
+          print("push to phone boost ");
+  context.push(AppRoutes.tooldataUsageScreen);
+}
+      ),
+  ];
+
+   final List<_DrawerItem> _bottomItems = [
+    _DrawerItem(
+      'Settings', AppImages.menusettings, 
+      Color(0xFF989CDF).withOpacity(0.20), onTap: () {
+          print("push to phone boost ");
+  context.push("AppRoutes.settings");
+}
+      ),
+    // ignore: deprecated_member_use
+    _DrawerItem(
+      'Feedback',AppImages.menufeedback, 
+      Color(0xFF7075C9).withOpacity(0.20)
+      ),
+    _DrawerItem(
+      'Rate Us', AppImages.menurateus, 
+      Color(0xFFFFDD55).withOpacity(0.20)
+      ),
+    _DrawerItem(
+      'Share App', AppImages.menushareapp, 
+      Color(0xFF989CDF).withOpacity(0.20)
+      ),
+    _DrawerItem(
+      'Privacy Policy', AppImages.menuprivacyPolicy, 
+      Color(0xFF878DF1).withOpacity(0.20)
+      ),
+  ];
     return Drawer(
       width: 220,
 
@@ -193,7 +353,10 @@ class _DrawerTile extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          onTap: onTap,
+          onTap: () {
+            item.onTap?.call(); // ✅ ADD THIS (IMPORTANT)
+            onTap(); // existing selection callback
+          },
           borderRadius: BorderRadius.circular(12),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
@@ -256,6 +419,11 @@ class _DrawerItem {
   final String label;
   final String imagepath;
   final Color iconColor;
+  final VoidCallback? onTap;
 
-  const _DrawerItem(this.label, this.imagepath, this.iconColor);
+  const _DrawerItem(
+    this.label, 
+    this.imagepath, 
+    this.iconColor, 
+    {this.onTap});
 }

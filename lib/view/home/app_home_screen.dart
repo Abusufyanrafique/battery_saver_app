@@ -286,55 +286,67 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CpuCoolerBloc, CpuCoolerState>(
-      builder: (context, state) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF181C3B),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF414669), width: 1),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // 🔋 Remaining (optional fallback)
-              _StatItem(
-                iconPath: AppImages.remaining,
-                iconColor: const Color(0xFFFF6B9D),
-                value: state.cpuUsage == 0
-                    ? 'Calculating...'
-                    : '${(100 - state.cpuUsage).toStringAsFixed(0)}%',
-                label: 'Remaining',
+      builder: (context, cpuState) {
+        return BlocBuilder<BatterySaverBloc, BatterySaverState>(
+          builder: (context, batteryState) {
+            return Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
               ),
-
-              const _StatDivider(),
-
-              // 🌡 REAL CPU TEMPERATURE
-              _StatItem(
-                iconPath: "assets/images/home/temp.png",
-                iconColor: const Color(0xFFFF9800),
-                value: state.temperature == 0
-                    ? 'N/A'
-                    : '${state.temperature.toStringAsFixed(1)}°C',
-                label: 'Temperature',
+              decoration: BoxDecoration(
+                color: const Color(0xFF181C3B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF414669),
+                  width: 1,
+                ),
               ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
 
-              const _StatDivider(),
+                  // 🔋 Remaining TIME (FROM BatterySaverBloc)
+                  _StatItem(
+                    iconPath: AppImages.remaining,
+                    iconColor: const Color(0xFFFF6B9D),
+                    value: batteryState.remainingTime.isEmpty
+                        ? 'Calculating...'
+                        : batteryState.remainingTime,
+                    label: 'Time',
+                  ),
 
-              // 💚 CPU STATUS (optional mapping)
-              _StatItem(
-                iconPath: AppImages.goodhe,
-                iconColor: const Color(0xFF4A8EFF),
-                value: state.statusMessage,
-                label: 'Health',
+                  const _StatDivider(),
+
+                  // 🌡 Temperature (CPU)
+                  _StatItem(
+                    iconPath: "assets/images/home/temp.png",
+                    iconColor: const Color(0xFFFF9800),
+                    value: cpuState.temperature == 0
+                        ? 'N/A'
+                        : '${cpuState.temperature.toStringAsFixed(1)}°C',
+                    label: 'Temperature',
+                  ),
+
+                  const _StatDivider(),
+
+                  // 💚 Health (CPU)
+                  _StatItem(
+                    iconPath: AppImages.goodhe,
+                    iconColor: const Color(0xFF4A8EFF),
+                    value: cpuState.statusMessage,
+                    label: 'Health',
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 }
+
 class _StatItem extends StatelessWidget {
   final String iconPath;
   final Color iconColor;

@@ -6,7 +6,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 
 
-enum TaskStatus { completed, inProgress, pending }
+enum TaskStatus { completed, inProgress, pending, done }
 
 class OptimizationTask {
   final String title;
@@ -163,6 +163,9 @@ class _TaskTile extends StatelessWidget {
             _DotIndicator(),
           ],
         );
+      case TaskStatus.done:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 

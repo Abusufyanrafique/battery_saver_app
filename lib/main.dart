@@ -1,5 +1,6 @@
 import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
 import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
+import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/router.dart';
 import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
@@ -43,6 +44,9 @@ class MyApp extends StatelessWidget {
       create: (_) => CpuCoolerBloc()
         ..add(CpuCoolerStartMonitoring()),
     ),
+     BlocProvider<TemperatureBloc>(
+          create: (_) => TemperatureBloc(),
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

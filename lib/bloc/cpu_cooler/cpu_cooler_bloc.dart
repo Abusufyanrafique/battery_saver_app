@@ -106,7 +106,7 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
 
       final cpu  = (data['cpuUsage']    as num?)?.toDouble() ?? 0.0;
       final temp = (data['temperature'] as num?)?.toDouble() ?? 0.0;
-      // ✅ Fix: cast safely — native may return Int or Long
+      //  cast safely — native may return Int or Long
       final apps = (data['runningApps'] as num?)?.toInt()   ?? 0;
 
       emit(state.copyWith(
