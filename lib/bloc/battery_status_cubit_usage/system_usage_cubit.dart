@@ -9,14 +9,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 // ─────────────────────────────────────────────────────────────
 
 class SystemUsageData extends Equatable {
-  final double cpuUsage;       // e.g. 32.5
-  final double temperature;    // e.g. 36.0
-  final int totalRamMb;        // e.g. 6144
-  final int usedRamMb;         // e.g. 4096
-  final int chargeCycles;      // estimated from battery level history
+  final double cpuUsage;     // e.g. 32.5
+  final double temperature;  // e.g. 36.0
+  final int totalRamMb;      // e.g. 6144
+  final int usedRamMb;       // e.g. 4096
+  final int chargeCycles;    // real value from device, 0 = not available
 
   // Formatted strings for UI
-  String get cpuUsageFormatted   => '${cpuUsage.toStringAsFixed(0)}%';
+  String get cpuUsageFormatted    => '${cpuUsage.toStringAsFixed(0)}%';
   String get temperatureFormatted => '${temperature.toStringAsFixed(1)}°C';
   String get ramUsageFormatted {
     if (totalRamMb <= 0) return '—';
@@ -28,6 +28,10 @@ class SystemUsageData extends Equatable {
     return (usedRamMb / totalRamMb * 100).round();
   }
 
+  // 0 means device does not expose charge cycles
+  String get chargeCyclesFormatted =>
+      chargeCycles > 0 ? '$chargeCycles' : 'N/A';
+
   const SystemUsageData({
     required this.cpuUsage,
     required this.temperature,
@@ -37,7 +41,8 @@ class SystemUsageData extends Equatable {
   });
 
   @override
-  List<Object?> get props => [cpuUsage, temperature, totalRamMb, usedRamMb, chargeCycles];
+  List<Object?> get props =>
+      [cpuUsage, temperature, totalRamMb, usedRamMb, chargeCycles];
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -78,8 +83,8 @@ class SystemUsageError extends SystemUsageState {
 
 class SystemUsageCubit extends Cubit<SystemUsageState> {
   // Native channels — same as MainActivity.kt
-  static const _cpuChannel   = MethodChannel('com.example.battery_saver_app/cpu_info');
-  static const _boostChannel = MethodChannel('com.example.battery_saver_app/phone_boost');
+  static const _cpuChannel     = MethodChannel('com.example.battery_saver_app/cpu_info');
+  static const _boostChannel   = MethodChannel('com.example.battery_saver_app/phone_boost');
   static const _batteryChannel = MethodChannel('com.example.battery_saver_app/battery_status');
 
   SystemUsageCubit() : super(const SystemUsageInitial());
@@ -90,46 +95,52 @@ class SystemUsageCubit extends Cubit<SystemUsageState> {
     try {
       print('🚀 SystemUsageCubit: Fetching real system data...');
 
-      // ── 1. CPU Info (getCpuInfo) ──────────────────────────────
+      // ── 1. CPU Info ────────────────────────────────────────────────
       // Returns: { cpuUsage: double, temperature: double, runningApps: int }
       final dynamic cpuRaw = await _cpuChannel.invokeMethod('getCpuInfo');
-      final Map<String, dynamic> cpuMap = Map<String, dynamic>.from(cpuRaw as Map);
+      final Map<String, dynamic> cpuMap =
+          Map<String, dynamic>.from(cpuRaw as Map);
 
       print('📊 CPU Map: $cpuMap');
 
       final double cpuUsage    = (cpuMap['cpuUsage']    as num?)?.toDouble() ?? 0.0;
       final double temperature = (cpuMap['temperature'] as num?)?.toDouble() ?? 0.0;
 
-      // ── 2. Memory Info (getMemoryInfo) ────────────────────────
+      // ── 2. Memory Info ─────────────────────────────────────────────
       // Returns: { totalRamMb, usedRamMb, runningProcessCount, performanceScore }
       final dynamic memRaw = await _boostChannel.invokeMethod('getMemoryInfo');
-      final Map<String, dynamic> memMap = Map<String, dynamic>.from(memRaw as Map);
+      final Map<String, dynamic> memMap =
+          Map<String, dynamic>.from(memRaw as Map);
 
       print('📊 Memory Map: $memMap');
 
       final int totalRamMb = (memMap['totalRamMb'] as num?)?.toInt() ?? 0;
       final int usedRamMb  = (memMap['usedRamMb']  as num?)?.toInt() ?? 0;
 
-      // ── 3. Charge Cycles — Battery level se estimate ──────────
-      // Android BatteryManager mein charge cycles directly available nahi hain
-      // Isliye battery level se ek rough estimate karte hain
-      final dynamic batteryRaw = await _batteryChannel.invokeMethod('getBatteryStatus');
-      final Map<String, dynamic> batteryMap = Map<String, dynamic>.from(batteryRaw as Map);
-      final int batteryLevel = (batteryMap['level'] as num?)?.toInt() ?? 50;
+      // ── 3. Battery Status + Real Cycle Count ───────────────────────
+      // Returns: { level, status, remainingMinutes, cycleCount }
+      // cycleCount = 0 means device does not expose this value
+      final dynamic batteryRaw =
+          await _batteryChannel.invokeMethod('getBatteryStatus');
+      final Map<String, dynamic> batteryMap =
+          Map<String, dynamic>.from(batteryRaw as Map);
 
-      // Simple heuristic: level 80%+ phones are usually well-maintained
-      // Real charge cycles Android APIs mein publicly exposed nahi hain
-      final int estimatedCycles = _estimateChargeCycles(batteryLevel);
+      final int cycleCount =
+          (batteryMap['cycleCount'] as num?)?.toInt() ?? 0;
 
-      print('✅ SystemUsage ready — CPU: $cpuUsage%, Temp: $temperature°C, RAM: $usedRamMb/$totalRamMb MB, Cycles: ~$estimatedCycles');
+      print('✅ SystemUsage ready — '
+          'CPU: $cpuUsage%, '
+          'Temp: $temperature°C, '
+          'RAM: $usedRamMb/$totalRamMb MB, '
+          'Cycles: ${cycleCount > 0 ? cycleCount : "N/A"}');
 
       emit(SystemUsageLoaded(
         data: SystemUsageData(
-          cpuUsage:    cpuUsage,
-          temperature: temperature,
-          totalRamMb:  totalRamMb,
-          usedRamMb:   usedRamMb,
-          chargeCycles: estimatedCycles,
+          cpuUsage:     cpuUsage,
+          temperature:  temperature,
+          totalRamMb:   totalRamMb,
+          usedRamMb:    usedRamMb,
+          chargeCycles: cycleCount, // real value, 0 = not available
         ),
       ));
     } on PlatformException catch (e) {
@@ -139,16 +150,5 @@ class SystemUsageCubit extends Cubit<SystemUsageState> {
       print('❌ Unknown Error: $e');
       emit(SystemUsageError(message: e.toString()));
     }
-  }
-
-  // Battery level se rough charge cycle estimate
-  // Note: Android mein actual charge cycles kisi bhi public API se nahi milte
-  int _estimateChargeCycles(int batteryLevel) {
-    // Typical phone: ~500 full cycles lifetime
-    // Yeh sirf ek placeholder estimate hai — real data available nahi
-    if (batteryLevel > 80) return 120;
-    if (batteryLevel > 60) return 200;
-    if (batteryLevel > 40) return 320;
-    return 450;
   }
 }

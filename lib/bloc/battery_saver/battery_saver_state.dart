@@ -1,5 +1,15 @@
 part of 'battery_saver_bloc.dart';
 
+// Battery reading with timestamp
+class BatteryReading extends Equatable {
+  final int level;
+  final DateTime time;
+  const BatteryReading({required this.level, required this.time});
+
+  @override
+  List<Object?> get props => [level, time];
+}
+
 class BatterySaverState extends Equatable {
   final int batteryLevel;
   final BatteryHealthStatus healthStatus;
@@ -10,6 +20,7 @@ class BatterySaverState extends Equatable {
   final bool isApplying;
   final bool applySuccess;
   final String? errorMessage;
+  final List<BatteryReading> batteryHistory; // ← ADD THIS
 
   const BatterySaverState({
     this.batteryLevel = 0,
@@ -21,6 +32,7 @@ class BatterySaverState extends Equatable {
     this.isApplying = false,
     this.applySuccess = false,
     this.errorMessage,
+    this.batteryHistory = const [], // ← ADD THIS
   });
 
   BatterySaverState copyWith({
@@ -35,6 +47,7 @@ class BatterySaverState extends Equatable {
     String? errorMessage,
     bool clearError = false,
     bool clearSuccess = false,
+    List<BatteryReading>? batteryHistory, // ← ADD THIS
   }) {
     return BatterySaverState(
       batteryLevel: batteryLevel ?? this.batteryLevel,
@@ -46,6 +59,7 @@ class BatterySaverState extends Equatable {
       isApplying: isApplying ?? this.isApplying,
       applySuccess: clearSuccess ? false : (applySuccess ?? this.applySuccess),
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      batteryHistory: batteryHistory ?? this.batteryHistory, // ← ADD THIS
     );
   }
 
@@ -60,5 +74,6 @@ class BatterySaverState extends Equatable {
         isApplying,
         applySuccess,
         errorMessage,
+        batteryHistory, // ← ADD THIS
       ];
 }

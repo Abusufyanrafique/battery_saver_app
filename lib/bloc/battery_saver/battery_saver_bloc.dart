@@ -29,10 +29,13 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
   ) async {
     final level = await _battery.batteryLevel;
     final batState = await _battery.batteryState;
-
     final isCharging =
-        batState == BatteryState.charging ||
-        batState == BatteryState.full;
+        batState == BatteryState.charging || batState == BatteryState.full;
+
+    // ── First reading save karo
+    final initialHistory = [
+      BatteryReading(level: level, time: DateTime.now()),
+    ];
 
     emit(state.copyWith(
       batteryLevel: level,
@@ -41,13 +44,16 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
       remainingTime: isCharging
           ? 'Charging'
           : remainingTimeFromLevel(level, modeIndex: state.appliedIndex),
+      batteryHistory: initialHistory,
     ));
 
+    // ── Har 5 second mein level check karo
     _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
       final newLevel = await _battery.batteryLevel;
       add(_BatteryLevelChanged(newLevel));
     });
 
+    // ── Charging state changes sunna
     _stateSub = _battery.onBatteryStateChanged.listen((s) {
       add(_BatteryStateChanged(s));
     });
@@ -92,6 +98,19 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
     _BatteryLevelChanged event,
     Emitter<BatterySaverState> emit,
   ) {
+    // ── Naya reading banao
+    final newReading = BatteryReading(
+      level: event.level,
+      time: DateTime.now(),
+    );
+
+    // ── 30 din se purani readings hatao, naya append karo
+    final cutoff = DateTime.now().subtract(const Duration(days: 30));
+    final updatedHistory = [
+      ...state.batteryHistory.where((r) => r.time.isAfter(cutoff)),
+      newReading,
+    ];
+
     emit(state.copyWith(
       batteryLevel: event.level,
       healthStatus: healthFromLevel(event.level),
@@ -101,6 +120,7 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
               event.level,
               modeIndex: state.appliedIndex,
             ),
+      batteryHistory: updatedHistory, // ← yahan history update hoti hai
     ));
   }
 

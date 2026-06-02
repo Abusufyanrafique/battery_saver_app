@@ -28,7 +28,7 @@ class MainActivity : FlutterActivity() {
     private val NETWORK_CHANNEL        = "com.battery_saver/network_stats"
     private val APP_STATS_CHANNEL      = "com.example.battery_saver_app/app_stats"
     private val BATTERY_CHANNEL        = "com.example.battery_saver_app/battery_status"
-    private val BATTERY_HEALTH_CHANNEL = "com.example.battery_saver_app/battery_health"  // NEW
+    private val BATTERY_HEALTH_CHANNEL = "com.example.battery_saver_app/battery_health"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -63,12 +63,14 @@ class MainActivity : FlutterActivity() {
                     }
 
                     val remainingMinutes = getRealRemainingTimeMinutes()
+                    val chargingCycles   = getChargingCycles()  // ← REAL CYCLE COUNT
 
                     result.success(
                         mapOf(
                             "level"            to level,
                             "status"           to status,
-                            "remainingMinutes" to remainingMinutes
+                            "remainingMinutes" to remainingMinutes,
+                            "cycleCount"       to chargingCycles   // ← ADDED
                         )
                     )
                 }
@@ -76,7 +78,7 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        // ======== BATTERY HEALTH CHANNEL (NEW) ===========
+        // ======== BATTERY HEALTH CHANNEL ===========
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             BATTERY_HEALTH_CHANNEL
@@ -229,81 +231,62 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // BATTERY HEALTH DATA (NEW)
-    // Returns: designCapacity, currentCapacity, voltage, temperature,
-    //          batteryLevel, healthStatus, chargingCycles, manufactureDate
+    // BATTERY HEALTH DATA
     // ─────────────────────────────────────────────────────────────────
     private fun getBatteryHealthData(): Map<String, Any> {
         val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
-        // ── Voltage (mV) ──────────────────────────────────────────────
         val voltage = batteryIntent
             ?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
             ?.toDouble() ?: 0.0
 
-        // ── Temperature (°C) — raw value is tenths of a degree ────────
         val temperature = (batteryIntent
             ?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0
 
-        // ── Battery Level % ───────────────────────────────────────────
         val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) ?: 0
         val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
         val batteryLevel = if (scale > 0) (level * 100 / scale) else 0
 
-        // ── Health Status ─────────────────────────────────────────────
         val healthInt = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
-       val healthStatus = when (healthInt) {
-    BatteryManager.BATTERY_HEALTH_GOOD          -> "Good"
-    BatteryManager.BATTERY_HEALTH_OVERHEAT      -> "Overheat"
-    BatteryManager.BATTERY_HEALTH_DEAD          -> "Dead"
-    BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE  -> "Over Voltage"
-    BatteryManager.BATTERY_HEALTH_COLD          -> "Cold"
-    BatteryManager.BATTERY_HEALTH_UNKNOWN       -> "Unknown"
-    else                                         -> "Unknown"
-}
+        val healthStatus = when (healthInt) {
+            BatteryManager.BATTERY_HEALTH_GOOD         -> "Good"
+            BatteryManager.BATTERY_HEALTH_OVERHEAT     -> "Overheat"
+            BatteryManager.BATTERY_HEALTH_DEAD         -> "Dead"
+            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Over Voltage"
+            BatteryManager.BATTERY_HEALTH_COLD         -> "Cold"
+            BatteryManager.BATTERY_HEALTH_UNKNOWN      -> "Unknown"
+            else                                        -> "Unknown"
+        }
 
-        // ── Current Remaining Charge (µAh → mAh) ─────────────────────
-        // BATTERY_PROPERTY_CHARGE_COUNTER = remaining charge in µAh
         val chargeCounterUah = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
         } else 0
         val currentCapacityMah = if (chargeCounterUah > 0) chargeCounterUah / 1000.0 else 0.0
 
-        // ── Design Capacity ───────────────────────────────────────────
-        // Android has no public API for design capacity.
-        // We try system properties (works on some OEMs like Xiaomi, Samsung).
-        // Fallback: calculate from chargeCounter + battery level.
         val designCapacityMah = getDesignCapacity(currentCapacityMah, batteryLevel)
 
-        // ── Charging Cycles ───────────────────────────────────────────
-        // Not available via public Android API.
-        // Some OEMs expose via system properties — we try those.
-        val chargingCycles = getChargingCycles()
+        val chargingCycles = getChargingCycles()  // ← same shared function
 
-        // ── Manufacture Date ──────────────────────────────────────────
-        // Android does not expose real battery manufacture date.
-        // We use device build date as the closest available approximation.
         val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
         val manufactureDate = sdf.format(java.util.Date(Build.TIME))
 
         return mapOf(
-            "voltage"          to voltage,
-            "temperature"      to temperature,
-            "batteryLevel"     to batteryLevel,
-            "healthStatus"     to healthStatus,
-            "currentCapacity"  to currentCapacityMah,
-            "designCapacity"   to designCapacityMah,
-            "chargingCycles"   to chargingCycles,
-            "manufactureDate"  to manufactureDate
+            "voltage"         to voltage,
+            "temperature"     to temperature,
+            "batteryLevel"    to batteryLevel,
+            "healthStatus"    to healthStatus,
+            "currentCapacity" to currentCapacityMah,
+            "designCapacity"  to designCapacityMah,
+            "chargingCycles"  to chargingCycles,
+            "manufactureDate" to manufactureDate
         )
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // DESIGN CAPACITY — tries OEM system properties, then calculates
+    // DESIGN CAPACITY
     // ─────────────────────────────────────────────────────────────────
     private fun getDesignCapacity(currentCapacityMah: Double, batteryLevel: Int): Double {
-        // Method 1: Try common OEM system property (Xiaomi, some Samsung)
         val propKeys = listOf(
             "ro.product.battery.capacity",
             "ro.boot.battery_cap",
@@ -318,7 +301,6 @@ class MainActivity : FlutterActivity() {
             } catch (_: Exception) {}
         }
 
-        // Method 2: Try reading from power_supply sysfs (works on some devices)
         val sysfsPaths = listOf(
             "/sys/class/power_supply/battery/charge_full_design",
             "/sys/class/power_supply/Battery/charge_full_design"
@@ -326,44 +308,25 @@ class MainActivity : FlutterActivity() {
         for (path in sysfsPaths) {
             try {
                 val raw = File(path).readText().trim().toLongOrNull()
-                // Value can be in µAh or mAh depending on kernel driver
                 if (raw != null && raw > 0) {
                     return if (raw > 100000) raw / 1000.0 else raw.toDouble()
                 }
             } catch (_: Exception) {}
         }
 
-        // Method 3: Calculate — if chargeCounter and level are valid,
-        //           extrapolate design capacity from current remaining charge
         if (currentCapacityMah > 0 && batteryLevel > 0) {
             return (currentCapacityMah / batteryLevel) * 100.0
         }
 
-        // Fallback: 0 means "not available"
         return 0.0
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // CHARGING CYCLES — OEM system properties only
+    // CHARGING CYCLES — sysfs + OEM system properties
     // Returns 0 if device does not expose this info
     // ─────────────────────────────────────────────────────────────────
     private fun getChargingCycles(): Int {
-        // Method 1: Common OEM properties
-        val propKeys = listOf(
-            "ro.batterycycle.count",          // Some Xiaomi
-            "persist.sys.battery.cycle",       // Some Huawei
-            "battery.cycle.count"
-        )
-        for (key in propKeys) {
-            try {
-                val process = Runtime.getRuntime().exec(arrayOf("getprop", key))
-                val value   = process.inputStream.bufferedReader().readLine()?.trim()
-                val cycles  = value?.toIntOrNull()
-                if (cycles != null && cycles > 0) return cycles
-            } catch (_: Exception) {}
-        }
-
-        // Method 2: Try sysfs cycle_count node
+        // Method 1: sysfs cycle_count node (Pixel, OnePlus, many stock Android)
         val sysfsPaths = listOf(
             "/sys/class/power_supply/battery/cycle_count",
             "/sys/class/power_supply/Battery/cycle_count"
@@ -371,15 +334,49 @@ class MainActivity : FlutterActivity() {
         for (path in sysfsPaths) {
             try {
                 val raw = File(path).readText().trim().toIntOrNull()
-                if (raw != null && raw > 0) return raw
+                if (raw != null && raw > 0) {
+                    android.util.Log.d("BATTERY", "cycle_count from sysfs ($path): $raw")
+                    return raw
+                }
             } catch (_: Exception) {}
         }
 
-        return 0  // Not available on this device
+        // Method 2: OEM system properties (Xiaomi, Huawei, Samsung)
+        val propKeys = listOf(
+            "ro.batterycycle.count",
+            "persist.sys.battery.cycle",
+            "battery.cycle.count",
+            "ro.boot.battery_cycle"
+        )
+        for (key in propKeys) {
+            try {
+                val process = Runtime.getRuntime().exec(arrayOf("getprop", key))
+                val value   = process.inputStream.bufferedReader().readLine()?.trim()
+                val cycles  = value?.toIntOrNull()
+                if (cycles != null && cycles > 0) {
+                    android.util.Log.d("BATTERY", "cycle_count from prop ($key): $cycles")
+                    return cycles
+                }
+            } catch (_: Exception) {}
+        }
+
+        // Method 3: ACTION_BATTERY_CHANGED extras (some Samsung / Xiaomi)
+        try {
+            val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val cycles = batteryIntent?.getIntExtra("charge_counter", -1)?.takeIf { it > 0 }
+                ?: batteryIntent?.getIntExtra("cycle_count", -1)?.takeIf { it > 0 }
+            if (cycles != null) {
+                android.util.Log.d("BATTERY", "cycle_count from BatteryIntent extra: $cycles")
+                return cycles
+            }
+        } catch (_: Exception) {}
+
+        android.util.Log.d("BATTERY", "cycle_count not available on this device")
+        return 0  // 0 = not available
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // CPU USAGE — /proc/stat delta (accurate)
+    // CPU USAGE
     // ─────────────────────────────────────────────────────────────────
     private fun getCpuUsage(): Double {
         return try {
@@ -409,7 +406,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TEMPERATURE — Battery fallback
+    // TEMPERATURE
     // ─────────────────────────────────────────────────────────────────
     private fun getCpuTemperature(): Double {
         return try {
@@ -438,7 +435,6 @@ class MainActivity : FlutterActivity() {
                     val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                     val now   = System.currentTimeMillis()
                     val start = now - 24 * 60 * 60 * 1000L
-
                     val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, now)
                     for (stat in stats) {
                         if (stat.lastTimeUsed > start && !stat.packageName.isNullOrEmpty()) {
@@ -448,12 +444,11 @@ class MainActivity : FlutterActivity() {
                 } catch (_: Exception) {}
 
                 try {
-                    val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                    val now   = System.currentTimeMillis()
-                    val start = now - 8 * 60 * 60 * 1000L
+                    val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val now    = System.currentTimeMillis()
+                    val start  = now - 8 * 60 * 60 * 1000L
                     val events = usm.queryEvents(start, now)
                     val event  = UsageEvents.Event()
-
                     while (events.hasNextEvent()) {
                         events.getNextEvent(event)
                         if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
@@ -501,11 +496,11 @@ class MainActivity : FlutterActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (hasUsagePermission()) {
                 try {
-                    val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                    val now   = System.currentTimeMillis()
-                    val start = now - 8 * 60 * 60 * 1000L
+                    val usm       = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val now       = System.currentTimeMillis()
+                    val start     = now - 8 * 60 * 60 * 1000L
                     val events    = usm.queryEvents(start, now)
-                    val event      = UsageEvents.Event()
+                    val event     = UsageEvents.Event()
                     val lastEvent = mutableMapOf<String, Int>()
 
                     while (events.hasNextEvent()) {
@@ -546,7 +541,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // MEMORY + REAL SYSTEM PERFORMANCE INDICATOR
+    // MEMORY INFO
     // ─────────────────────────────────────────────────────────────────
     private fun getMemoryInfo(): Map<String, Any> {
         val am      = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -558,12 +553,10 @@ class MainActivity : FlutterActivity() {
         val powerManager  = getSystemService(Context.POWER_SERVICE) as PowerManager
         val thermalStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             powerManager.currentThermalStatus
-        } else {
-            0
-        }
-        val thermalPenalty         = thermalStatus * 15
-        val ramAvailablePercent    = (memInfo.availMem.toDouble() / memInfo.totalMem.toDouble()) * 100
-        val realPerformanceScore   = ((ramAvailablePercent * 0.6 + 40) - thermalPenalty).toInt().coerceIn(1, 100)
+        } else { 0 }
+        val thermalPenalty       = thermalStatus * 15
+        val ramAvailablePercent  = (memInfo.availMem.toDouble() / memInfo.totalMem.toDouble()) * 100
+        val realPerformanceScore = ((ramAvailablePercent * 0.6 + 40) - thermalPenalty).toInt().coerceIn(1, 100)
 
         return mapOf(
             "totalRamMb"          to totalMb,
@@ -587,7 +580,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // REAL ACCURATE APP USAGE, DRAIN & SCREEN ON TIME (SOT)
+    // APP USAGE WITH BATTERY
     // ─────────────────────────────────────────────────────────────────
     private fun getAppUsageWithBattery(startTime: Long, endTime: Long): Map<String, Any> {
         val appsList         = mutableListOf<Map<String, Any>>()
@@ -604,8 +597,8 @@ class MainActivity : FlutterActivity() {
         val appForegroundTimestamps = mutableMapOf<String, Long>()
         val appTotalTime            = mutableMapOf<String, Long>()
 
-        var lastInteractiveTime: Long  = -1L
-        var totalScreenOnTimeMs: Long  = 0L
+        var lastInteractiveTime: Long = -1L
+        var totalScreenOnTimeMs: Long = 0L
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
@@ -640,15 +633,15 @@ class MainActivity : FlutterActivity() {
             totalScreenOnTimeMs += (endTime - lastInteractiveTime)
         }
 
-        val totalForegroundMs  = appTotalTime.values.sum()
+        val totalForegroundMs   = appTotalTime.values.sum()
         val finalScreenOnTimeMs = if (totalScreenOnTimeMs > 0L) totalScreenOnTimeMs else totalForegroundMs
 
         if (totalForegroundMs > 0L) {
-            val batteryIntent    = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            val batteryLevel     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 100) ?: 100
-            val batteryScale     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
-            val currentBatteryPct       = (batteryLevel * 100.0 / batteryScale)
-            val totalEstimatedDrain     = (100.0 - currentBatteryPct).coerceIn(10.0, 100.0)
+            val batteryIntent       = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val batteryLevel        = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 100) ?: 100
+            val batteryScale        = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+            val currentBatteryPct   = (batteryLevel * 100.0 / batteryScale)
+            val totalEstimatedDrain = (100.0 - currentBatteryPct).coerceIn(10.0, 100.0)
 
             for ((pkg, totalTimeMs) in appTotalTime) {
                 if (totalTimeMs <= 0L) continue
@@ -677,7 +670,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // REAL BATTERY REMAINING MINUTES (PUBLIC HARDWARE REGISTERS)
+    // REAL BATTERY REMAINING MINUTES
     // ─────────────────────────────────────────────────────────────────
     private fun getRealRemainingTimeMinutes(): Long {
         val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -691,7 +684,7 @@ class MainActivity : FlutterActivity() {
         } else { 0 }
 
         if (currentNow < 0 && chargeCounter > 0) {
-            val currentNowmA    = Math.abs(currentNow) / 1000.0
+            val currentNowmA     = Math.abs(currentNow) / 1000.0
             val chargeCountermAh = chargeCounter / 1000.0
             if (currentNowmA > 0) {
                 return ((chargeCountermAh / currentNowmA) * 60).toLong()
