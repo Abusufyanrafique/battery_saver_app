@@ -1,8 +1,9 @@
 // lib/blocs/battery_health/battery_health_state.dart
 
+
+import 'package:battery_saver_app/data/repositories/battery_repository.dart';
 import 'package:battery_saver_app/view/battery_health/result_battery_health_screen.dart';
 import 'package:equatable/equatable.dart';
-
 
 abstract class BatteryHealthState extends Equatable {
   const BatteryHealthState();

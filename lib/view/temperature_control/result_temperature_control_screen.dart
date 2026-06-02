@@ -9,8 +9,24 @@ import 'package:battery_saver_app/widgets/temperature_control/result_temperature
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ResultTemperatureControlScreen extends StatelessWidget {
+class ResultTemperatureControlScreen extends StatefulWidget {
   const ResultTemperatureControlScreen({super.key});
+
+  @override
+  State<ResultTemperatureControlScreen> createState() =>
+      _ResultTemperatureControlScreenState();
+}
+
+class _ResultTemperatureControlScreenState
+    extends State<ResultTemperatureControlScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Screen open hote hi scanning shuru karo
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TemperatureBloc>().add(TemperatureCoolDownStarted());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +48,7 @@ class ResultTemperatureControlScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
+                // ── Image ──────────────────────────────────
                 Container(
                   height: getHeight(200),
                   width: double.infinity,
@@ -44,52 +61,72 @@ class ResultTemperatureControlScreen extends StatelessWidget {
                   ),
                 ),
 
-                SizedBox(height: getHeight(70)),
+                SizedBox(height: getHeight(30)),
 
-                Center(
-                  child: Text(
-                    AppText.optimizingdevicetemperature,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: getFont(20),
-                      color: const Color(0xFF55D0FF),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: getHeight(4)),
-
-                Center(
-                  child: Text(
-                    AppText.pleasewait,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      fontWeight: FontWeight.w500,
-                      fontSize: getFont(14),
-                      color: const Color(0xFFD9D9D9),
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: getHeight(44)),
-
-                /// BLoC CONNECTED WIDGET
+                // ── Title + Subtitle (state ke hisaab se badle) ──
                 BlocBuilder<TemperatureBloc, TemperatureState>(
                   builder: (context, state) {
-                    return ScanResultWidget();
+                    final isDone = state.coolingStatus == CoolingStatus.done;
+
+                    return Column(
+                      children: [
+                        Center(
+                          child: Text(
+                            isDone
+                                ? 'Device Optimized!'
+                                : AppText.optimizingdevicetemperature,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: getFont(20),
+                              color: isDone
+                                  ? const Color(0xFF3DDC84)
+                                  : const Color(0xFF55D0FF),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: getHeight(4)),
+                        Center(
+                          child: Text(
+                            isDone
+                                ? 'Temperature reduced to ${state.tempCelsius.toStringAsFixed(1)}°C'
+                                : AppText.pleasewait,
+                            textAlign: TextAlign.center,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w500,
+                              fontSize: getFont(14),
+                              color: const Color(0xFFD9D9D9),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
                   },
                 ),
 
+                SizedBox(height: getHeight(30)),
+
+                // ── Scan Result Widget ──────────────────────
+                const ScanResultWidget(),
+
                 SizedBox(height: getHeight(38)),
 
-                CleanButtonWidget(
-                  text: AppText.cancletemp,
-                  onPressed: () {
-                    context.read<TemperatureBloc>().add(
-                      TemperatureCoolDownCancelled(),
+                // ── Cancel / Done Button ────────────────────
+                BlocBuilder<TemperatureBloc, TemperatureState>(
+                  builder: (context, state) {
+                    final isDone = state.coolingStatus == CoolingStatus.done;
+
+                    return CleanButtonWidget(
+                      text: isDone ? 'Done' : AppText.cancletemp,
+                      onPressed: () {
+                        if (!isDone) {
+                          context.read<TemperatureBloc>().add(
+                            TemperatureCoolDownCancelled(),
+                          );
+                        }
+                        Navigator.pop(context);
+                      },
                     );
-                    Navigator.pop(context);
                   },
                 ),
               ],

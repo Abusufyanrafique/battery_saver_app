@@ -3,6 +3,7 @@
 import 'package:battery_saver_app/bloc/battery_health/battery_health_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_event.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_state.dart';
+ // ✅ Correct import
 import 'package:battery_saver_app/data/repositories/battery_repository.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
@@ -14,13 +15,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ResultBatteryHealthScreen extends StatelessWidget {
-  // BatteryHealthScreen se data aata hai via GoRouter extra
+  // BatteryHealthScreen se real data GoRouter extra ke zariye aata hai
   final BatteryHealthModel? passedData;
 
   const ResultBatteryHealthScreen({super.key, this.passedData});
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Agar passedData already hai to BlocProvider bilkul zaroorat nahi
+    // Data already BatteryHealthScreen ne fetch karke pass kar diya hai
+    if (passedData != null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0D1B3E),
+        appBar: CustomAppBar(title: AppText.batteryHealth),
+        body: _buildBody(passedData!),
+      );
+    }
+
+    // ✅ Sirf tab naya BLoC banao jab passedData null ho (direct navigation case)
     return BlocProvider(
       create: (_) => BatteryHealthBloc(repository: BatteryRepository())
         ..add(const LoadBatteryHealth()),
@@ -29,22 +41,19 @@ class ResultBatteryHealthScreen extends StatelessWidget {
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: BlocBuilder<BatteryHealthBloc, BatteryHealthState>(
           builder: (context, state) {
-            // Passed data use karo ya BLoC state se lo
-            final BatteryHealthModel? data =
-                passedData ?? (state is BatteryHealthLoaded ? state.data : null);
-
-            if (state is BatteryHealthLoading && data == null) {
+            if (state is BatteryHealthLoading) {
               return const Center(
                 child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
               );
             }
 
-            if (state is BatteryHealthError && data == null) {
+            if (state is BatteryHealthError) {
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    const Icon(Icons.error_outline,
+                        color: Colors.red, size: 48),
                     const SizedBox(height: 12),
                     Text(
                       state.message,
@@ -63,44 +72,51 @@ class ResultBatteryHealthScreen extends StatelessWidget {
               );
             }
 
-            if (data == null) return const SizedBox.shrink();
+            if (state is BatteryHealthLoaded) {
+              return _buildBody(state.data);
+            }
 
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
-                children: [
-                  BatteryHealthCard(
-                    percentage: data.healthPercent,
-                    status: data.healthStatus,
-                    description: data.healthDescription,
-                  ),
-                  const SizedBox(height: 12),
-
-                  BatteryCapacityCard(
-                    designCapacity: data.formattedDesignCapacity,
-                    currentCapacity: data.formattedCurrentCapacity,
-                  ),
-                  const SizedBox(height: 12),
-
-                  HealthDetailsCard(
-                    voltage: data.formattedVoltage,
-                    temperature: data.formattedTemperature,
-                    chargingCycles: data.formattedCycles,
-                    manufactureDate: data.deviceModel, // device model show karo
-                  ),
-                  const SizedBox(height: 12),
-
-                  BatteryTipsCard(
-                    tip: _getTipForStatus(data.healthStatus),
-                    subTip: _getSubTipForStatus(data.healthStatus),
-                  ),
-
-                  const SizedBox(height: 24),
-                ],
-              ),
-            );
+            return const SizedBox.shrink();
           },
         ),
+      ),
+    );
+  }
+
+  // ✅ Alag method — ek baar likhao, dono cases mein reuse ho
+  Widget _buildBody(BatteryHealthModel data) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        children: [
+          BatteryHealthCard(
+            percentage: data.healthPercent,
+            status: data.healthStatus,
+            description: data.healthDescription,
+          ),
+          const SizedBox(height: 12),
+
+          BatteryCapacityCard(
+            designCapacity: data.formattedDesignCapacity,
+            currentCapacity: data.formattedCurrentCapacity,
+          ),
+          const SizedBox(height: 12),
+
+          HealthDetailsCard(
+            voltage: data.formattedVoltage,
+            temperature: data.formattedTemperature,
+            chargingCycles: data.formattedCycles,
+            manufactureDate: data.deviceModel,
+          ),
+          const SizedBox(height: 12),
+
+          BatteryTipsCard(
+            tip: _getTipForStatus(data.healthStatus),
+            subTip: _getSubTipForStatus(data.healthStatus),
+          ),
+
+          const SizedBox(height: 24),
+        ],
       ),
     );
   }
@@ -131,12 +147,9 @@ class ResultBatteryHealthScreen extends StatelessWidget {
     }
   }
 }
-
-// lib/models/battery_health_model.dart
-
 class BatteryHealthModel {
   final int batteryLevel;
-  final String batteryState; // charging, discharging, full
+  final String batteryState;
   final double voltage;
   final double temperature;
   final int chargingCycles;
@@ -167,7 +180,8 @@ class BatteryHealthModel {
   String get formattedTemperature => '${temperature.toStringAsFixed(0)}°C';
   String get formattedDesignCapacity => '$designCapacity mAh';
   String get formattedCurrentCapacity => '$currentCapacity mAh';
-  String get formattedCycles => '$chargingCycles Cycles';
+  String get formattedCycles =>
+      chargingCycles > 0 ? '$chargingCycles Cycles' : 'N/A';
 
   String get healthDescription {
     switch (healthStatus.toLowerCase()) {

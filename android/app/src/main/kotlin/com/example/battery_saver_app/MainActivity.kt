@@ -10,7 +10,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.os.BatteryManager
 import android.os.Build
+import android.os.PowerManager
 import android.os.Process
 import android.telephony.TelephonyManager
 import androidx.annotation.RequiresApi
@@ -21,537 +23,489 @@ import java.io.File
 
 class MainActivity : FlutterActivity() {
 
-    private val CPU_CHANNEL = "com.example.battery_saver_app/cpu_info"
-    private val BOOST_CHANNEL = "com.example.battery_saver_app/phone_boost"
-    private val NETWORK_CHANNEL = "com.battery_saver/network_stats"
-
-    private var lastCpuNanos = 0L
-    private var lastWallNanos = 0L
-    private var isFirstCall = true
+    private val CPU_CHANNEL            = "com.example.battery_saver_app/cpu_info"
+    private val BOOST_CHANNEL          = "com.example.battery_saver_app/phone_boost"
+    private val NETWORK_CHANNEL        = "com.battery_saver/network_stats"
+    private val APP_STATS_CHANNEL      = "com.example.battery_saver_app/app_stats"
+    private val BATTERY_CHANNEL        = "com.example.battery_saver_app/battery_status"
+    private val BATTERY_HEALTH_CHANNEL = "com.example.battery_saver_app/battery_health"  // NEW
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // ─────────────────────────────────────────────
-        // CPU INFO CHANNEL
-        // ─────────────────────────────────────────────
+        // ======== BATTERY STATUS CHANNEL ===========
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            CPU_CHANNEL
+            BATTERY_CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getCpuInfo" -> {
-                    try {
-                        result.success(
-                            mapOf(
-                                "cpuUsage" to getCpuUsage(),
-                                "temperature" to getCpuTemperature(),
-                                "runningApps" to getRunningApps()
-                            )
+                "getBatteryStatus" -> {
+                    val batteryIntent = registerReceiver(
+                        null,
+                        IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                    )
+
+                    val level = batteryIntent?.getIntExtra(
+                        BatteryManager.EXTRA_LEVEL,
+                        -1
+                    ) ?: -1
+
+                    val statusInt = batteryIntent?.getIntExtra(
+                        BatteryManager.EXTRA_STATUS,
+                        -1
+                    ) ?: -1
+
+                    val status = when (statusInt) {
+                        BatteryManager.BATTERY_STATUS_CHARGING    -> "charging"
+                        BatteryManager.BATTERY_STATUS_FULL        -> "full"
+                        BatteryManager.BATTERY_STATUS_DISCHARGING -> "discharging"
+                        else                                       -> "unknown"
+                    }
+
+                    val remainingMinutes = getRealRemainingTimeMinutes()
+
+                    result.success(
+                        mapOf(
+                            "level"            to level,
+                            "status"           to status,
+                            "remainingMinutes" to remainingMinutes
                         )
-                    } catch (e: Exception) {
-                        result.error("CPU_INFO_ERROR", e.message, null)
-                    }
-                }
-                "coolDown" -> {
-                    try {
-                        killBackgroundApps()
-                        result.success(null)
-                    } catch (e: Exception) {
-                        result.error("COOL_DOWN_ERROR", e.message, null)
-                    }
+                    )
                 }
                 else -> result.notImplemented()
             }
         }
 
-        // ─────────────────────────────────────────────
-        // PHONE BOOST CHANNEL
-        // ─────────────────────────────────────────────
+        // ======== BATTERY HEALTH CHANNEL (NEW) ===========
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            BOOST_CHANNEL
+            BATTERY_HEALTH_CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getMemoryInfo" -> {
+                "getBatteryHealth" -> {
                     try {
-                        result.success(getMemoryInfo())
+                        result.success(getBatteryHealthData())
                     } catch (e: Exception) {
-                        result.error("MEM_ERROR", e.message, null)
-                    }
-                }
-                "boostMemory" -> {
-                    try {
-                        boostMemory()
-                        result.success(null)
-                    } catch (e: Exception) {
-                        result.error("BOOST_ERROR", e.message, null)
+                        result.error("BATTERY_HEALTH_ERROR", e.message, null)
                     }
                 }
                 else -> result.notImplemented()
             }
         }
 
-        // ─────────────────────────────────────────────
-        // NETWORK STATS CHANNEL
-        // ─────────────────────────────────────────────
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            NETWORK_CHANNEL
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
+        // ── CPU INFO CHANNEL ──────────────────────────────────────────
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CPU_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getCpuInfo" -> {
+                        Thread {
+                            try {
+                                val cpuUsage    = getCpuUsage()
+                                val temperature = getCpuTemperature()
+                                val runningApps = getRunningApps()
 
-                "hasPermission" -> {
-                    result.success(hasUsagePermission())
-                }
+                                android.util.Log.d("CPU_TEST", "Usage: $cpuUsage")
+                                android.util.Log.d("CPU_TEST", "Temp:  $temperature")
+                                android.util.Log.d("CPU_TEST", "Apps:  $runningApps")
 
-                "getTotalMobileData" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val startTime = call.argument<Long>("startTime") ?: 0L
-                        val endTime = call.argument<Long>("endTime") ?: System.currentTimeMillis()
-                        result.success(getTotalMobileBytes(startTime, endTime))
-                    } else {
-                        result.success(mapOf("rx" to 0L, "tx" to 0L))
+                                runOnUiThread {
+                                    result.success(
+                                        mapOf(
+                                            "cpuUsage"    to cpuUsage,
+                                            "temperature" to temperature,
+                                            "runningApps" to runningApps
+                                        )
+                                    )
+                                }
+                            } catch (e: Exception) {
+                                runOnUiThread {
+                                    result.error("CPU_INFO_ERROR", e.message, null)
+                                }
+                            }
+                        }.start()
                     }
-                }
 
-                "getTotalWifiData" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val startTime = call.argument<Long>("startTime") ?: 0L
-                        val endTime = call.argument<Long>("endTime") ?: System.currentTimeMillis()
-                        result.success(getTotalWifiBytes(startTime, endTime))
-                    } else {
-                        result.success(mapOf("rx" to 0L, "tx" to 0L))
+                    "coolDown" -> {
+                        Thread {
+                            try {
+                                killBackgroundApps()
+                                runOnUiThread { result.success(null) }
+                            } catch (e: Exception) {
+                                runOnUiThread { result.error("COOL_DOWN_ERROR", e.message, null) }
+                            }
+                        }.start()
                     }
-                }
 
-                "getAppNetworkData" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val startTime = call.argument<Long>("startTime") ?: 0L
-                        val endTime = call.argument<Long>("endTime") ?: System.currentTimeMillis()
-                        val packageNames = call.argument<List<String>>("packageNames") ?: emptyList()
-                        result.success(getAppNetworkData(startTime, endTime, packageNames))
-                    } else {
-                        result.success(emptyList<Map<String, Any>>())
+                    else -> result.notImplemented()
+                }
+            }
+
+        // ── PHONE BOOST CHANNEL ───────────────────────────────────────
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BOOST_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getMemoryInfo" -> {
+                        try {
+                            result.success(getMemoryInfo())
+                        } catch (e: Exception) {
+                            result.error("MEM_ERROR", e.message, null)
+                        }
                     }
-                }
-
-                "getDailyData" -> {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        val startTime = call.argument<Long>("startTime") ?: 0L
-                        val endTime = call.argument<Long>("endTime") ?: System.currentTimeMillis()
-                        val intervalHours = call.argument<Int>("intervalHours") ?: 24
-                        result.success(getDailyData(startTime, endTime, intervalHours))
-                    } else {
-                        result.success(emptyList<Map<String, Any>>())
+                    "boostMemory" -> {
+                        try {
+                            boostMemory()
+                            result.success(null)
+                        } catch (e: Exception) {
+                            result.error("BOOST_ERROR", e.message, null)
+                        }
                     }
-                }
-
-                else -> result.notImplemented()
-            }
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // NETWORK — Permission Check
-    // ─────────────────────────────────────────────
-    private fun hasUsagePermission(): Boolean {
-        return try {
-            val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                appOps.unsafeCheckOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    Process.myUid(),
-                    packageName
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                appOps.checkOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    Process.myUid(),
-                    packageName
-                )
-            }
-            mode == AppOpsManager.MODE_ALLOWED
-        } catch (e: Exception) {
-            false
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // NETWORK — Total Mobile Bytes
-    // ─────────────────────────────────────────────
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun getTotalMobileBytes(startTime: Long, endTime: Long): Map<String, Long> {
-        return try {
-            val nsm = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
-            val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val subscriberId = try {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    @Suppress("DEPRECATION", "MissingPermission")
-                    tm.subscriberId
-                } else null
-            } catch (e: Exception) { null }
-
-            val bucket = nsm.querySummaryForDevice(
-                ConnectivityManager.TYPE_MOBILE,
-                subscriberId,
-                startTime,
-                endTime
-            )
-            mapOf("rx" to bucket.rxBytes, "tx" to bucket.txBytes)
-        } catch (e: Exception) {
-            mapOf("rx" to 0L, "tx" to 0L)
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // NETWORK — Total WiFi Bytes
-    // ─────────────────────────────────────────────
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun getTotalWifiBytes(startTime: Long, endTime: Long): Map<String, Long> {
-        return try {
-            val nsm = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
-            val bucket = nsm.querySummaryForDevice(
-                ConnectivityManager.TYPE_WIFI,
-                null,
-                startTime,
-                endTime
-            )
-            mapOf("rx" to bucket.rxBytes, "tx" to bucket.txBytes)
-        } catch (e: Exception) {
-            mapOf("rx" to 0L, "tx" to 0L)
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // NETWORK — Per-App Data
-    // ─────────────────────────────────────────────
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun getAppNetworkData(
-        startTime: Long,
-        endTime: Long,
-        packageNames: List<String>
-    ): List<Map<String, Any>> {
-        val result = mutableListOf<Map<String, Any>>()
-        return try {
-            val nsm = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
-            val pm = packageManager
-
-            val uidToPackage = mutableMapOf<Int, String>()
-            for (pkgName in packageNames) {
-                try {
-                    val uid = pm.getApplicationInfo(pkgName, 0).uid
-                    uidToPackage[uid] = pkgName
-                    android.util.Log.d("NET_DEBUG", "📦 $pkgName => UID $uid")
-                } catch (e: Exception) {
-                    android.util.Log.d("NET_DEBUG", "❌ $pkgName not installed: ${e.message}")
+                    else -> result.notImplemented()
                 }
             }
 
-            val rxMap = mutableMapOf<String, Long>()
-            val txMap = mutableMapOf<String, Long>()
-            for (pkg in packageNames) {
-                rxMap[pkg] = 0L
-                txMap[pkg] = 0L
-            }
+        // ── NETWORK STATS CHANNEL ─────────────────────────────────────
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, NETWORK_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "hasPermission" -> result.success(hasUsagePermission())
 
-            fun scanNetwork(networkType: Int, subscriberId: String?) {
-                try {
-                    val stats = nsm.querySummary(networkType, subscriberId, startTime, endTime)
-                    val bucket = NetworkStats.Bucket()
-                    while (stats.hasNextBucket()) {
-                        stats.getNextBucket(bucket)
-                        val pkg = uidToPackage[bucket.uid] ?: continue
-                        rxMap[pkg] = (rxMap[pkg] ?: 0L) + bucket.rxBytes
-                        txMap[pkg] = (txMap[pkg] ?: 0L) + bucket.txBytes
+                    "getTotalMobileData" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val s = call.argument<Long>("startTime") ?: 0L
+                            val e = call.argument<Long>("endTime")   ?: System.currentTimeMillis()
+                            result.success(getTotalMobileBytes(s, e))
+                        } else result.success(mapOf("rx" to 0L, "tx" to 0L))
                     }
-                    stats.close()
-                } catch (e: Exception) {
-                    android.util.Log.e("NET_DEBUG", "scanNetwork error ($networkType): ${e.message}")
+
+                    "getTotalWifiData" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val s = call.argument<Long>("startTime") ?: 0L
+                            val e = call.argument<Long>("endTime")   ?: System.currentTimeMillis()
+                            result.success(getTotalWifiBytes(s, e))
+                        } else result.success(mapOf("rx" to 0L, "tx" to 0L))
+                    }
+
+                    "getAppNetworkData" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val s    = call.argument<Long>("startTime")            ?: 0L
+                            val e    = call.argument<Long>("endTime")              ?: System.currentTimeMillis()
+                            val pkgs = call.argument<List<String>>("packageNames") ?: emptyList()
+                            result.success(getAppNetworkData(s, e, pkgs))
+                        } else result.success(emptyList<Map<String, Any>>())
+                    }
+
+                    "getDailyData" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            val s  = call.argument<Long>("startTime")    ?: 0L
+                            val e  = call.argument<Long>("endTime")      ?: System.currentTimeMillis()
+                            val ih = call.argument<Int>("intervalHours") ?: 24
+                            result.success(getDailyData(s, e, ih))
+                        } else result.success(emptyList<Map<String, Any>>())
+                    }
+
+                    else -> result.notImplemented()
                 }
             }
 
-            val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val subscriberId = try {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                    @Suppress("DEPRECATION", "MissingPermission")
-                    tm.subscriberId
-                } else null
-            } catch (e: Exception) { null }
-
-            scanNetwork(ConnectivityManager.TYPE_MOBILE, subscriberId)
-            scanNetwork(ConnectivityManager.TYPE_WIFI, null)
-
-            for (pkg in packageNames) {
-                val rx = rxMap[pkg] ?: 0L
-                val tx = txMap[pkg] ?: 0L
-                android.util.Log.d("NET_DEBUG", "✅ $pkg => RX:$rx TX:$tx Total:${rx + tx}")
-                result.add(
-                    mapOf(
-                        "packageName" to pkg,
-                        "rx" to rx,
-                        "tx" to tx,
-                        "total" to (rx + tx)
-                    )
-                )
-            }
-            result
-        } catch (e: Exception) {
-            android.util.Log.e("NET_DEBUG", "getAppNetworkData crash: ${e.message}")
-            result
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // NETWORK — Daily/Hourly Chart Data
-    // ─────────────────────────────────────────────
-    @RequiresApi(Build.VERSION_CODES.M)
-    private fun getDailyData(
-        startTime: Long,
-        endTime: Long,
-        intervalHours: Int
-    ): List<Map<String, Any>> {
-        val result = mutableListOf<Map<String, Any>>()
-        return try {
-            val nsm = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
-            val intervalMs = intervalHours * 60L * 60L * 1000L
-
-            var current = startTime
-            while (current < endTime) {
-                val intervalEnd = minOf(current + intervalMs, endTime)
-                var rxBytes = 0L
-                var txBytes = 0L
-
-                try {
-                    val mobileBucket = nsm.querySummaryForDevice(
-                        ConnectivityManager.TYPE_MOBILE,
-                        null,
-                        current,
-                        intervalEnd
-                    )
-                    rxBytes += mobileBucket.rxBytes
-                    txBytes += mobileBucket.txBytes
-                } catch (_: Exception) {}
-
-                try {
-                    val wifiBucket = nsm.querySummaryForDevice(
-                        ConnectivityManager.TYPE_WIFI,
-                        null,
-                        current,
-                        intervalEnd
-                    )
-                    rxBytes += wifiBucket.rxBytes
-                    txBytes += wifiBucket.txBytes
-                } catch (_: Exception) {}
-
-                result.add(
-                    mapOf(
-                        "timestamp" to current,
-                        "rx" to rxBytes,
-                        "tx" to txBytes,
-                        "total" to (rxBytes + txBytes)
-                    )
-                )
-                current += intervalMs
-            }
-            result
-        } catch (e: Exception) {
-            result
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // CPU USAGE
-    // ─────────────────────────────────────────────
-    private fun getCpuUsage(): Double {
-        val numCores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
-
-        var myTicks = 0L
-        try {
-            val taskDir = File("/proc/self/task")
-            taskDir.listFiles()?.forEach {
-                myTicks += readStatTicks("${it.path}/stat")
-            }
-        } catch (_: Exception) {}
-
-        var otherTicks = 0L
-        try {
-            val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            val procs = am.runningAppProcesses ?: emptyList()
-            val myPid = android.os.Process.myPid()
-            for (proc in procs) {
-                if (proc.pid != myPid) {
-                    otherTicks += readStatTicks("/proc/${proc.pid}/stat")
+        // ── APP STATS CHANNEL ─────────────────────────────────────────
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_STATS_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getAppUsageStats" -> {
+                        Thread {
+                            try {
+                                val startTime = call.argument<Long>("startTime") ?: 0L
+                                val endTime   = call.argument<Long>("endTime")   ?: System.currentTimeMillis()
+                                val data      = getAppUsageWithBattery(startTime, endTime)
+                                runOnUiThread { result.success(data) }
+                            } catch (e: Exception) {
+                                runOnUiThread { result.error("STATS_ERROR", e.message, null) }
+                            }
+                        }.start()
+                    }
+                    else -> result.notImplemented()
                 }
             }
-        } catch (_: Exception) {}
-
-        val visibleBusyTicks = myTicks + otherTicks
-        val totalSystemTicks = readUptimeTicks(numCores)
-
-        return if (isFirstCall) {
-            lastCpuNanos = visibleBusyTicks
-            lastWallNanos = totalSystemTicks
-            isFirstCall = false
-            0.0
-        } else {
-            val cpuDiff = (visibleBusyTicks - lastCpuNanos).coerceAtLeast(0L)
-            val totalDiff = (totalSystemTicks - lastWallNanos).coerceAtLeast(1L)
-            lastCpuNanos = visibleBusyTicks
-            lastWallNanos = totalSystemTicks
-            val rawRatio = cpuDiff.toDouble() / totalDiff.toDouble()
-            val scaleFactor = 2.8
-            (rawRatio * 100.0 * scaleFactor).coerceIn(0.0, 100.0)
-        }
     }
 
-    private fun readStatTicks(path: String): Long {
-        return try {
-            val line = File(path).readText()
-            val afterComm = line.substringAfterLast(')').trim()
-            val fields = afterComm.split(" ")
-            val utime = fields.getOrNull(11)?.toLongOrNull() ?: 0L
-            val stime = fields.getOrNull(12)?.toLongOrNull() ?: 0L
-            utime + stime
-        } catch (_: Exception) { 0L }
-    }
+    // ─────────────────────────────────────────────────────────────────
+    // BATTERY HEALTH DATA (NEW)
+    // Returns: designCapacity, currentCapacity, voltage, temperature,
+    //          batteryLevel, healthStatus, chargingCycles, manufactureDate
+    // ─────────────────────────────────────────────────────────────────
+    private fun getBatteryHealthData(): Map<String, Any> {
+        val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
-    private fun readUptimeTicks(numCores: Int): Long {
-        return try {
-            val text = File("/proc/uptime").readText().trim()
-            val uptimeSec = text.split(" ")[0].toDoubleOrNull() ?: return 0L
-            (uptimeSec * 100.0 * numCores).toLong()
-        } catch (_: Exception) { 0L }
-    }
+        // ── Voltage (mV) ──────────────────────────────────────────────
+        val voltage = batteryIntent
+            ?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
+            ?.toDouble() ?: 0.0
 
-    // ─────────────────────────────────────────────
-    // TEMPERATURE
-    // ─────────────────────────────────────────────
-    private fun getCpuTemperature(): Double {
-        val paths = listOf(
-            "/sys/class/thermal/thermal_zone0/temp",
-            "/sys/class/thermal/thermal_zone1/temp",
-            "/sys/class/thermal/thermal_zone2/temp"
+        // ── Temperature (°C) — raw value is tenths of a degree ────────
+        val temperature = (batteryIntent
+            ?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0
+
+        // ── Battery Level % ───────────────────────────────────────────
+        val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) ?: 0
+        val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+        val batteryLevel = if (scale > 0) (level * 100 / scale) else 0
+
+        // ── Health Status ─────────────────────────────────────────────
+        val healthInt = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
+       val healthStatus = when (healthInt) {
+    BatteryManager.BATTERY_HEALTH_GOOD          -> "Good"
+    BatteryManager.BATTERY_HEALTH_OVERHEAT      -> "Overheat"
+    BatteryManager.BATTERY_HEALTH_DEAD          -> "Dead"
+    BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE  -> "Over Voltage"
+    BatteryManager.BATTERY_HEALTH_COLD          -> "Cold"
+    BatteryManager.BATTERY_HEALTH_UNKNOWN       -> "Unknown"
+    else                                         -> "Unknown"
+}
+
+        // ── Current Remaining Charge (µAh → mAh) ─────────────────────
+        // BATTERY_PROPERTY_CHARGE_COUNTER = remaining charge in µAh
+        val chargeCounterUah = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
+        } else 0
+        val currentCapacityMah = if (chargeCounterUah > 0) chargeCounterUah / 1000.0 else 0.0
+
+        // ── Design Capacity ───────────────────────────────────────────
+        // Android has no public API for design capacity.
+        // We try system properties (works on some OEMs like Xiaomi, Samsung).
+        // Fallback: calculate from chargeCounter + battery level.
+        val designCapacityMah = getDesignCapacity(currentCapacityMah, batteryLevel)
+
+        // ── Charging Cycles ───────────────────────────────────────────
+        // Not available via public Android API.
+        // Some OEMs expose via system properties — we try those.
+        val chargingCycles = getChargingCycles()
+
+        // ── Manufacture Date ──────────────────────────────────────────
+        // Android does not expose real battery manufacture date.
+        // We use device build date as the closest available approximation.
+        val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
+        val manufactureDate = sdf.format(java.util.Date(Build.TIME))
+
+        return mapOf(
+            "voltage"          to voltage,
+            "temperature"      to temperature,
+            "batteryLevel"     to batteryLevel,
+            "healthStatus"     to healthStatus,
+            "currentCapacity"  to currentCapacityMah,
+            "designCapacity"   to designCapacityMah,
+            "chargingCycles"   to chargingCycles,
+            "manufactureDate"  to manufactureDate
         )
-        for (path in paths) {
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // DESIGN CAPACITY — tries OEM system properties, then calculates
+    // ─────────────────────────────────────────────────────────────────
+    private fun getDesignCapacity(currentCapacityMah: Double, batteryLevel: Int): Double {
+        // Method 1: Try common OEM system property (Xiaomi, some Samsung)
+        val propKeys = listOf(
+            "ro.product.battery.capacity",
+            "ro.boot.battery_cap",
+            "sys.battery.full_capacity"
+        )
+        for (key in propKeys) {
             try {
-                val raw = File(path).readText().trim().toLongOrNull() ?: continue
-                return if (raw > 1000) raw / 1000.0 else raw.toDouble()
+                val process = Runtime.getRuntime().exec(arrayOf("getprop", key))
+                val value   = process.inputStream.bufferedReader().readLine()?.trim()
+                val mah     = value?.toDoubleOrNull()
+                if (mah != null && mah > 100) return mah
             } catch (_: Exception) {}
         }
-        return getBatteryTemperature()
+
+        // Method 2: Try reading from power_supply sysfs (works on some devices)
+        val sysfsPaths = listOf(
+            "/sys/class/power_supply/battery/charge_full_design",
+            "/sys/class/power_supply/Battery/charge_full_design"
+        )
+        for (path in sysfsPaths) {
+            try {
+                val raw = File(path).readText().trim().toLongOrNull()
+                // Value can be in µAh or mAh depending on kernel driver
+                if (raw != null && raw > 0) {
+                    return if (raw > 100000) raw / 1000.0 else raw.toDouble()
+                }
+            } catch (_: Exception) {}
+        }
+
+        // Method 3: Calculate — if chargeCounter and level are valid,
+        //           extrapolate design capacity from current remaining charge
+        if (currentCapacityMah > 0 && batteryLevel > 0) {
+            return (currentCapacityMah / batteryLevel) * 100.0
+        }
+
+        // Fallback: 0 means "not available"
+        return 0.0
     }
 
-    private fun getBatteryTemperature(): Double {
+    // ─────────────────────────────────────────────────────────────────
+    // CHARGING CYCLES — OEM system properties only
+    // Returns 0 if device does not expose this info
+    // ─────────────────────────────────────────────────────────────────
+    private fun getChargingCycles(): Int {
+        // Method 1: Common OEM properties
+        val propKeys = listOf(
+            "ro.batterycycle.count",          // Some Xiaomi
+            "persist.sys.battery.cycle",       // Some Huawei
+            "battery.cycle.count"
+        )
+        for (key in propKeys) {
+            try {
+                val process = Runtime.getRuntime().exec(arrayOf("getprop", key))
+                val value   = process.inputStream.bufferedReader().readLine()?.trim()
+                val cycles  = value?.toIntOrNull()
+                if (cycles != null && cycles > 0) return cycles
+            } catch (_: Exception) {}
+        }
+
+        // Method 2: Try sysfs cycle_count node
+        val sysfsPaths = listOf(
+            "/sys/class/power_supply/battery/cycle_count",
+            "/sys/class/power_supply/Battery/cycle_count"
+        )
+        for (path in sysfsPaths) {
+            try {
+                val raw = File(path).readText().trim().toIntOrNull()
+                if (raw != null && raw > 0) return raw
+            } catch (_: Exception) {}
+        }
+
+        return 0  // Not available on this device
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // CPU USAGE — /proc/stat delta (accurate)
+    // ─────────────────────────────────────────────────────────────────
+    private fun getCpuUsage(): Double {
+        return try {
+            val line1  = File("/proc/stat").bufferedReader().readLine() ?: return 0.0
+            val toks1  = line1.trim().split("\\s+".toRegex())
+            val total1 = toks1.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
+            val idle1  = toks1.getOrNull(4)?.toLongOrNull() ?: 0L
+
+            Thread.sleep(500)
+
+            val line2  = File("/proc/stat").bufferedReader().readLine() ?: return 0.0
+            val toks2  = line2.trim().split("\\s+".toRegex())
+            val total2 = toks2.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
+            val idle2  = toks2.getOrNull(4)?.toLongOrNull() ?: 0L
+
+            val totalDiff = total2 - total1
+            val idleDiff  = idle2  - idle1
+
+            if (totalDiff <= 0L) return 0.0
+            val usage = ((totalDiff - idleDiff) * 100.0 / totalDiff).coerceIn(0.0, 100.0)
+            android.util.Log.d("CPU_TEST", "Calculated usage: $usage%")
+            usage
+        } catch (e: Exception) {
+            android.util.Log.e("CPU_TEST", "getCpuUsage error: ${e.message}")
+            0.0
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // TEMPERATURE — Battery fallback
+    // ─────────────────────────────────────────────────────────────────
+    private fun getCpuTemperature(): Double {
         return try {
             val intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            val temp = intent?.getIntExtra(android.os.BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
-            temp / 10.0
-        } catch (_: Exception) { 0.0 }
+            val temp   = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+            val result = temp / 10.0
+            android.util.Log.d("CPU_TEST", "Battery temp: $result°C")
+            result
+        } catch (e: Exception) {
+            android.util.Log.e("CPU_TEST", "getCpuTemperature error: ${e.message}")
+            0.0
+        }
     }
 
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────
     // RUNNING APPS
-    //
-    // Android 8+ par getRunningAppProcesses() sirf apna process deta
-    // hai (always 1) — Google restriction.
-    //
-    // FINAL FIX — 3 layer approach:
-    //   Layer 1: UsageEvents MOVE_TO_FOREGROUND — jo apps abhi bhi
-    //            foreground/active state mein hain (last 8 hours)
-    //   Layer 2: getRunningServices() — background services
-    //   Layer 3: getRunningTasks() — visible tasks
-    //   Fallback: Android < 8 old method
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────
     @Suppress("DEPRECATION")
     private fun getRunningApps(): Int {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val runningPackages = mutableSetOf<String>()
 
-        // ── Android 8+ ────────────────────────────────────────────────────
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val runningPackages = mutableSetOf<String>()
-
-            // Layer 1: UsageEvents — sabse accurate
-            // Jin apps ka last event MOVE_TO_FOREGROUND tha woh abhi active hain
             if (hasUsagePermission()) {
                 try {
                     val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                     val now   = System.currentTimeMillis()
-                    val start = now - 8 * 60 * 60 * 1000L  // last 8 hours
+                    val start = now - 24 * 60 * 60 * 1000L
 
-                    val events    = usm.queryEvents(start, now)
-                    val event     = UsageEvents.Event()
-                    // Har app ka last event track karo
-                    val lastEvent = mutableMapOf<String, Int>()
+                    val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, now)
+                    for (stat in stats) {
+                        if (stat.lastTimeUsed > start && !stat.packageName.isNullOrEmpty()) {
+                            runningPackages.add(stat.packageName)
+                        }
+                    }
+                } catch (_: Exception) {}
+
+                try {
+                    val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val now   = System.currentTimeMillis()
+                    val start = now - 8 * 60 * 60 * 1000L
+                    val events = usm.queryEvents(start, now)
+                    val event  = UsageEvents.Event()
 
                     while (events.hasNextEvent()) {
                         events.getNextEvent(event)
-                        when (event.eventType) {
-                            UsageEvents.Event.MOVE_TO_FOREGROUND,
-                            UsageEvents.Event.ACTIVITY_RESUMED ->
-                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_FOREGROUND
-                            UsageEvents.Event.MOVE_TO_BACKGROUND,
-                            UsageEvents.Event.ACTIVITY_PAUSED ->
-                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
+                        if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                            event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND ||
+                            event.eventType == UsageEvents.Event.ACTIVITY_RESUMED   ||
+                            event.eventType == UsageEvents.Event.ACTIVITY_PAUSED) {
+                            if (!event.packageName.isNullOrEmpty()) {
+                                runningPackages.add(event.packageName)
+                            }
                         }
                     }
-
-                    // Sirf wo apps jo abhi FOREGROUND state mein hain
-                    lastEvent.forEach { (pkg, type) ->
-                        if (type == UsageEvents.Event.MOVE_TO_FOREGROUND) {
-                            runningPackages.add(pkg)
-                        }
-                    }
-                    android.util.Log.d("CPU_DEBUG", "UsageEvents foreground: ${runningPackages.size}")
-                } catch (e: Exception) {
-                    android.util.Log.e("CPU_DEBUG", "UsageEvents error: ${e.message}")
-                }
+                } catch (_: Exception) {}
             }
 
-            // Layer 2: getRunningServices() — background services wali apps
             try {
                 am.getRunningServices(200).forEach { si ->
                     runningPackages.add(si.service.packageName)
                 }
-                android.util.Log.d("CPU_DEBUG", "After services: ${runningPackages.size}")
-            } catch (e: Exception) {
-                android.util.Log.e("CPU_DEBUG", "getRunningServices error: ${e.message}")
-            }
+            } catch (_: Exception) {}
 
-            // Layer 3: getRunningTasks() — foreground/visible tasks
             try {
-                am.getRunningTasks(20).forEach { task ->
-                    task.topActivity?.packageName?.let { runningPackages.add(it) }
+                am.getRunningTasks(50).forEach { task ->
+                    task.topActivity?.packageName?.let  { runningPackages.add(it) }
+                    task.baseActivity?.packageName?.let { runningPackages.add(it) }
                 }
             } catch (_: Exception) {}
 
-            android.util.Log.d("CPU_DEBUG", "Total running: ${runningPackages.size}")
-            return runningPackages.size
+        } else {
+            try {
+                am.runningAppProcesses?.forEach { proc ->
+                    proc.pkgList?.forEach { runningPackages.add(it) }
+                }
+            } catch (_: Exception) {}
         }
-
-        // ── Android < 8 — purana reliable method ─────────────────────────
-        return try {
-            am.runningAppProcesses?.size ?: 0
-        } catch (_: Exception) { 0 }
+        return runningPackages.size
     }
 
-    // ─────────────────────────────────────────────
-    // COOL DOWN — UsageEvents se background apps kill
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────
+    // KILL BACKGROUND APPS
+    // ─────────────────────────────────────────────────────────────────
     @Suppress("DEPRECATION")
     private fun killBackgroundApps() {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // UsageEvents se background state wali apps nikaalo
             if (hasUsagePermission()) {
                 try {
                     val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                     val now   = System.currentTimeMillis()
                     val start = now - 8 * 60 * 60 * 1000L
                     val events    = usm.queryEvents(start, now)
-                    val event     = UsageEvents.Event()
+                    val event      = UsageEvents.Event()
                     val lastEvent = mutableMapOf<String, Int>()
 
                     while (events.hasNextEvent()) {
@@ -565,7 +519,6 @@ class MainActivity : FlutterActivity() {
                                 lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
                         }
                     }
-
                     lastEvent.forEach { (pkg, type) ->
                         if (type == UsageEvents.Event.MOVE_TO_BACKGROUND && pkg != packageName) {
                             try { am.killBackgroundProcesses(pkg) } catch (_: Exception) {}
@@ -573,8 +526,6 @@ class MainActivity : FlutterActivity() {
                     }
                 } catch (_: Exception) {}
             }
-
-            // Services bhi kill karo
             try {
                 am.getRunningServices(200).forEach { si ->
                     val pkg = si.service.packageName
@@ -585,7 +536,6 @@ class MainActivity : FlutterActivity() {
             } catch (_: Exception) {}
 
         } else {
-            // Android < 8
             am.runningAppProcesses
                 ?.filter { it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED }
                 ?.flatMap { it.pkgList?.toList() ?: emptyList() }
@@ -595,21 +545,31 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    // ─────────────────────────────────────────────
-    // MEMORY
-    // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────
+    // MEMORY + REAL SYSTEM PERFORMANCE INDICATOR
+    // ─────────────────────────────────────────────────────────────────
     private fun getMemoryInfo(): Map<String, Any> {
-        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val am      = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memInfo = ActivityManager.MemoryInfo()
         am.getMemoryInfo(memInfo)
         val totalMb = (memInfo.totalMem / 1024 / 1024).toInt()
         val availMb = (memInfo.availMem / 1024 / 1024).toInt()
-        val usedMb = totalMb - availMb
-        val processes = am.runningAppProcesses ?: emptyList()
+
+        val powerManager  = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val thermalStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            powerManager.currentThermalStatus
+        } else {
+            0
+        }
+        val thermalPenalty         = thermalStatus * 15
+        val ramAvailablePercent    = (memInfo.availMem.toDouble() / memInfo.totalMem.toDouble()) * 100
+        val realPerformanceScore   = ((ramAvailablePercent * 0.6 + 40) - thermalPenalty).toInt().coerceIn(1, 100)
+
         return mapOf(
-            "totalRamMb" to totalMb,
-            "usedRamMb" to usedMb,
-            "runningProcessCount" to processes.size
+            "totalRamMb"          to totalMb,
+            "usedRamMb"           to (totalMb - availMb),
+            "runningProcessCount" to (am.runningAppProcesses?.size ?: 0),
+            "performanceScore"    to realPerformanceScore
         )
     }
 
@@ -624,5 +584,258 @@ class MainActivity : FlutterActivity() {
             }
         System.gc()
         Runtime.getRuntime().gc()
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // REAL ACCURATE APP USAGE, DRAIN & SCREEN ON TIME (SOT)
+    // ─────────────────────────────────────────────────────────────────
+    private fun getAppUsageWithBattery(startTime: Long, endTime: Long): Map<String, Any> {
+        val appsList         = mutableListOf<Map<String, Any>>()
+        val fallbackResponse = mapOf("totalScreenOnTimeSec" to 0L, "apps" to appsList)
+
+        if (!hasUsagePermission()) return fallbackResponse
+
+        val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val pm  = packageManager
+
+        val events = usm.queryEvents(startTime, endTime)
+        val event  = UsageEvents.Event()
+
+        val appForegroundTimestamps = mutableMapOf<String, Long>()
+        val appTotalTime            = mutableMapOf<String, Long>()
+
+        var lastInteractiveTime: Long  = -1L
+        var totalScreenOnTimeMs: Long  = 0L
+
+        while (events.hasNextEvent()) {
+            events.getNextEvent(event)
+            val pkg = event.packageName ?: continue
+
+            if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
+                event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                appForegroundTimestamps[pkg] = event.timeStamp
+            } else if (event.eventType == UsageEvents.Event.MOVE_TO_BACKGROUND ||
+                       event.eventType == UsageEvents.Event.ACTIVITY_PAUSED) {
+                val openTime = appForegroundTimestamps.remove(pkg)
+                if (openTime != null) {
+                    val duration = event.timeStamp - openTime
+                    if (duration > 0) {
+                        appTotalTime[pkg] = (appTotalTime[pkg] ?: 0L) + duration
+                    }
+                }
+            }
+
+            if (event.eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
+                lastInteractiveTime = event.timeStamp
+            } else if (event.eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
+                if (lastInteractiveTime != -1L) {
+                    val screenOnDuration = event.timeStamp - lastInteractiveTime
+                    if (screenOnDuration > 0) totalScreenOnTimeMs += screenOnDuration
+                    lastInteractiveTime = -1L
+                }
+            }
+        }
+
+        if (lastInteractiveTime != -1L && endTime > lastInteractiveTime) {
+            totalScreenOnTimeMs += (endTime - lastInteractiveTime)
+        }
+
+        val totalForegroundMs  = appTotalTime.values.sum()
+        val finalScreenOnTimeMs = if (totalScreenOnTimeMs > 0L) totalScreenOnTimeMs else totalForegroundMs
+
+        if (totalForegroundMs > 0L) {
+            val batteryIntent    = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val batteryLevel     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 100) ?: 100
+            val batteryScale     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+            val currentBatteryPct       = (batteryLevel * 100.0 / batteryScale)
+            val totalEstimatedDrain     = (100.0 - currentBatteryPct).coerceIn(10.0, 100.0)
+
+            for ((pkg, totalTimeMs) in appTotalTime) {
+                if (totalTimeMs <= 0L) continue
+
+                val appName = try {
+                    pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
+                } catch (_: Exception) { pkg }
+
+                val screenTimeSec   = totalTimeMs / 1000L
+                val batteryEstimate = (totalTimeMs.toDouble() / totalForegroundMs.toDouble()) * totalEstimatedDrain
+
+                appsList.add(mapOf(
+                    "packageName"    to pkg,
+                    "appName"        to appName,
+                    "screenTimeSec"  to screenTimeSec,
+                    "batteryPercent" to batteryEstimate.coerceIn(0.0, 100.0)
+                ))
+            }
+            appsList.sortByDescending { it["screenTimeSec"] as Long }
+        }
+
+        return mapOf(
+            "totalScreenOnTimeSec" to (finalScreenOnTimeMs / 1000L),
+            "apps"                 to appsList
+        )
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // REAL BATTERY REMAINING MINUTES (PUBLIC HARDWARE REGISTERS)
+    // ─────────────────────────────────────────────────────────────────
+    private fun getRealRemainingTimeMinutes(): Long {
+        val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+
+        val currentNow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+        } else { 0 }
+
+        val chargeCounter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
+        } else { 0 }
+
+        if (currentNow < 0 && chargeCounter > 0) {
+            val currentNowmA    = Math.abs(currentNow) / 1000.0
+            val chargeCountermAh = chargeCounter / 1000.0
+            if (currentNowmA > 0) {
+                return ((chargeCountermAh / currentNowmA) * 60).toLong()
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val chargeTime = bm.computeChargeTimeRemaining()
+            if (chargeTime > 0) return chargeTime / 1000 / 60
+        }
+        return -1L
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // PERMISSION CHECK
+    // ─────────────────────────────────────────────────────────────────
+    private fun hasUsagePermission(): Boolean {
+        return try {
+            val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+            val mode   = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
+            } else {
+                @Suppress("DEPRECATION")
+                appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), packageName)
+            }
+            mode == AppOpsManager.MODE_ALLOWED
+        } catch (_: Exception) { false }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // NETWORK — Total Mobile Bytes
+    // ─────────────────────────────────────────────────────────────────
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun getTotalMobileBytes(startTime: Long, endTime: Long): Map<String, Long> {
+        return try {
+            val nsm          = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
+            val tm           = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val subscriberId = try {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    @Suppress("DEPRECATION", "MissingPermission") tm.subscriberId
+                } else null
+            } catch (_: Exception) { null }
+            val bucket = nsm.querySummaryForDevice(ConnectivityManager.TYPE_MOBILE, subscriberId, startTime, endTime)
+            mapOf("rx" to bucket.rxBytes, "tx" to bucket.txBytes)
+        } catch (_: Exception) { mapOf("rx" to 0L, "tx" to 0L) }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // NETWORK — Total WiFi Bytes
+    // ─────────────────────────────────────────────────────────────────
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun getTotalWifiBytes(startTime: Long, endTime: Long): Map<String, Long> {
+        return try {
+            val nsm    = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
+            val bucket = nsm.querySummaryForDevice(ConnectivityManager.TYPE_WIFI, null, startTime, endTime)
+            mapOf("rx" to bucket.rxBytes, "tx" to bucket.txBytes)
+        } catch (_: Exception) { mapOf("rx" to 0L, "tx" to 0L) }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // NETWORK — Per-App Data
+    // ─────────────────────────────────────────────────────────────────
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun getAppNetworkData(startTime: Long, endTime: Long, packageNames: List<String>): List<Map<String, Any>> {
+        val result = mutableListOf<Map<String, Any>>()
+        return try {
+            val nsm          = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
+            val pm           = packageManager
+            val uidToPackage = mutableMapOf<Int, String>()
+            for (pkgName in packageNames) {
+                try {
+                    val uid = pm.getApplicationInfo(pkgName, 0).uid
+                    uidToPackage[uid] = pkgName
+                } catch (_: Exception) {}
+            }
+            val rxMap = packageNames.associateWith { 0L }.toMutableMap()
+            val txMap = packageNames.associateWith { 0L }.toMutableMap()
+
+            fun scan(networkType: Int, subscriberId: String?) {
+                try {
+                    val stats  = nsm.querySummary(networkType, subscriberId, startTime, endTime)
+                    val bucket = NetworkStats.Bucket()
+                    while (stats.hasNextBucket()) {
+                        stats.getNextBucket(bucket)
+                        val pkg = uidToPackage[bucket.uid] ?: continue
+                        rxMap[pkg] = (rxMap[pkg] ?: 0L) + bucket.rxBytes
+                        txMap[pkg] = (txMap[pkg] ?: 0L) + bucket.txBytes
+                    }
+                    stats.close()
+                } catch (e: Exception) {
+                    android.util.Log.e("NET_DEBUG", "scan($networkType): ${e.message}")
+                }
+            }
+
+            val tm  = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val sub = try {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                    @Suppress("DEPRECATION", "MissingPermission") tm.subscriberId
+                } else null
+            } catch (_: Exception) { null }
+
+            scan(ConnectivityManager.TYPE_MOBILE, sub)
+            scan(ConnectivityManager.TYPE_WIFI, null)
+
+            for (pkg in packageNames) {
+                val rx = rxMap[pkg] ?: 0L
+                val tx = txMap[pkg] ?: 0L
+                result.add(mapOf("packageName" to pkg, "rx" to rx, "tx" to tx, "total" to (rx + tx)))
+            }
+            result
+        } catch (e: Exception) {
+            android.util.Log.e("NET_DEBUG", "getAppNetworkData: ${e.message}")
+            result
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // NETWORK — Daily / Hourly Chart Data
+    // ─────────────────────────────────────────────────────────────────
+    @RequiresApi(Build.VERSION_CODES.M)
+    private fun getDailyData(startTime: Long, endTime: Long, intervalHours: Int): List<Map<String, Any>> {
+        val result     = mutableListOf<Map<String, Any>>()
+        val nsm        = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
+        val intervalMs = intervalHours * 60L * 60L * 1000L
+        var current    = startTime
+
+        while (current < endTime) {
+            val iEnd    = minOf(current + intervalMs, endTime)
+            var rxBytes = 0L
+            var txBytes = 0L
+            try {
+                val b = nsm.querySummaryForDevice(ConnectivityManager.TYPE_MOBILE, null, current, iEnd)
+                rxBytes += b.rxBytes; txBytes += b.txBytes
+            } catch (_: Exception) {}
+            try {
+                val b = nsm.querySummaryForDevice(ConnectivityManager.TYPE_WIFI, null, current, iEnd)
+                rxBytes += b.rxBytes; txBytes += b.txBytes
+            } catch (_: Exception) {}
+            result.add(mapOf(
+                "timestamp" to current, "rx" to rxBytes,
+                "tx"        to txBytes, "total" to (rxBytes + txBytes)
+            ))
+            current += intervalMs
+        }
+        return result
     }
 }

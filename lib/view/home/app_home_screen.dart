@@ -4,6 +4,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
+import 'package:battery_saver_app/utils/helper/battery_helpers.dart';
 import 'package:battery_saver_app/widgets/app_drawer/phone_optimizer_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -156,9 +157,15 @@ class _BatteryCard extends StatelessWidget {
     return BlocBuilder<BatterySaverBloc, BatterySaverState>(
       builder: (context, state) {
         final int battery = state.batteryLevel;
-        final String healthStatus =
-            state.healthStatus?.toString() ?? "Unknown";
 
+    final BatteryHealthStatus status =
+        healthFromLevel(battery);
+
+    final String healthStatus =
+        batteryHealthLabel(status);
+
+    final Color healthColor =
+        batteryHealthColor(status);
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(19, 10, 16, 24),
@@ -249,12 +256,12 @@ class _BatteryCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          healthStatus,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            fontSize: getFont(16),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+      batteryHealthLabel(status),
+      style: TextStyle(
+        color: batteryHealthColor(status),
+        fontWeight: FontWeight.w600,
+      ),
+    ),
                       ],
                     ),
                   ],
@@ -289,6 +296,20 @@ class _StatsRow extends StatelessWidget {
       builder: (context, cpuState) {
         return BlocBuilder<BatterySaverBloc, BatterySaverState>(
           builder: (context, batteryState) {
+
+            // 🔋 Battery Health
+            final batteryStatus =
+                healthFromLevel(batteryState.batteryLevel);
+
+            // 💻 CPU Health (simple logic using temperature)
+            final cpuHealth = cpuState.temperature >= 80
+                ? BatteryHealthStatus.critical
+                : cpuState.temperature >= 60
+                    ? BatteryHealthStatus.low
+                    : cpuState.temperature >= 40
+                        ? BatteryHealthStatus.moderate
+                        : BatteryHealthStatus.good;
+
             return Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 12,
@@ -306,19 +327,19 @@ class _StatsRow extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
 
-                  // 🔋 Remaining TIME (FROM BatterySaverBloc)
+                  // 🔋 Remaining TIME
                   _StatItem(
                     iconPath: AppImages.remaining,
                     iconColor: const Color(0xFFFF6B9D),
                     value: batteryState.remainingTime.isEmpty
                         ? 'Calculating...'
                         : batteryState.remainingTime,
-                    label: 'Time',
+                    label: 'Remaining',
                   ),
 
                   const _StatDivider(),
 
-                  // 🌡 Temperature (CPU)
+                  // 🌡 Temperature
                   _StatItem(
                     iconPath: "assets/images/home/temp.png",
                     iconColor: const Color(0xFFFF9800),
@@ -333,8 +354,8 @@ class _StatsRow extends StatelessWidget {
                   // 💚 Health (CPU)
                   _StatItem(
                     iconPath: AppImages.goodhe,
-                    iconColor: const Color(0xFF4A8EFF),
-                    value: cpuState.statusMessage,
+                    iconColor: batteryHealthColor(cpuHealth),
+                    value: batteryHealthLabel(cpuHealth),
                     label: 'Health',
                   ),
                 ],
@@ -346,7 +367,6 @@ class _StatsRow extends StatelessWidget {
     );
   }
 }
-
 class _StatItem extends StatelessWidget {
   final String iconPath;
   final Color iconColor;

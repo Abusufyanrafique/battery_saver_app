@@ -8,27 +8,11 @@ import 'package:flutter/foundation.dart';
 part 'cpu_cooler_event.dart';
 part 'cpu_cooler_state.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Method Channel — name must match MainActivity.kt exactly
-// ─────────────────────────────────────────────────────────────────────────────
 const _channel = MethodChannel('com.example.battery_saver_app/cpu_info');
 
-Future<Map<String, dynamic>> _fetchRealData() async {
-  try {
-    final result =
-        await _channel.invokeMapMethod<String, dynamic>('getCpuInfo');
-    return result ?? {};
-  } on PlatformException catch (e) {
-    debugPrint('❌ MethodChannel error: ${e.message}');
-    return {};
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BLoC
-// ─────────────────────────────────────────────────────────────────────────────
 class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
   Timer? _pollingTimer;
+  bool _isFetching = false; // overlap guard
 
   CpuCoolerBloc() : super(const CpuCoolerState()) {
     on<CpuCoolerStartMonitoring>(_onStartMonitoring);
@@ -37,11 +21,51 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
     on<CpuCoolerStopMonitoring>(_onStopMonitoring);
   }
 
+  // ─────────────────────────────────────────────
+  // Data fetch — Kotlin Thread.sleep(500) ke saath safe
+  // ─────────────────────────────────────────────
+  Future<void> _loadCpuData(Emitter<CpuCoolerState> emit) async {
+    if (_isFetching) return; // overlap prevent karo
+    _isFetching = true;
+
+    try {
+      final result = await _channel.invokeMapMethod<String, dynamic>('getCpuInfo');
+      final data = result ?? {};
+
+      final cpu  = (data['cpuUsage']    as num?)?.toDouble() ?? 0.0;
+      final temp = (data['temperature'] as num?)?.toDouble() ?? 0.0;
+      final apps = (data['runningApps'] as num?)?.toInt()    ?? 0;
+
+      debugPrint('✅ CPU: $cpu% | Temp: $temp°C | Apps: $apps');
+
+      emit(state.copyWith(
+        status:        CpuCoolerStatus.monitoring,
+        cpuUsage:      cpu,
+        temperature:   temp,
+        runningApps:   apps,
+        statusMessage: '',
+      ));
+    } catch (e) {
+      debugPrint('❌ CPU Channel Error: $e');
+      emit(state.copyWith(
+        status:       CpuCoolerStatus.error,
+        errorMessage: e.toString(),
+      ));
+    } finally {
+      _isFetching = false;
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // EVENTS
+  // ─────────────────────────────────────────────
+
   Future<void> _onStartMonitoring(
     CpuCoolerStartMonitoring event,
     Emitter<CpuCoolerState> emit,
   ) async {
-    await _fetchAndEmit(emit, status: CpuCoolerStatus.monitoring);
+    emit(state.copyWith(status: CpuCoolerStatus.initial));
+    await _loadCpuData(emit);
     _startTimer();
   }
 
@@ -49,8 +73,9 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
     CpuCoolerRefreshStats event,
     Emitter<CpuCoolerState> emit,
   ) async {
+    // CoolingDown mein refresh mat karo
     if (state.status == CpuCoolerStatus.coolingDown) return;
-    await _fetchAndEmit(emit, status: CpuCoolerStatus.monitoring);
+    await _loadCpuData(emit);
   }
 
   Future<void> _onCoolDownRequested(
@@ -60,23 +85,29 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
     _pollingTimer?.cancel();
 
     emit(state.copyWith(
-      status: CpuCoolerStatus.coolingDown,
+      status:        CpuCoolerStatus.coolingDown,
       statusMessage: 'Cooling down...',
     ));
 
-    // Tell native side to run ActivityManager.killBackgroundProcesses
     try {
       await _channel.invokeMethod('coolDown');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('coolDown error: $e');
+    }
 
-    await Future.delayed(const Duration(seconds: 3));
+    // Thoda wait karo taake kill effect ho sake
+    await Future.delayed(const Duration(seconds: 2));
 
-    await _fetchAndEmit(
-      emit,
-      status: CpuCoolerStatus.cooled,
+    // Fresh data lo
+    await _loadCpuData(emit);
+
+    emit(state.copyWith(
+      status:        CpuCoolerStatus.cooled,
       statusMessage: 'System cooled!',
-    );
+    ));
 
+    // 2 sec baad monitoring resume karo
+    await Future.delayed(const Duration(seconds: 2));
     _startTimer();
   }
 
@@ -85,44 +116,18 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
     Emitter<CpuCoolerState> emit,
   ) {
     _pollingTimer?.cancel();
+    _isFetching = false;
   }
 
-  // ── helpers ───────────────────────────────────────────────────────────────
-
+  // ─────────────────────────────────────────────
+  // TIMER — 5 seconds (Kotlin 500ms sleep + processing time)
+  // ─────────────────────────────────────────────
   void _startTimer() {
     _pollingTimer?.cancel();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-      add(const CpuCoolerRefreshStats());
-    });
-  }
-
-  Future<void> _fetchAndEmit(
-    Emitter<CpuCoolerState> emit, {
-    required CpuCoolerStatus status,
-    String? statusMessage,
-  }) async {
-    try {
-      final data = await _fetchRealData();
-
-      final cpu  = (data['cpuUsage']    as num?)?.toDouble() ?? 0.0;
-      final temp = (data['temperature'] as num?)?.toDouble() ?? 0.0;
-      //  cast safely — native may return Int or Long
-      final apps = (data['runningApps'] as num?)?.toInt()   ?? 0;
-
-      emit(state.copyWith(
-        status: status,
-        cpuUsage: cpu,
-        temperature: temp,
-        runningApps: apps,
-        statusMessage: statusMessage ??
-            (temp > 60 ? 'CPU is running hot!' : 'Monitoring...'),
-      ));
-    } catch (e) {
-      emit(state.copyWith(
-        status: CpuCoolerStatus.error,
-        errorMessage: e.toString(),
-      ));
-    }
+    _pollingTimer = Timer.periodic(
+      const Duration(seconds: 5), // 3 se 5 kiya — overlap avoid
+      (_) => add(const CpuCoolerRefreshStats()),
+    );
   }
 
   @override

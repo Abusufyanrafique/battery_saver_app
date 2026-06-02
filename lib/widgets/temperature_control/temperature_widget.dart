@@ -1,3 +1,5 @@
+// temperature_widget.dart
+
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -30,82 +32,108 @@ class TemperatureWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFF3A3FCC), width: 1.2),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          child: Stack(
             children: [
-              // ─── TOP SECTION ───────────────────────
-              Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppText.currenttemperature,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: getFont(14),
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+              // ── Main Content ──────────────────────────────────
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 400),
+                opacity: state.isLoading ? 0.3 : 1.0,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // ─── TOP SECTION ───────────────────────
+                    Column(
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            AppText.currenttemperature,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontSize:   getFont(14),
+                              fontWeight: FontWeight.w600,
+                              color:      Colors.white,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        // Real temperature value
+                        Text(
+                          '${state.tempCelsius.toStringAsFixed(1)}°C',
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontSize:   getFont(22),
+                            fontWeight: FontWeight.w700,
+                            color:      Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+
+                        // Cool / Normal / Hot label
+                        Text(
+                          state.tempLabel,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontSize:   getFont(10),
+                            fontWeight: FontWeight.w500,
+                            color:      state.tempLabelColor,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _GradientSlider(value: state.tempValue),
+                        const SizedBox(height: 4),
+
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Cool',   style: TextStyle(fontSize: 9, color: Color(0xFF00FF09), fontWeight: FontWeight.w500)),
+                            Text('Normal', style: TextStyle(fontSize: 9, color: Color(0xFF55D0FF), fontWeight: FontWeight.w500)),
+                            Text('Hot',    style: TextStyle(fontSize: 9, color: Color(0xFFFF23C1), fontWeight: FontWeight.w500)),
+                          ],
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '${state.tempCelsius.toStringAsFixed(1)}°C',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(22),
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+
+                    const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
+
+                    // ─── TOGGLE ROWS ───────────────────────
+                    Column(
+                      children: [
+                        _ToggleRow(
+                          icon:     Icons.ac_unit,
+                          title:    'Auto Cool',
+                          subtitle: 'Automatically reduce\ntemperature',
+                          value:    state.autoCool,
+                          onChanged: (val) => context
+                              .read<TemperatureBloc>()
+                              .add(TemperatureAutoCoolToggled(val)),
+                        ),
+                        const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
+                        const SizedBox(height: 8),
+                        _ToggleRow(
+                          icon:     Icons.developer_board_outlined,
+                          title:    'CPU Cooler',
+                          subtitle: 'Reduce CPU usage\nto cool down',
+                          value:    state.cpuCooler,
+                          onChanged: (val) => context
+                              .read<TemperatureBloc>()
+                              .add(TemperatureCpuCoolerToggled(val)),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    state.tempLabel,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(10),
-                      fontWeight: FontWeight.w500,
-                      color: state.tempLabelColor,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  _GradientSlider(value: state.tempValue),
-                  const SizedBox(height: 4),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Cool', style: TextStyle(fontSize: 9, color: Color(0xFF00FF09), fontWeight: FontWeight.w500)),
-                      Text('Normal', style: TextStyle(fontSize: 9, color: Color(0xFF55D0FF), fontWeight: FontWeight.w500)),
-                      Text('Hot', style: TextStyle(fontSize: 9, color: Color(0xFFFF23C1), fontWeight: FontWeight.w500)),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
 
-              const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
-
-              // ─── TOGGLE ROWS ───────────────────────
-              Column(
-                children: [
-                  _ToggleRow(
-                    icon: Icons.ac_unit,
-                    title: 'Auto Cool',
-                    subtitle: 'Automatically reduce\ntemperature',
-                    value: state.autoCool,
-                    onChanged: (val) => context
-                        .read<TemperatureBloc>()
-                        .add(TemperatureAutoCoolToggled(val)),
+              // ── Loading Overlay ───────────────────────────────
+              if (state.isLoading)
+                const Positioned.fill(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color:       Color(0xFF9A3CFF),
+                      strokeWidth: 2,
+                    ),
                   ),
-                  const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
-                  const SizedBox(height: 8),
-                  _ToggleRow(
-                    icon: Icons.developer_board_outlined,
-                    title: 'CPU Cooler',
-                    subtitle: 'Reduce CPU usage\nto cool down',
-                    value: state.cpuCooler,
-                    onChanged: (val) => context
-                        .read<TemperatureBloc>()
-                        .add(TemperatureCpuCoolerToggled(val)),
-                  ),
-                ],
-              ),
+                ),
             ],
           ),
         );
@@ -117,14 +145,13 @@ class TemperatureWidget extends StatelessWidget {
 // ─── Gradient Slider ──────────────────────────────────────────────────────────
 class _GradientSlider extends StatelessWidget {
   final double value;
-
   const _GradientSlider({required this.value});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final width = constraints.maxWidth;
+        final width  = constraints.maxWidth;
         final thumbX = value * width;
 
         return SizedBox(
@@ -150,15 +177,15 @@ class _GradientSlider extends StatelessWidget {
               Positioned(
                 left: thumbX - 5,
                 child: Container(
-                  width: getWidth(10),
+                  width:  getWidth(10),
                   height: getHeight(10),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFF3DDC84),
+                    shape:  BoxShape.circle,
+                    color:  const Color(0xFF3DDC84),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3DDC84).withOpacity(0.4),
-                        blurRadius: 5,
+                        color:       const Color(0xFF3DDC84).withOpacity(0.4),
+                        blurRadius:  5,
                         spreadRadius: 1,
                       ),
                     ],
@@ -196,9 +223,8 @@ class _ToggleRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ICON
           Container(
-            width: getWidth(40),
+            width:  getWidth(40),
             height: getHeight(40),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -207,10 +233,7 @@ class _ToggleRow extends StatelessWidget {
             ),
             child: Icon(icon, size: 16, color: const Color(0xFF989CDF)),
           ),
-
           const SizedBox(width: 10),
-
-          // TEXT
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -219,9 +242,9 @@ class _ToggleRow extends StatelessWidget {
                 Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(11),
+                    fontSize:   getFont(11),
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color:      Colors.white,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -230,24 +253,22 @@ class _ToggleRow extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.visible,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    fontSize: getFont(9),
+                    fontSize:   getFont(9),
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFFD9D9D9),
-                    height: 1.2,
+                    color:      const Color(0xFFD9D9D9),
+                    height:     1.2,
                   ),
                 ),
               ],
             ),
           ),
-
-          // SWITCH
           Transform.scale(
             scale: 0.70,
             child: Switch(
-              value: value,
-              onChanged: onChanged,
-              activeColor: Colors.white,
-              activeTrackColor: const Color(0xFF286FEE),
+              value:              value,
+              onChanged:          onChanged,
+              activeColor:        Colors.white,
+              activeTrackColor:   const Color(0xFF286FEE),
               inactiveThumbColor: Colors.white,
               inactiveTrackColor: const Color(0xFF3A3F6A),
             ),

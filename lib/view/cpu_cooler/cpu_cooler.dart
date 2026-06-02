@@ -115,16 +115,16 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                     CpuCoolerWidget(
                       items: [
                         CpuInfoItem(
-                          imagePath: AppImages.cpuusage,
-                          title: "CPU Usage",
-                          value: state.cpuUsage == 0.0
-                              ? '--'
-                              : '${state.cpuUsage.toStringAsFixed(1)}%',
-                        ),
+  imagePath: AppImages.cpuusage,
+  title: "CPU Usage",
+  value: state.cpuUsage == 0.0
+      ? '--'
+      : '${state.cpuUsage.toStringAsFixed(1)}%',
+),
                         CpuInfoItem(
                           imagePath: AppImages.cpumangerimage,
                           title: "Running Apps",
-                          // ✅ Show real count
+                         
                           value: state.runningApps == 0
                               ? '--'
                               : '${state.runningApps}',

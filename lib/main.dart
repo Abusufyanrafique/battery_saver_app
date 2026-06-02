@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
+import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
 import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
@@ -47,6 +48,9 @@ class MyApp extends StatelessWidget {
      BlocProvider<TemperatureBloc>(
           create: (_) => TemperatureBloc(),
         ),
+        BlocProvider(
+        create: (context) => BatteryStatusCubit(),
+        )
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

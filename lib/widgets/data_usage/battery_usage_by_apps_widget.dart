@@ -4,7 +4,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:battery_saver_app/bloc/battery_usage_home/battery_usage_bloc_home.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
-import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 
 class BatteryUsageByAppsWidget extends StatelessWidget {
@@ -66,8 +65,7 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
               SizedBox(height: getHeight(6)),
 
               Expanded(
-                child: BlocBuilder<BatteryUsageHomeBloc,
-                    BatteryUsageHomeState>(
+                child: BlocBuilder<BatteryUsageHomeBloc, BatteryUsageHomeState>(
                   builder: (context, state) {
                     if (state is BatteryUsageHomeLoading ||
                         state is BatteryUsageHomeInitial) {
@@ -77,13 +75,26 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                     }
 
                     if (state is BatteryUsageHomeError) {
-                      return Center(child: Text(state.message));
+                      return Center(
+                        child: Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.white70, fontSize: 11),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
                     }
 
                     if (state is BatteryUsageHomeLoaded) {
+                      if (state.items.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            'No data for today',
+                            style: TextStyle(color: Colors.white54),
+                          ),
+                        );
+                      }
                       return Column(
-                        mainAxisAlignment:
-                            MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: state.items
                             .take(4)
                             .map((item) => _AppUsageRow(item: item))
@@ -112,27 +123,69 @@ class _AppUsageRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // App Icon
         SvgPicture.asset(item.svgIcon, width: 16, height: 16),
         SizedBox(width: getWidth(8)),
 
+        // App Name + Progress Bar
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(item.appName,
-                  style: const TextStyle(color: Colors.white)),
+              // App name + screen time
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    item.appName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                    ),
+                  ),
+                  Text(
+                    item.usageTime,   // "2h 30m" — real screen time
+                    style: const TextStyle(
+                      color: Color(0xFFD9D9D9),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
               LinearProgressIndicator(
-                color: Color(0xFF891BFF),
-                backgroundColor: Color(0xFF343964),
-                value: item.percentage / 100,
+                color: const Color(0xFF891BFF),
+                backgroundColor: const Color(0xFF343964),
+                value: (item.percentage / 100).clamp(0.0, 1.0),
+                minHeight: 4,
               ),
             ],
           ),
         ),
 
-        Text(
-          "${item.percentage}%",
-          style: TextStyle(color: item.percentageColor),
+        SizedBox(width: getWidth(8)),
+
+        // Battery % (estimated)
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Text(
+            //   "${item.percentage}%",
+            //   style: TextStyle(
+            //     color: item.percentageColor,
+            //     fontSize: 11,
+            //     fontWeight: FontWeight.bold,
+            //   ),
+            // ),
+            Text(
+              "${item.batteryPercent.toStringAsFixed(1)}%",
+              style: const TextStyle(
+                color: Colors.white38,
+                fontSize: 9,
+              ),
+            ),
+          ],
         ),
       ],
     );

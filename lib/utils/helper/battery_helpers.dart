@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+///  Battery Health Levels
 enum BatteryHealthStatus { critical, low, moderate, good, full }
 
+///  Convert battery level → status
 BatteryHealthStatus healthFromLevel(int level) {
   if (level >= 90) return BatteryHealthStatus.full;
   if (level >= 60) return BatteryHealthStatus.good;
@@ -10,6 +12,39 @@ BatteryHealthStatus healthFromLevel(int level) {
   return BatteryHealthStatus.critical;
 }
 
+///  Convert status → readable text (NEW)
+String batteryHealthLabel(BatteryHealthStatus status) {
+  switch (status) {
+    case BatteryHealthStatus.full:
+      return "Excellent";
+    case BatteryHealthStatus.good:
+      return "Good";
+    case BatteryHealthStatus.moderate:
+      return "Normal";
+    case BatteryHealthStatus.low:
+      return "Low";
+    case BatteryHealthStatus.critical:
+      return "Critical";
+  }
+}
+
+///  Convert status → UI color (NEW)
+Color batteryHealthColor(BatteryHealthStatus status) {
+  switch (status) {
+    case BatteryHealthStatus.full:
+      return const Color(0xFF3DDC84);
+    case BatteryHealthStatus.good:
+      return const Color(0xFF8BC34A);
+    case BatteryHealthStatus.moderate:
+      return const Color(0xFFFFC107);
+    case BatteryHealthStatus.low:
+      return const Color(0xFFFF9800);
+    case BatteryHealthStatus.critical:
+      return const Color(0xFFFF5252);
+  }
+}
+
+///  Remaining time estimator
 String remainingTimeFromLevel(int level, {int modeIndex = 0}) {
   if (level <= 0) return '--';
 
