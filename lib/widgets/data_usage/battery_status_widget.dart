@@ -24,17 +24,14 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
   @override
   void initState() {
     super.initState();
-    // Screen load hote hi real data call karega
     context.read<BatteryStatusCubit>().loadBatteryStatus();
   }
 
-  // Real-time MS to String Formatter
   String _formatTime(int ms) {
     if (ms <= 0) return '0h 0m';
     int totalSeconds = ms ~/ 1000;
     int hours = totalSeconds ~/ 3600;
     int minutes = (totalSeconds % 3600) ~/ 60;
-
     return '${hours}h ${minutes}m';
   }
 
@@ -49,7 +46,6 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
   Widget build(BuildContext context) {
     return BlocBuilder<BatteryStatusCubit, BatteryStatusState>(
       builder: (context, state) {
-        // Fallback variables ko dynamically badla jayega agar data aa jata hai
         int level = widget.batteryLevel;
         String remainingTime = '—';
         String screenOnTime = '—';
@@ -58,18 +54,13 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
         String score = '—';
         String label = '—';
 
-        // ─────────────────────────────────────────────
-        // NATIVE REAL DATA VALIDATION
-        // ─────────────────────────────────────────────
         if (state is BatteryStatusLoaded) {
           level = state.data.level;
-          
-          // Native formatted time check karein ya direct milliseconds parse karein
-          screenOnTime = state.data.screenTimeFormatted != '0s' 
-              ? state.data.screenTimeFormatted 
+
+          screenOnTime = state.data.screenTimeFormatted != '0s'
+              ? state.data.screenTimeFormatted
               : _formatTime(state.data.screenOnTime);
 
-          // Real remaining time fallback calculation
           remainingTime = '${level * 15 ~/ 60}h ${(level * 15) % 60}m';
           label = _getPerformanceLabel(level);
           score = '$level/100';
@@ -85,14 +76,13 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
 
         return Container(
           width: double.infinity,
-          padding: EdgeInsets.all(getWidth(12)),
+          padding: EdgeInsets.all(getWidth(10)), 
           decoration: BoxDecoration(
             border: Border.all(
               color: const Color(0xFF4103AC),
               width: 1.2,
             ),
             gradient: const RadialGradient(
-              center: Alignment.center,
               radius: 1.2,
               colors: [
                 Color(0xFF070D34),
@@ -100,21 +90,24 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                 Color(0xCC5C0EE3),
               ],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Stack(
             children: [
-              // State check tak opacity thodi kam rkhein taake "Fake" data user ko feel na ho
               AnimatedOpacity(
                 duration: const Duration(milliseconds: 300),
                 opacity: state is BatteryStatusLoading ? 0.3 : 1.0,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _CircularBattery(level: level),
-                    SizedBox(width: getWidth(12)),
+                    SizedBox(width: getWidth(16)), // ← thoda zyada gap
+            
+                    // SizedBox(width: getWidth(16)), // ← divider ke baad space
                     Expanded(
                       child: Column(
                         children: [
+                          // ── Top Row ──
                           Row(
                             children: [
                               Expanded(
@@ -139,7 +132,19 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                               ),
                             ],
                           ),
-                          SizedBox(height: getHeight(10)),
+
+            //Horizontal Divider ──==================================
+                         //Horizontal Divider ──==================================
+SizedBox(height: getHeight(8)),
+Container(
+  height: 1,
+  color: Color(0xFF4103AC),
+),
+SizedBox(height: getHeight(8)),
+                          SizedBox(width: getWidth(3),),
+  
+
+                          // ── Bottom Row ──
                           Row(
                             children: [
                               Expanded(
@@ -171,7 +176,6 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                 ),
               ),
 
-              // Loader Setup
               if (state is BatteryStatusLoading)
                 const Positioned.fill(
                   child: Center(
@@ -181,7 +185,6 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                   ),
                 ),
 
-              // Error Refresh Trigger
               if (state is BatteryStatusError)
                 Positioned.fill(
                   child: Container(
@@ -190,12 +193,14 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Failed to fetch real data", 
-                          style: TextStyle(color: Colors.white, fontSize: 12)
+                          "Failed to fetch real data",
+                          style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                         IconButton(
-                          onPressed: () => context.read<BatteryStatusCubit>().loadBatteryStatus(),
-                          icon: const Icon(Icons.refresh_rounded, color: Colors.redAccent, size: 24),
+                          onPressed: () =>
+                              context.read<BatteryStatusCubit>().loadBatteryStatus(),
+                          icon: const Icon(Icons.refresh_rounded,
+                              color: Colors.redAccent, size: 24),
                         ),
                       ],
                     ),
@@ -210,7 +215,7 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
 }
 
 // ─────────────────────────────────────────────
-// CIRCULAR BATTERY (UNCHANGED)
+// CIRCULAR BATTERY
 // ─────────────────────────────────────────────
 class _CircularBattery extends StatelessWidget {
   final int level;
@@ -227,14 +232,19 @@ class _CircularBattery extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.bolt_rounded, color: const Color(0xFFFF2D9B), size: getWidth(20)),
+              Icon(Icons.bolt_rounded,
+                  color: const Color(0xFFFF2D9B), size: getWidth(20)),
               Text(
                 '$level%',
-                style: TextStyle(fontSize: getFont(30), fontWeight: FontWeight.w600, color: Colors.white),
+                style: TextStyle(
+                    fontSize: getFont(30),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
               Text(
                 'Battery Level',
-                style: TextStyle(fontSize: getFont(9), color: Colors.white),
+                style:
+                    TextStyle(fontSize: getFont(9), color: Colors.white),
               ),
             ],
           ),
@@ -258,16 +268,31 @@ class _CircularBatteryPainter extends CustomPainter {
     final bgPaint = Paint()
       ..color = Colors.white.withOpacity(0.08)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8;
+      ..strokeWidth = 4;
 
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), startAngle, sweepAngle, false, bgPaint);
+    canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        bgPaint);
 
     final fgPaint = Paint()
       ..shader = const SweepGradient(
-        colors: [Color(0xFF9A3CFF), Color(0xFFFF2D9B), Color(0xFF00BFFF)],
+        colors: [
+          // Color(0xFF9A3CFF),
+          //  Color(0xFFFF2D9B), 
+          //  Color(0xFF00BFFF)
+           Color(0xFFFF19BD),
+           Color(0xFF7F1DE7), 
+           Color(0xFF55D0FF),
+            Color(0xFF55D0FF),
+           Color(0xFF7F1DE7), 
+           Color(0xFFA24BFF)
+           ],
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 8;
+      ..strokeWidth = 4;
 
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
@@ -283,7 +308,7 @@ class _CircularBatteryPainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────
-// STAT ITEM (UNCHANGED)
+// STAT ITEM
 // ─────────────────────────────────────────────
 class _StatItem extends StatelessWidget {
   final String imagepath;
@@ -305,35 +330,56 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(right: showRightBorder ? getWidth(10) : 0),
+      padding: EdgeInsets.only(
+        right: showRightBorder ? getWidth(12) : 0,
+        left: showRightBorder ? 0 : getWidth(12), // ← left side bhi space
+      ),
+      decoration: showRightBorder
+      //verticalll divider ==========================================here
+          ? BoxDecoration(
+              border: Border(
+                right: BorderSide(
+                  color: Color(0xFF4103AC),
+                  width: 1,
+                ),
+              ),
+            )
+          : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Image.asset(imagepath, width: getWidth(12), height: getWidth(16)),
+              Image.asset(imagepath,
+                  width: getWidth(12), height: getWidth(16)),
               SizedBox(width: getWidth(4)),
               Expanded(
                 child: Text(
                   title,
-                  style: AppTextStyles.bodyMedium.copyWith(fontSize: getFont(9), color: Colors.white),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(9), color: Colors.white),
                 ),
               ),
             ],
           ),
-          SizedBox(height: getHeight(3)),
+          SizedBox(height: getHeight(5)), // ← thodi zyada spacing
           Padding(
             padding: const EdgeInsets.only(left: 9),
             child: Text(
               value,
-              style: AppTextStyles.bodyLarge.copyWith(fontSize: getFont(12), fontWeight: FontWeight.bold, color: Colors.white),
+              style: AppTextStyles.bodyLarge.copyWith(
+                  fontSize: getFont(13), // ← thoda bada
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
             ),
           ),
+          SizedBox(height: getHeight(2)),
           Padding(
             padding: const EdgeInsets.only(left: 9),
             child: Text(
               subtitle,
-              style: AppTextStyles.bodyMedium.copyWith(fontSize: getFont(10), color: Colors.white70),
+              style: AppTextStyles.bodyMedium.copyWith(
+                  fontSize: getFont(10), color: Colors.white70),
             ),
           ),
         ],

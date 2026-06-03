@@ -57,15 +57,13 @@ const _kExts = {
 };
 
 const _kImages = {
-  'Images':    'assets/images/tools/filemanagerimages.png',
-  'Videos':    'assets/images/tools/filemanagervideos.png',
-  'Audio':     'assets/images/tools/filemanageraudio.png',
-  'Documents': 'assets/images/tools/filemanagernotes.png',
-  'Downloads': 'assets/images/tools/filemanagerdownload.png',
-  'APKs':      'assets/images/tools/filemanagerapk.png',
+  'Images':    'assets/images/file_manager/filemanagerimages.png',
+  'Videos':    'assets/images/file_manager/filemanagervideos.png',
+  'Audio':     'assets/images/file_manager/filemanageraudio.png',
+  'Documents': 'assets/images/file_manager/filemanagernotes.png',
+  'Downloads': 'assets/images/file_manager/filemanagerdownload.png',
+  'APKs':      'assets/images/file_manager/filemanagerapk.png',
 };
-
-// ─── BLOCKED DIRS (Android 11+ restricted paths) ──────────────────────────────
 
 const _kBlockedSuffixes = [
   'Android/data',
@@ -80,26 +78,18 @@ class FileManagerRepository {
   bool _scanning = false;
 
   // ── PERMISSION ──────────────────────────────────────────────────────────────
-  // Android 11+: MANAGE_EXTERNAL_STORAGE needed for broad access.
-  // Falls back to READ_EXTERNAL_STORAGE for partial access.
 
   Future<bool> requestStoragePermission() async {
     if (!Platform.isAndroid) return true;
-
-    // Already granted?
     if (await Permission.manageExternalStorage.isGranted) return true;
     if (await Permission.storage.isGranted) return true;
-
-    // Request MANAGE_EXTERNAL_STORAGE first (Android 11+)
     final manageStatus = await Permission.manageExternalStorage.request();
     if (manageStatus.isGranted) return true;
-
-    // Fallback: READ_EXTERNAL_STORAGE (Android 10 and below, or partial)
     final storageStatus = await Permission.storage.request();
     return storageStatus.isGranted;
   }
 
-  // ── STORAGE INFO ────────────────────────────────────────────────────────────
+  // ── INTERNAL STORAGE ────────────────────────────────────────────────────────
 
   Future<StorageDeviceModel> fetchInternalStorage() async {
     try {
@@ -107,8 +97,8 @@ class FileManagerRepository {
       final total = await ds.getTotalDiskSpace ?? 0.0;
       final free  = await ds.getFreeDiskSpace  ?? 0.0;
       return StorageDeviceModel(
-        name: 'Internal Storage',
-        usedGB: (total - free) / 1024,
+        name:    'Internal Storage',
+        usedGB:  (total - free) / 1024,
         totalGB: total / 1024,
       );
     } catch (e) {
@@ -119,31 +109,116 @@ class FileManagerRepository {
     }
   }
 
+  // ── SD CARD STORAGE (FIXED) ──────────────────────────────────────────────────
+  // FIX 1: Root walk-up added (same as _resolveRoot)
+  // FIX 2: Real size via `df` command instead of hardcoded 0
+
   Future<StorageDeviceModel?> fetchSdCardStorage() async {
     if (!Platform.isAndroid) return null;
     try {
       final dirs = await getExternalStorageDirectories();
-      if (dirs != null && dirs.length > 1) {
-        final parts = dirs[1].path.split('/');
-        if (parts.length >= 3) {
-          final sd = '/${parts[1]}/${parts[2]}';
-          if (Directory(sd).existsSync()) {
-            return StorageDeviceModel(
-              name: 'SD Card', usedGB: 0, totalGB: 0, isSdCard: true,
-            );
-          }
+      debugLog('[FM] external dirs count: ${dirs?.length}');
+        // ── DEBUG ──
+    print("🗂️ EXTERNAL DIRS COUNT: ${dirs?.length}");
+    dirs?.forEach((d) => print("   📂 DIR: ${d.path}"));
+      // SD card is second entry — if only 1 or none, no SD card
+     if (dirs == null || dirs.length <= 1) {
+  debugLog('[FM] No SD card — showing placeholder');
+  return const StorageDeviceModel(
+    name:    'SD Card',
+    usedGB:  0,
+    totalGB: 0,
+    isSdCard: true,
+  );
+}
+
+      // Walk up to find real SD card root (strip Android/data/... suffix)
+      final parts = dirs[1].path.split('/');
+      String? sdRoot;
+
+      for (int i = parts.length; i >= 3; i--) {
+        final candidate = parts.sublist(0, i).join('/');
+        final d = Directory(candidate);
+        if (!d.existsSync()) continue;
+
+        final hasDCIM     = Directory('$candidate/DCIM').existsSync();
+        final hasDownload = Directory('$candidate/Download').existsSync()
+                         || Directory('$candidate/Downloads').existsSync();
+        if (hasDCIM || hasDownload) {
+          sdRoot = candidate;
+          debugLog('[FM] SD root via walk-up: $sdRoot');
+          break;
         }
       }
+
+      // Fallback: use /storage/XXXX-XXXX directly
+      if (sdRoot == null && parts.length >= 3) {
+        final candidate = '/${parts[1]}/${parts[2]}';
+        if (Directory(candidate).existsSync()) {
+          sdRoot = candidate;
+          debugLog('[FM] SD root via fallback: $sdRoot');
+        }
+      }
+
+      if (sdRoot == null) {
+        debugLog('[FM] SD root not resolved — returning null');
+        return null;
+      }
+
+      // ── Get real SD card size via `df` ─────────────────────────────────────
+      double totalGB = 0;
+      double usedGB  = 0;
+
+      try {
+        final result = await Process.run('df', [sdRoot]);
+        debugLog('[FM] df stdout: ${result.stdout}');
+
+        if (result.exitCode == 0) {
+          final lines = result.stdout
+              .toString()
+              .trim()
+              .split('\n')
+              .where((l) => l.isNotEmpty)
+              .toList();
+
+          // df output (Android):
+          // Filesystem       1K-blocks    Used Available Use% Mounted on
+          // /dev/block/...   xxxxxxxxx   xxxxx   xxxxxxx  xx% /storage/XXXX
+
+          for (final line in lines) {
+            // Skip header line
+            if (line.startsWith('Filesystem') || line.startsWith('Sys')) continue;
+
+            final cols = line.trim().split(RegExp(r'\s+'));
+            if (cols.length >= 4) {
+              final totalKB = double.tryParse(cols[1]) ?? 0;
+              final usedKB  = double.tryParse(cols[2]) ?? 0;
+              if (totalKB > 0) {
+                totalGB = totalKB / (1024 * 1024);
+                usedGB  = usedKB  / (1024 * 1024);
+                debugLog('[FM] SD card size: used=${usedGB.toStringAsFixed(2)}GB total=${totalGB.toStringAsFixed(2)}GB');
+                break;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        debugLog('[FM] df error: $e');
+      }
+
+      return StorageDeviceModel(
+        name:     'SD Card',
+        usedGB:   usedGB,
+        totalGB:  totalGB,
+        isSdCard: true,
+      );
     } catch (e) {
-      debugLog('fetchSdCardStorage error: $e');
+      debugLog('[FM] fetchSdCardStorage error: $e');
+      return null;
     }
-    return null;
   }
 
-  // ── FILE SCAN — main thread compute, NO isolate ─────────────────────────────
-  // Isolate was causing silent hangs on Android 11+ due to permission
-  // context not being available inside the spawned isolate.
-  // Using compute() keeps it off the UI thread safely.
+  // ── FILE SCAN ────────────────────────────────────────────────────────────────
 
   Future<List<FileCategoryModel>> fetchFileCategories({
     bool forceRefresh = false,
@@ -165,7 +240,6 @@ class FileManagerRepository {
       final root = await _resolveRoot();
       debugLog('[FM] root=$root  exists=${Directory(root).existsSync()}');
 
-      // Run scan directly — no isolate, no spawn failures
       final maps = await _scanDirectory(root);
       debugLog('[FM] scan returned ${maps.length} categories');
 
@@ -175,10 +249,6 @@ class FileManagerRepository {
         imagePath: m['imagePath'] as String,
         fileCount: m['fileCount'] as int,
       )).toList();
-
-      for (final m in models) {
-        debugLog('[FM]   ${m.name}: ${m.fileCount} files  ${m.size}');
-      }
 
       _cache = models;
       return models;
@@ -190,7 +260,7 @@ class FileManagerRepository {
     }
   }
 
-  // ── DIRECTORY SCAN (runs in same isolate via async, off UI via compute) ──────
+  // ── DIRECTORY SCAN ───────────────────────────────────────────────────────────
 
   Future<List<Map<String, dynamic>>> _scanDirectory(String rootPath) async {
     final root = Directory(rootPath);
@@ -207,14 +277,12 @@ class FileManagerRepository {
     };
     int dlCount = 0, dlBytes = 0;
 
-    // Download folder paths
     final dlPaths = <String>[];
     for (final n in ['Download', 'Downloads']) {
       final p = '$rootPath/$n';
       if (Directory(p).existsSync()) dlPaths.add(p);
     }
 
-    // BFS stack with depth tracking
     final stack  = <String>[rootPath];
     final depths = <String, int>{rootPath: 0};
     int   scanned = 0;
@@ -224,11 +292,9 @@ class FileManagerRepository {
       final depth = depths[path] ?? 0;
       if (depth > 6) continue;
 
-      // Skip hidden dirs
       final dirName = path.split('/').last;
       if (dirName.startsWith('.')) continue;
 
-      // Skip Android restricted dirs
       bool blocked = false;
       for (final suffix in _kBlockedSuffixes) {
         if (path.endsWith(suffix) || path.contains('/$suffix/')) {
@@ -242,7 +308,7 @@ class FileManagerRepository {
       try {
         entities = await Directory(path).list(followLinks: false).toList();
       } catch (_) {
-        continue; // Permission denied for this sub-dir — skip silently
+        continue;
       }
 
       for (final entity in entities) {
@@ -256,11 +322,9 @@ class FileManagerRepository {
           int sz = 0;
           try { sz = entity.statSync().size; } catch (_) {}
 
-          // Check if in Downloads folder
           final inDl = dlPaths.any((dp) => fp.startsWith(dp));
           if (inDl) { dlCount++; dlBytes += sz; }
 
-          // Categorize by extension
           for (final cat in _kExts.keys) {
             if (_kExts[cat]!.contains(ext)) {
               counts[cat] = counts[cat]! + 1;
@@ -309,25 +373,22 @@ class FileManagerRepository {
     }).toList();
   }
 
-  // ── ROOT RESOLUTION ─────────────────────────────────────────────────────────
+  // ── ROOT RESOLUTION ──────────────────────────────────────────────────────────
 
   Future<String> _resolveRoot() async {
-    // Try getExternalStorageDirectories first
     try {
       final dirs = await getExternalStorageDirectories();
       if (dirs != null && dirs.isNotEmpty) {
-        // Walk up to the storage root (strip Android/data/... suffix)
         final parts = dirs[0].path.split('/');
         for (int i = parts.length; i >= 3; i--) {
           final candidate = parts.sublist(0, i).join('/');
           final d = Directory(candidate);
           if (d.existsSync()) {
-            // Make sure it looks like a storage root (has DCIM or Download)
             final hasDCIM     = Directory('$candidate/DCIM').existsSync();
             final hasDownload = Directory('$candidate/Download').existsSync()
                              || Directory('$candidate/Downloads').existsSync();
             if (hasDCIM || hasDownload) {
-              debugLog('[FM] resolved root via getExternalStorageDirectories: $candidate');
+              debugLog('[FM] resolved root: $candidate');
               return candidate;
             }
           }
@@ -336,14 +397,12 @@ class FileManagerRepository {
     } catch (e) {
       debugLog('[FM] getExternalStorageDirectories failed: $e');
     }
-
-    // Fallback: standard Android path
     const fallback = '/storage/emulated/0';
     debugLog('[FM] using fallback root: $fallback');
     return fallback;
   }
 
-  // ── HELPERS ─────────────────────────────────────────────────────────────────
+  // ── HELPERS ──────────────────────────────────────────────────────────────────
 
   void cancelScan() {
     _scanning = false;

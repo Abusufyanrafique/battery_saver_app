@@ -20,7 +20,7 @@ class StatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // APK mode colors
     final Color labelColor = isApkMode
-        ?  Colors.white  // orange label
+        ?  Colors.white 
         : Colors.white;
     final Color valueColor = isApkMode
         ? const Color(0xFF55D0FF)   // orange value

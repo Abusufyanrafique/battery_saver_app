@@ -181,7 +181,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                           child: Text(
                             'No data yet',
                             style: TextStyle(
-                              color: Colors.white54,
+                              color: Color(0xFF4103AC),
                               fontSize: getFont(11),
                             ),
                           ),
@@ -201,11 +201,11 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                               verticalInterval:
                                   interval > 0 ? interval.toDouble() : 1,
                               getDrawingHorizontalLine: (_) => FlLine(
-                                color: Colors.white.withOpacity(0.07),
+                                color: Color(0xFF4103AC),
                                 strokeWidth: 1,
                               ),
                               getDrawingVerticalLine: (_) => FlLine(
-                                color: Colors.white.withOpacity(0.07),
+                                color: Color(0xFF4103AC),
                                 strokeWidth: 1,
                               ),
                             ),

@@ -11,13 +11,23 @@ class DataUsageRepository {
 
   static const Map<String, _AppInfo> _knownApps = {
     'com.whatsapp':
-        _AppInfo('WhatsApp', AppIcons.whatsappicon, Color(0xFF26D626)),
+        _AppInfo(
+          'WhatsApp', 
+          AppIcons.whatsappicon,
+           Color(0xFF26D626)),
     'com.facebook.katana':
-        _AppInfo('Facebook', AppIcons.facebookicon, Color(0xFF0392EB)),
+        _AppInfo('Facebook',
+         AppIcons.facebookicon,
+          Color(0xFF0392EB)),
     'com.instagram.android':
-        _AppInfo('Instagram', AppIcons.instagramicon, Color(0xFFEA3918)),
+        _AppInfo('Instagram', 
+        AppIcons.instagramicon,
+         Color(0xFFEA3918)),
     'com.google.android.youtube':
-        _AppInfo('YouTube', AppIcons.youtubeicon, Color(0xFFEA0202)),
+        _AppInfo('YouTube',
+         AppIcons.youtubeicon,
+          Color(0xFFEA0202)
+          ),
   };
 
   /// -------------------------

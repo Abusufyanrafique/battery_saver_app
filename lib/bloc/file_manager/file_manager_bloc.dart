@@ -81,21 +81,24 @@ class FileManagerLoadedState extends FileManagerState {
     this.searchQuery = '',
   });
 
+  // FIX: sdCardStorage null override bug — use explicit sentinel
   FileManagerLoadedState copyWith({
     List<FileCategoryModel>? categories,
     List<FileCategoryModel>? filteredCategories,
     StorageDeviceModel? internalStorage,
     StorageDeviceModel? sdCardStorage,
+    bool clearSdCard = false,          // set true only to explicitly null it
     bool? isRefreshing,
     String? searchQuery,
   }) {
     return FileManagerLoadedState(
-      categories: categories ?? this.categories,
+      categories:         categories         ?? this.categories,
       filteredCategories: filteredCategories ?? this.filteredCategories,
-      internalStorage: internalStorage ?? this.internalStorage,
-      sdCardStorage: sdCardStorage ?? this.sdCardStorage,
-      isRefreshing: isRefreshing ?? this.isRefreshing,
-      searchQuery: searchQuery ?? this.searchQuery,
+      internalStorage:    internalStorage    ?? this.internalStorage,
+      // clearSdCard=true hoga tabhi null set hoga, warna purana value rakhega
+      sdCardStorage:      clearSdCard ? null : (sdCardStorage ?? this.sdCardStorage),
+      isRefreshing:       isRefreshing       ?? this.isRefreshing,
+      searchQuery:        searchQuery        ?? this.searchQuery,
     );
   }
 
@@ -126,7 +129,6 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     on<FileManagerSearchEvent>(_onSearch);
   }
 
-  // ── LOAD ─────────────────────────────
   Future<void> _onLoad(
     FileManagerLoadEvent event,
     Emitter<FileManagerState> emit,
@@ -135,7 +137,6 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     await _loadData(emit, forceRefresh: false);
   }
 
-  // ── RETRY ─────────────────────────────
   Future<void> _onRetry(
     FileManagerRetryEvent event,
     Emitter<FileManagerState> emit,
@@ -144,40 +145,35 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     await _loadData(emit, forceRefresh: true);
   }
 
-  // ── REFRESH ───────────────────────────
   Future<void> _onRefresh(
     FileManagerRefreshEvent event,
     Emitter<FileManagerState> emit,
   ) async {
     if (state is FileManagerLoadedState) {
+      // FIX: copyWith se sdCardStorage preserve hoga — null override nahi hoga
       emit((state as FileManagerLoadedState).copyWith(isRefreshing: true));
     }
     await _loadData(emit, forceRefresh: true);
   }
 
-  // ── SEARCH ─────────────────────────────
   void _onSearch(
     FileManagerSearchEvent event,
     Emitter<FileManagerState> emit,
   ) {
     if (state is! FileManagerLoadedState) return;
-
     final current = state as FileManagerLoadedState;
     final q = event.query.toLowerCase().trim();
-
     final filtered = q.isEmpty
         ? current.categories
         : current.categories
             .where((e) => e.name.toLowerCase().contains(q))
             .toList();
-
     emit(current.copyWith(
       filteredCategories: filtered,
       searchQuery: event.query,
     ));
   }
 
-  // ── CORE LOGIC (FIXED) ─────────────────────────
   Future<void> _loadData(
     Emitter<FileManagerState> emit, {
     required bool forceRefresh,
@@ -185,7 +181,6 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     try {
       print("🚀 LOAD DATA START");
 
-      // 🔥 SAFETY TIMEOUT (IMPORTANT)
       final hasPermission = await _repo
           .requestStoragePermission()
           .timeout(const Duration(seconds: 5), onTimeout: () {
@@ -202,40 +197,48 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         return;
       }
 
-      final storage = await _repo.fetchInternalStorage();
-      final sdCard = await _repo.fetchSdCardStorage();
+      // Dono parallel fetch karo — time bachao
+      final results = await Future.wait([
+        _repo.fetchInternalStorage(),
+        _repo.fetchSdCardStorage(),
+      ]);
 
-      print("📦 STORAGE LOADED");
+      final storage = results[0] as StorageDeviceModel;
+      final sdCard  = results[1] as StorageDeviceModel?;
 
-      // ⚡ immediate UI update
+      print("📦 STORAGE: internal=${storage.totalLabel}  sdCard=${sdCard?.totalLabel ?? 'null'}");
+
+      // Immediate UI — spinner + storage bars
       emit(FileManagerLoadedState(
-        categories: const [],
+        categories:         const [],
         filteredCategories: const [],
-        internalStorage: storage,
-        sdCardStorage: sdCard,
-        isRefreshing: true,
+        internalStorage:    storage,
+        sdCardStorage:      sdCard,   // FIX: null hoga toh nahi dikha — correct hai
+        isRefreshing:       true,
       ));
 
-      // 🔥 SAFE SCAN WITH TIMEOUT
+      // FIX: Timeout pe double-scan nahi — sirf empty return
       final categories = await _repo
           .fetchFileCategories(forceRefresh: forceRefresh)
-          .timeout(const Duration(seconds: 15), onTimeout: () {
-        print("⛔ Scan timeout");
-        return _repo.fetchFileCategories(forceRefresh: true);
-      });
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              print("⛔ Scan timeout — returning empty");
+              return [];  // FIX: double fetchFileCategories nahi
+            },
+          );
 
-      print("📁 CATEGORIES LOADED: ${categories.length}");
+      print("📁 CATEGORIES: ${categories.length}");
 
       emit(FileManagerLoadedState(
-        categories: categories,
+        categories:         categories,
         filteredCategories: categories,
-        internalStorage: storage,
-        sdCardStorage: sdCard,
-        isRefreshing: false,
+        internalStorage:    storage,
+        sdCardStorage:      sdCard,   // FIX: same sdCard pass — lost nahi hoga
+        isRefreshing:       false,
       ));
     } catch (e) {
       print("❌ ERROR: $e");
-
       emit(FileManagerErrorState(e.toString()));
     }
   }

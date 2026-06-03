@@ -320,10 +320,10 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                   _categoryGrid(state),
                   const SizedBox(height: 24),
                   _StorageCard(storage: state.internalStorage),
-                  if (state.sdCardStorage != null) ...[
-                    const SizedBox(height: 12),
-                    _StorageCard(storage: state.sdCardStorage!),
-                  ],
+                if (state.sdCardStorage != null) ...[
+  const SizedBox(height: 12),
+  _StorageCard(storage: state.sdCardStorage!),
+],
                   const SizedBox(height: 32),
                 ],
               ),

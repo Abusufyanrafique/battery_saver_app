@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
 import 'package:battery_saver_app/bloc/battery_usage_home/battery_usage_bloc_home.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -78,7 +77,10 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                       return Center(
                         child: Text(
                           state.message,
-                          style: const TextStyle(color: Colors.white70, fontSize: 11),
+                          style: const TextStyle(
+                            color: Colors.white70,
+                             fontSize: 11,
+                             ),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -180,8 +182,8 @@ class _AppUsageRow extends StatelessWidget {
             // ),
             Text(
               "${item.batteryPercent.toStringAsFixed(1)}%",
-              style: const TextStyle(
-                color: Colors.white38,
+              style:  TextStyle(
+                color: item.percentageColor,
                 fontSize: 9,
               ),
             ),
@@ -189,5 +191,23 @@ class _AppUsageRow extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+Color _appColor(String packageName) {
+  switch (packageName) {
+    case 'com.instagram.android':
+      return const Color(0xFFFE39C6); // Pink
+
+    case 'com.google.android.youtube':
+      return const Color(0xFFF02767); // Red
+
+    case 'com.whatsapp':
+      return const Color(0xFF9A3CFF); // Green
+
+    case 'com.facebook.katana':
+      return const Color(0xFF39DDFE); // Blue
+
+    default:
+      return const Color(0xFF39DDFE); // Cyan
   }
 }
