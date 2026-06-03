@@ -2,32 +2,46 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:battery_saver_app/data/repositories/file_manager_repository.dart';
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
 // EVENTS
-// ══════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
 
 abstract class FileManagerEvent extends Equatable {
   const FileManagerEvent();
-  @override List<Object?> get props => [];
+
+  @override
+  List<Object?> get props => [];
 }
 
-class FileManagerLoadEvent    extends FileManagerEvent { const FileManagerLoadEvent(); }
-class FileManagerRetryEvent   extends FileManagerEvent { const FileManagerRetryEvent(); }
-class FileManagerRefreshEvent extends FileManagerEvent { const FileManagerRefreshEvent(); }
+class FileManagerLoadEvent extends FileManagerEvent {
+  const FileManagerLoadEvent();
+}
+
+class FileManagerRetryEvent extends FileManagerEvent {
+  const FileManagerRetryEvent();
+}
+
+class FileManagerRefreshEvent extends FileManagerEvent {
+  const FileManagerRefreshEvent();
+}
 
 class FileManagerSearchEvent extends FileManagerEvent {
   final String query;
   const FileManagerSearchEvent(this.query);
-  @override List<Object?> get props => [query];
+
+  @override
+  List<Object?> get props => [query];
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
 // STATES
-// ══════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
 
 abstract class FileManagerState extends Equatable {
   const FileManagerState();
-  @override List<Object?> get props => [];
+
+  @override
+  List<Object?> get props => [];
 }
 
 class FileManagerLoadingState extends FileManagerState {
@@ -36,25 +50,27 @@ class FileManagerLoadingState extends FileManagerState {
 
 class FileManagerPermissionDeniedState extends FileManagerState {
   final String message;
-  const FileManagerPermissionDeniedState({
-    this.message = 'Storage permission required to scan files.',
-  });
-  @override List<Object?> get props => [message];
+  const FileManagerPermissionDeniedState(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }
 
 class FileManagerErrorState extends FileManagerState {
   final String message;
   const FileManagerErrorState(this.message);
-  @override List<Object?> get props => [message];
+
+  @override
+  List<Object?> get props => [message];
 }
 
 class FileManagerLoadedState extends FileManagerState {
-  final List<FileCategoryModel>  categories;
-  final List<FileCategoryModel>  filteredCategories;
-  final StorageDeviceModel       internalStorage;
-  final StorageDeviceModel?      sdCardStorage;
-  final bool                     isRefreshing;
-  final String                   searchQuery;
+  final List<FileCategoryModel> categories;
+  final List<FileCategoryModel> filteredCategories;
+  final StorageDeviceModel internalStorage;
+  final StorageDeviceModel? sdCardStorage;
+  final bool isRefreshing;
+  final String searchQuery;
 
   const FileManagerLoadedState({
     required this.categories,
@@ -62,35 +78,41 @@ class FileManagerLoadedState extends FileManagerState {
     required this.internalStorage,
     this.sdCardStorage,
     this.isRefreshing = false,
-    this.searchQuery  = '',
+    this.searchQuery = '',
   });
 
   FileManagerLoadedState copyWith({
     List<FileCategoryModel>? categories,
     List<FileCategoryModel>? filteredCategories,
-    StorageDeviceModel?      internalStorage,
-    StorageDeviceModel?      sdCardStorage,
-    bool?                    isRefreshing,
-    String?                  searchQuery,
-  }) => FileManagerLoadedState(
-    categories:         categories         ?? this.categories,
-    filteredCategories: filteredCategories ?? this.filteredCategories,
-    internalStorage:    internalStorage    ?? this.internalStorage,
-    sdCardStorage:      sdCardStorage      ?? this.sdCardStorage,
-    isRefreshing:       isRefreshing       ?? this.isRefreshing,
-    searchQuery:        searchQuery        ?? this.searchQuery,
-  );
+    StorageDeviceModel? internalStorage,
+    StorageDeviceModel? sdCardStorage,
+    bool? isRefreshing,
+    String? searchQuery,
+  }) {
+    return FileManagerLoadedState(
+      categories: categories ?? this.categories,
+      filteredCategories: filteredCategories ?? this.filteredCategories,
+      internalStorage: internalStorage ?? this.internalStorage,
+      sdCardStorage: sdCardStorage ?? this.sdCardStorage,
+      isRefreshing: isRefreshing ?? this.isRefreshing,
+      searchQuery: searchQuery ?? this.searchQuery,
+    );
+  }
 
   @override
   List<Object?> get props => [
-    categories, filteredCategories, internalStorage,
-    sdCardStorage, isRefreshing, searchQuery,
-  ];
+        categories,
+        filteredCategories,
+        internalStorage,
+        sdCardStorage,
+        isRefreshing,
+        searchQuery,
+      ];
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
 // BLOC
-// ══════════════════════════════════════════════════════════════════════════════
+// ─────────────────────────────────────────────
 
 class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   final FileManagerRepository _repo;
@@ -104,59 +126,123 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     on<FileManagerSearchEvent>(_onSearch);
   }
 
-  Future<void> _onLoad(FileManagerLoadEvent e, Emitter<FileManagerState> emit) async {
-    emit(const FileManagerLoadingState());
-    await _loadData(emit);
+  // ── LOAD ─────────────────────────────
+  Future<void> _onLoad(
+    FileManagerLoadEvent event,
+    Emitter<FileManagerState> emit,
+  ) async {
+    print("🔥 LOAD EVENT STARTED");
+    await _loadData(emit, forceRefresh: false);
   }
 
-  Future<void> _onRetry(FileManagerRetryEvent e, Emitter<FileManagerState> emit) async {
+  // ── RETRY ─────────────────────────────
+  Future<void> _onRetry(
+    FileManagerRetryEvent event,
+    Emitter<FileManagerState> emit,
+  ) async {
     emit(const FileManagerLoadingState());
-    await _loadData(emit);
+    await _loadData(emit, forceRefresh: true);
   }
 
-  Future<void> _onRefresh(FileManagerRefreshEvent e, Emitter<FileManagerState> emit) async {
+  // ── REFRESH ───────────────────────────
+  Future<void> _onRefresh(
+    FileManagerRefreshEvent event,
+    Emitter<FileManagerState> emit,
+  ) async {
     if (state is FileManagerLoadedState) {
       emit((state as FileManagerLoadedState).copyWith(isRefreshing: true));
     }
-    await _loadData(emit);
+    await _loadData(emit, forceRefresh: true);
   }
 
-  void _onSearch(FileManagerSearchEvent e, Emitter<FileManagerState> emit) {
+  // ── SEARCH ─────────────────────────────
+  void _onSearch(
+    FileManagerSearchEvent event,
+    Emitter<FileManagerState> emit,
+  ) {
     if (state is! FileManagerLoadedState) return;
-    final cur   = state as FileManagerLoadedState;
-    final query = e.query.trim().toLowerCase();
-    final filtered = query.isEmpty
-        ? cur.categories
-        : cur.categories.where((c) => c.name.toLowerCase().contains(query)).toList();
-    emit(cur.copyWith(filteredCategories: filtered, searchQuery: e.query));
+
+    final current = state as FileManagerLoadedState;
+    final q = event.query.toLowerCase().trim();
+
+    final filtered = q.isEmpty
+        ? current.categories
+        : current.categories
+            .where((e) => e.name.toLowerCase().contains(q))
+            .toList();
+
+    emit(current.copyWith(
+      filteredCategories: filtered,
+      searchQuery: event.query,
+    ));
   }
 
-  Future<void> _loadData(Emitter<FileManagerState> emit) async {
+  // ── CORE LOGIC (FIXED) ─────────────────────────
+  Future<void> _loadData(
+    Emitter<FileManagerState> emit, {
+    required bool forceRefresh,
+  }) async {
     try {
-      final hasPermission = await _repo.requestStoragePermission();
+      print("🚀 LOAD DATA START");
+
+      // 🔥 SAFETY TIMEOUT (IMPORTANT)
+      final hasPermission = await _repo
+          .requestStoragePermission()
+          .timeout(const Duration(seconds: 5), onTimeout: () {
+        print("⛔ Permission timeout");
+        return false;
+      });
+
+      print("🔐 PERMISSION: $hasPermission");
+
       if (!hasPermission) {
-        emit(const FileManagerPermissionDeniedState());
+        emit(const FileManagerPermissionDeniedState(
+          "Storage permission required",
+        ));
         return;
       }
 
-      final results = await Future.wait([
-        _repo.fetchFileCategories(),
-        _repo.fetchInternalStorage(),
-        _repo.fetchSdCardStorage(),
-      ]);
+      final storage = await _repo.fetchInternalStorage();
+      final sdCard = await _repo.fetchSdCardStorage();
 
-      final categories = results[0] as List<FileCategoryModel>;
-      final storage    = results[1] as StorageDeviceModel;
-      final sdCard     = results[2] as StorageDeviceModel?;
+      print("📦 STORAGE LOADED");
+
+      // ⚡ immediate UI update
+      emit(FileManagerLoadedState(
+        categories: const [],
+        filteredCategories: const [],
+        internalStorage: storage,
+        sdCardStorage: sdCard,
+        isRefreshing: true,
+      ));
+
+      // 🔥 SAFE SCAN WITH TIMEOUT
+      final categories = await _repo
+          .fetchFileCategories(forceRefresh: forceRefresh)
+          .timeout(const Duration(seconds: 15), onTimeout: () {
+        print("⛔ Scan timeout");
+        return _repo.fetchFileCategories(forceRefresh: true);
+      });
+
+      print("📁 CATEGORIES LOADED: ${categories.length}");
 
       emit(FileManagerLoadedState(
-        categories:         categories,
+        categories: categories,
         filteredCategories: categories,
-        internalStorage:    storage,
-        sdCardStorage:      sdCard,
+        internalStorage: storage,
+        sdCardStorage: sdCard,
+        isRefreshing: false,
       ));
     } catch (e) {
-      emit(FileManagerErrorState('Error: ${e.toString()}'));
+      print("❌ ERROR: $e");
+
+      emit(FileManagerErrorState(e.toString()));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _repo.cancelScan();
+    return super.close();
   }
 }

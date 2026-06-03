@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/models/tools/tool_item.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/view/file_manager/file_manager_screen.dart';
 import 'package:flutter/material.dart';
 
 class QuickWidgetItem {
@@ -88,7 +89,15 @@ final List<ToolItem> toolsData = [
     // icon: Icons.folder_rounded,
     iconColor: const Color(0xFFFFCC80),
     // iconBgColor: const Color(0xFF3A2B1A),
-     route: '/FileManagerScreen',
+    onTap:(context) {
+       Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const FileManagerPage(),
+        ),
+      );
+    },
+    //  route: '/FileManagerScreen',
   ),
   ToolItem(
     title: 'Data Usage',

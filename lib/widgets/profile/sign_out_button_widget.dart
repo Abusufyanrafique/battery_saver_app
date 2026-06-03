@@ -9,7 +9,7 @@ class SignOutButtonWidget extends StatelessWidget {
 
   const SignOutButtonWidget({
     super.key,
-    this.onTap,
+    this.onTap, required bool isLoading,
   });
 
   @override

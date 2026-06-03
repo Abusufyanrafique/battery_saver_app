@@ -4,21 +4,19 @@ enum SecurityScanStatus { idle, scanning, done }
 
 class SecurityScanState extends Equatable {
   final SecurityScanStatus status;
-
-  /// Konse items complete ho gaye (index list)
   final List<bool> completedItems;
-
-  /// 0–100 scan progress
   final int progress;
-
-  /// Kitne threats mile (real check se)
   final int threatsFound;
+
+  /// Human-readable name of the scan currently running, e.g. "Virus Scan"
+  final String currentScanLabel;
 
   const SecurityScanState({
     this.status = SecurityScanStatus.idle,
     this.completedItems = const [false, false, false, false],
     this.progress = 0,
     this.threatsFound = 0,
+    this.currentScanLabel = '',
   });
 
   bool get isSafe => threatsFound == 0;
@@ -30,15 +28,18 @@ class SecurityScanState extends Equatable {
     List<bool>? completedItems,
     int? progress,
     int? threatsFound,
+    String? currentScanLabel,
   }) {
     return SecurityScanState(
       status: status ?? this.status,
       completedItems: completedItems ?? this.completedItems,
       progress: progress ?? this.progress,
       threatsFound: threatsFound ?? this.threatsFound,
+      currentScanLabel: currentScanLabel ?? this.currentScanLabel,
     );
   }
 
   @override
-  List<Object?> get props => [status, completedItems, progress, threatsFound];
+  List<Object?> get props =>
+      [status, completedItems, progress, threatsFound, currentScanLabel];
 }

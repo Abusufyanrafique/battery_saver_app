@@ -57,7 +57,7 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       image: const DecorationImage(
-                        image: AssetImage(AppImages.batteryhealthimager),
+                        image: AssetImage(AppImages.batteryhealthimageq),
                         fit: BoxFit.contain,
                       ),
                     ),

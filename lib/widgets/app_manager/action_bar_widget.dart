@@ -77,6 +77,7 @@ class ActionBarWidget extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   AppIcons.roboticon,
+                  color: Colors.white,
                   width: getWidth(24),
                   height: getHeight(24),
                 ),

@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:battery_saver_app/models/junk/junk_item.dart';
 import 'package:battery_saver_app/services/junk_scanner_service.dart';
 import 'junk_event.dart';
@@ -49,13 +47,14 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
       totalJunkDisplay: '0 MB',
     ));
 
+    // Ticker — UI mein package names cycle karo scan ke dauran
     _scanTimer?.cancel();
     _scanTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
       _packageIndex = (_packageIndex + 1) % _packages.length;
       add(ScanTickEvent(_packages[_packageIndex]));
     });
 
-    // Real scan
+    // Real device scan
     final rawItems = await JunkScannerService.scanAll();
 
     _scanTimer?.cancel();
@@ -98,35 +97,27 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
   Future<void> _onClean(CleanJunkEvent event, Emitter<JunkState> emit) async {
     emit(state.copyWith(phase: ScanPhase.cleaning));
 
-    try {
-      final checkedLabels = state.items
-          .where((e) => e.isChecked)
-          .map((e) => e.label)
-          .toList();
+    // Sirf checked items ko clean karo — label ke basis par
+    final checkedLabels = state.items
+        .where((e) => e.isChecked)
+        .map((e) => e.label)
+        .toSet();
 
-      if (checkedLabels.contains('Cache Junk')) {
-        final dir = await getTemporaryDirectory();
-        if (dir.existsSync()) {
-          dir.deleteSync(recursive: true);
-          dir.createSync();
-        }
+    await Future.wait([
+      if (checkedLabels.contains('Cache Junk'))    JunkScannerService.cleanCacheJunk(),
+      if (checkedLabels.contains('Residual Junk')) JunkScannerService.cleanResidualJunk(),
+      if (checkedLabels.contains('Ad Junk'))       JunkScannerService.cleanAdJunk(),
+      if (checkedLabels.contains('APK Junk'))      JunkScannerService.cleanAPKJunk(),
+      if (checkedLabels.contains('Memory Junk'))   JunkScannerService.cleanMemoryJunk(),
+    ]);
+
+    // Cleaned items ki size 0 kar do
+    final cleanedItems = state.items.map((e) {
+      if (e.isChecked) {
+        return e.copyWith(isChecked: false, size: '0 MB', sizeInMB: 0);
       }
-
-      if (checkedLabels.contains('APK Junk') && Platform.isAndroid) {
-        final dirs = await getExternalCacheDirectories();
-        dirs?.forEach((dir) {
-          if (dir.existsSync()) dir.deleteSync(recursive: true);
-        });
-      }
-    } catch (_) {}
-
-    final cleanedItems = state.items
-        .map((e) => e.copyWith(
-              isChecked: false,
-              size: '0 MB',
-              sizeInMB: 0,
-            ))
-        .toList();
+      return e;
+    }).toList();
 
     emit(state.copyWith(
       phase: ScanPhase.cleaned,

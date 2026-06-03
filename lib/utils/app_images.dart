@@ -107,5 +107,7 @@ static const String containeroptimizeimage ="assets/images/home/containeroptimiz
 static const String containeroptimizebattery = "assets/images/home/containeroptimizebattery.png";
 static const String containeroptimizeappmanage = "assets/images/home/containeroptimizeappmanage.png";
 // static const String time = "assets/images/data_usage/Time.png";
-static const String batteryhealthimager = "assets/images/battery_saver/batteryhealthimage.png";
+static const String batteryhealthimageq ="assets/images/battery_saver/batteryhealthimage.png";
+static const String threads = "assets/images/home/threads.png";
+
 } 

@@ -5,6 +5,7 @@ import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/helper/battery_helpers.dart';
+import 'package:battery_saver_app/view/file_manager/file_manager_screen.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/battery_saver/battery_mode_list_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
@@ -117,9 +118,19 @@ class _BatterySaverBody extends StatelessWidget {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          Image.asset(
-                            AppImages.batterysaverimage,
-                            height: getHeight(200),
+                          GestureDetector(
+                            onTap: () {
+                                Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const FileManagerPage(),
+    ),
+  );
+                            },
+                            child: Image.asset(
+                              AppImages.batterysaverimage,
+                              height: getHeight(200),
+                            ),
                           ),
 
                           Column(

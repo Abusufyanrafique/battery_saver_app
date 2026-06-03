@@ -82,4 +82,7 @@ class AppIcons {
   static const String appmanagerdeleteicon = "assets/icons/battery_saver/appmanagerdeleteicon.svg";
   static const String roboticon ="assets/icons/battery_saver/roboticon.svg";
   static const String chargecycleicon ="assets/icons/optimize/chargecycleicon.svg";
+  static const String threads = "assets/icons/optimize/threads.svg";
+  static const String apkfile = "assets/icons/optimize/apkfile.svg";
+
     } 

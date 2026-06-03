@@ -9,6 +9,7 @@ import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.BatteryManager
 import android.os.Build
@@ -29,9 +30,49 @@ class MainActivity : FlutterActivity() {
     private val APP_STATS_CHANNEL      = "com.example.battery_saver_app/app_stats"
     private val BATTERY_CHANNEL        = "com.example.battery_saver_app/battery_status"
     private val BATTERY_HEALTH_CHANNEL = "com.example.battery_saver_app/battery_health"
+    private val SECURITY_CHANNEL       = "com.yourapp/security"
+
+    private val dangerousPermissions = listOf(
+        android.Manifest.permission.READ_CONTACTS,
+        android.Manifest.permission.READ_CALL_LOG,
+        android.Manifest.permission.RECORD_AUDIO,
+        android.Manifest.permission.ACCESS_FINE_LOCATION,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION,
+        android.Manifest.permission.READ_SMS,
+        android.Manifest.permission.RECEIVE_SMS,
+        android.Manifest.permission.CAMERA,
+        android.Manifest.permission.READ_EXTERNAL_STORAGE,
+        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        android.Manifest.permission.READ_PHONE_STATE,
+        android.Manifest.permission.PROCESS_OUTGOING_CALLS,
+        android.Manifest.permission.BODY_SENSORS,
+        android.Manifest.permission.GET_ACCOUNTS
+    )
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // ======== SECURITY SCAN CHANNEL ===========
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            SECURITY_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getDangerousGrantedPermissions" -> {
+                    val granted = dangerousPermissions.filter { permission ->
+                        checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED
+                    }
+                    result.success(granted)
+                }
+                "getBuildTags" -> {
+                    result.success(Build.TAGS ?: "")
+                }
+                "getSdkVersion" -> {
+                    result.success(Build.VERSION.SDK_INT)
+                }
+                else -> result.notImplemented()
+            }
+        }
 
         // ======== BATTERY STATUS CHANNEL ===========
         MethodChannel(
@@ -44,33 +85,22 @@ class MainActivity : FlutterActivity() {
                         null,
                         IntentFilter(Intent.ACTION_BATTERY_CHANGED)
                     )
-
-                    val level = batteryIntent?.getIntExtra(
-                        BatteryManager.EXTRA_LEVEL,
-                        -1
-                    ) ?: -1
-
-                    val statusInt = batteryIntent?.getIntExtra(
-                        BatteryManager.EXTRA_STATUS,
-                        -1
-                    ) ?: -1
-
+                    val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                    val statusInt = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
                     val status = when (statusInt) {
                         BatteryManager.BATTERY_STATUS_CHARGING    -> "charging"
                         BatteryManager.BATTERY_STATUS_FULL        -> "full"
                         BatteryManager.BATTERY_STATUS_DISCHARGING -> "discharging"
                         else                                       -> "unknown"
                     }
-
                     val remainingMinutes = getRealRemainingTimeMinutes()
-                    val chargingCycles   = getChargingCycles()  // ← REAL CYCLE COUNT
-
+                    val chargingCycles   = getChargingCycles()
                     result.success(
                         mapOf(
                             "level"            to level,
                             "status"           to status,
                             "remainingMinutes" to remainingMinutes,
-                            "cycleCount"       to chargingCycles   // ← ADDED
+                            "cycleCount"       to chargingCycles
                         )
                     )
                 }
@@ -95,7 +125,7 @@ class MainActivity : FlutterActivity() {
             }
         }
 
-        // ── CPU INFO CHANNEL ──────────────────────────────────────────
+        // ======== CPU INFO CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CPU_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -105,11 +135,9 @@ class MainActivity : FlutterActivity() {
                                 val cpuUsage    = getCpuUsage()
                                 val temperature = getCpuTemperature()
                                 val runningApps = getRunningApps()
-
                                 android.util.Log.d("CPU_TEST", "Usage: $cpuUsage")
                                 android.util.Log.d("CPU_TEST", "Temp:  $temperature")
                                 android.util.Log.d("CPU_TEST", "Apps:  $runningApps")
-
                                 runOnUiThread {
                                     result.success(
                                         mapOf(
@@ -120,13 +148,10 @@ class MainActivity : FlutterActivity() {
                                     )
                                 }
                             } catch (e: Exception) {
-                                runOnUiThread {
-                                    result.error("CPU_INFO_ERROR", e.message, null)
-                                }
+                                runOnUiThread { result.error("CPU_INFO_ERROR", e.message, null) }
                             }
                         }.start()
                     }
-
                     "coolDown" -> {
                         Thread {
                             try {
@@ -137,12 +162,11 @@ class MainActivity : FlutterActivity() {
                             }
                         }.start()
                     }
-
                     else -> result.notImplemented()
                 }
             }
 
-        // ── PHONE BOOST CHANNEL ───────────────────────────────────────
+        // ======== PHONE BOOST CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BOOST_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -165,12 +189,11 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
-        // ── NETWORK STATS CHANNEL ─────────────────────────────────────
+        // ======== NETWORK STATS CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, NETWORK_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "hasPermission" -> result.success(hasUsagePermission())
-
                     "getTotalMobileData" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             val s = call.argument<Long>("startTime") ?: 0L
@@ -178,7 +201,6 @@ class MainActivity : FlutterActivity() {
                             result.success(getTotalMobileBytes(s, e))
                         } else result.success(mapOf("rx" to 0L, "tx" to 0L))
                     }
-
                     "getTotalWifiData" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             val s = call.argument<Long>("startTime") ?: 0L
@@ -186,7 +208,6 @@ class MainActivity : FlutterActivity() {
                             result.success(getTotalWifiBytes(s, e))
                         } else result.success(mapOf("rx" to 0L, "tx" to 0L))
                     }
-
                     "getAppNetworkData" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             val s    = call.argument<Long>("startTime")            ?: 0L
@@ -195,7 +216,6 @@ class MainActivity : FlutterActivity() {
                             result.success(getAppNetworkData(s, e, pkgs))
                         } else result.success(emptyList<Map<String, Any>>())
                     }
-
                     "getDailyData" -> {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             val s  = call.argument<Long>("startTime")    ?: 0L
@@ -204,12 +224,11 @@ class MainActivity : FlutterActivity() {
                             result.success(getDailyData(s, e, ih))
                         } else result.success(emptyList<Map<String, Any>>())
                     }
-
                     else -> result.notImplemented()
                 }
             }
 
-        // ── APP STATS CHANNEL ─────────────────────────────────────────
+        // ======== APP STATS CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_STATS_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -234,18 +253,13 @@ class MainActivity : FlutterActivity() {
     // BATTERY HEALTH DATA
     // ─────────────────────────────────────────────────────────────────
     private fun getBatteryHealthData(): Map<String, Any> {
-        val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        val bm            = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
 
-        val voltage = batteryIntent
-            ?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
-            ?.toDouble() ?: 0.0
-
-        val temperature = (batteryIntent
-            ?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0
-
-        val level = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) ?: 0
-        val scale = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+        val voltage     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)?.toDouble() ?: 0.0
+        val temperature = (batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0
+        val level       = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) ?: 0
+        val scale       = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
         val batteryLevel = if (scale > 0) (level * 100 / scale) else 0
 
         val healthInt = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
@@ -259,17 +273,12 @@ class MainActivity : FlutterActivity() {
             else                                        -> "Unknown"
         }
 
-        val chargeCounterUah = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
-        } else 0
+        val chargeCounterUah   = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
         val currentCapacityMah = if (chargeCounterUah > 0) chargeCounterUah / 1000.0 else 0.0
-
-        val designCapacityMah = getDesignCapacity(currentCapacityMah, batteryLevel)
-
-        val chargingCycles = getChargingCycles()  // ← same shared function
-
-        val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
-        val manufactureDate = sdf.format(java.util.Date(Build.TIME))
+        val designCapacityMah  = getDesignCapacity(currentCapacityMah, batteryLevel)
+        val chargingCycles     = getChargingCycles()
+        val sdf                = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
+        val manufactureDate    = sdf.format(java.util.Date(Build.TIME))
 
         return mapOf(
             "voltage"         to voltage,
@@ -300,7 +309,6 @@ class MainActivity : FlutterActivity() {
                 if (mah != null && mah > 100) return mah
             } catch (_: Exception) {}
         }
-
         val sysfsPaths = listOf(
             "/sys/class/power_supply/battery/charge_full_design",
             "/sys/class/power_supply/Battery/charge_full_design"
@@ -313,20 +321,16 @@ class MainActivity : FlutterActivity() {
                 }
             } catch (_: Exception) {}
         }
-
         if (currentCapacityMah > 0 && batteryLevel > 0) {
             return (currentCapacityMah / batteryLevel) * 100.0
         }
-
         return 0.0
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // CHARGING CYCLES — sysfs + OEM system properties
-    // Returns 0 if device does not expose this info
+    // CHARGING CYCLES
     // ─────────────────────────────────────────────────────────────────
     private fun getChargingCycles(): Int {
-        // Method 1: sysfs cycle_count node (Pixel, OnePlus, many stock Android)
         val sysfsPaths = listOf(
             "/sys/class/power_supply/battery/cycle_count",
             "/sys/class/power_supply/Battery/cycle_count"
@@ -340,8 +344,6 @@ class MainActivity : FlutterActivity() {
                 }
             } catch (_: Exception) {}
         }
-
-        // Method 2: OEM system properties (Xiaomi, Huawei, Samsung)
         val propKeys = listOf(
             "ro.batterycycle.count",
             "persist.sys.battery.cycle",
@@ -359,20 +361,17 @@ class MainActivity : FlutterActivity() {
                 }
             } catch (_: Exception) {}
         }
-
-        // Method 3: ACTION_BATTERY_CHANGED extras (some Samsung / Xiaomi)
         try {
             val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val cycles = batteryIntent?.getIntExtra("charge_counter", -1)?.takeIf { it > 0 }
                 ?: batteryIntent?.getIntExtra("cycle_count", -1)?.takeIf { it > 0 }
             if (cycles != null) {
-                android.util.Log.d("BATTERY", "cycle_count from BatteryIntent extra: $cycles")
+                android.util.Log.d("BATTERY", "cycle_count from BatteryIntent: $cycles")
                 return cycles
             }
         } catch (_: Exception) {}
-
         android.util.Log.d("BATTERY", "cycle_count not available on this device")
-        return 0  // 0 = not available
+        return 0
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -384,17 +383,13 @@ class MainActivity : FlutterActivity() {
             val toks1  = line1.trim().split("\\s+".toRegex())
             val total1 = toks1.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
             val idle1  = toks1.getOrNull(4)?.toLongOrNull() ?: 0L
-
             Thread.sleep(500)
-
             val line2  = File("/proc/stat").bufferedReader().readLine() ?: return 0.0
             val toks2  = line2.trim().split("\\s+".toRegex())
             val total2 = toks2.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
             val idle2  = toks2.getOrNull(4)?.toLongOrNull() ?: 0L
-
             val totalDiff = total2 - total1
             val idleDiff  = idle2  - idle1
-
             if (totalDiff <= 0L) return 0.0
             val usage = ((totalDiff - idleDiff) * 100.0 / totalDiff).coerceIn(0.0, 100.0)
             android.util.Log.d("CPU_TEST", "Calculated usage: $usage%")
@@ -406,7 +401,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // TEMPERATURE
+    // CPU TEMPERATURE
     // ─────────────────────────────────────────────────────────────────
     private fun getCpuTemperature(): Double {
         return try {
@@ -442,7 +437,6 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                 } catch (_: Exception) {}
-
                 try {
                     val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                     val now    = System.currentTimeMillis()
@@ -462,20 +456,15 @@ class MainActivity : FlutterActivity() {
                     }
                 } catch (_: Exception) {}
             }
-
             try {
-                am.getRunningServices(200).forEach { si ->
-                    runningPackages.add(si.service.packageName)
-                }
+                am.getRunningServices(200).forEach { si -> runningPackages.add(si.service.packageName) }
             } catch (_: Exception) {}
-
             try {
                 am.getRunningTasks(50).forEach { task ->
                     task.topActivity?.packageName?.let  { runningPackages.add(it) }
                     task.baseActivity?.packageName?.let { runningPackages.add(it) }
                 }
             } catch (_: Exception) {}
-
         } else {
             try {
                 am.runningAppProcesses?.forEach { proc ->
@@ -492,7 +481,6 @@ class MainActivity : FlutterActivity() {
     @Suppress("DEPRECATION")
     private fun killBackgroundApps() {
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (hasUsagePermission()) {
                 try {
@@ -502,7 +490,6 @@ class MainActivity : FlutterActivity() {
                     val events    = usm.queryEvents(start, now)
                     val event     = UsageEvents.Event()
                     val lastEvent = mutableMapOf<String, Int>()
-
                     while (events.hasNextEvent()) {
                         events.getNextEvent(event)
                         when (event.eventType) {
@@ -529,7 +516,6 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             } catch (_: Exception) {}
-
         } else {
             am.runningAppProcesses
                 ?.filter { it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED }
@@ -549,7 +535,6 @@ class MainActivity : FlutterActivity() {
         am.getMemoryInfo(memInfo)
         val totalMb = (memInfo.totalMem / 1024 / 1024).toInt()
         val availMb = (memInfo.availMem / 1024 / 1024).toInt()
-
         val powerManager  = getSystemService(Context.POWER_SERVICE) as PowerManager
         val thermalStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             powerManager.currentThermalStatus
@@ -557,7 +542,6 @@ class MainActivity : FlutterActivity() {
         val thermalPenalty       = thermalStatus * 15
         val ramAvailablePercent  = (memInfo.availMem.toDouble() / memInfo.totalMem.toDouble()) * 100
         val realPerformanceScore = ((ramAvailablePercent * 0.6 + 40) - thermalPenalty).toInt().coerceIn(1, 100)
-
         return mapOf(
             "totalRamMb"          to totalMb,
             "usedRamMb"           to (totalMb - availMb),
@@ -585,25 +569,20 @@ class MainActivity : FlutterActivity() {
     private fun getAppUsageWithBattery(startTime: Long, endTime: Long): Map<String, Any> {
         val appsList         = mutableListOf<Map<String, Any>>()
         val fallbackResponse = mapOf("totalScreenOnTimeSec" to 0L, "apps" to appsList)
-
         if (!hasUsagePermission()) return fallbackResponse
 
-        val usm = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val pm  = packageManager
-
+        val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val pm     = packageManager
         val events = usm.queryEvents(startTime, endTime)
         val event  = UsageEvents.Event()
-
         val appForegroundTimestamps = mutableMapOf<String, Long>()
         val appTotalTime            = mutableMapOf<String, Long>()
-
         var lastInteractiveTime: Long = -1L
         var totalScreenOnTimeMs: Long = 0L
 
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val pkg = event.packageName ?: continue
-
             if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
                 event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
                 appForegroundTimestamps[pkg] = event.timeStamp
@@ -612,12 +591,9 @@ class MainActivity : FlutterActivity() {
                 val openTime = appForegroundTimestamps.remove(pkg)
                 if (openTime != null) {
                     val duration = event.timeStamp - openTime
-                    if (duration > 0) {
-                        appTotalTime[pkg] = (appTotalTime[pkg] ?: 0L) + duration
-                    }
+                    if (duration > 0) appTotalTime[pkg] = (appTotalTime[pkg] ?: 0L) + duration
                 }
             }
-
             if (event.eventType == UsageEvents.Event.SCREEN_INTERACTIVE) {
                 lastInteractiveTime = event.timeStamp
             } else if (event.eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
@@ -645,14 +621,11 @@ class MainActivity : FlutterActivity() {
 
             for ((pkg, totalTimeMs) in appTotalTime) {
                 if (totalTimeMs <= 0L) continue
-
                 val appName = try {
                     pm.getApplicationLabel(pm.getApplicationInfo(pkg, 0)).toString()
                 } catch (_: Exception) { pkg }
-
                 val screenTimeSec   = totalTimeMs / 1000L
                 val batteryEstimate = (totalTimeMs.toDouble() / totalForegroundMs.toDouble()) * totalEstimatedDrain
-
                 appsList.add(mapOf(
                     "packageName"    to pkg,
                     "appName"        to appName,
@@ -673,24 +646,14 @@ class MainActivity : FlutterActivity() {
     // REAL BATTERY REMAINING MINUTES
     // ─────────────────────────────────────────────────────────────────
     private fun getRealRemainingTimeMinutes(): Long {
-        val bm = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-
-        val currentNow = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-        } else { 0 }
-
-        val chargeCounter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
-        } else { 0 }
-
+        val bm            = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+        val currentNow    = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+        val chargeCounter = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
         if (currentNow < 0 && chargeCounter > 0) {
             val currentNowmA     = Math.abs(currentNow) / 1000.0
             val chargeCountermAh = chargeCounter / 1000.0
-            if (currentNowmA > 0) {
-                return ((chargeCountermAh / currentNowmA) * 60).toLong()
-            }
+            if (currentNowmA > 0) return ((chargeCountermAh / currentNowmA) * 60).toLong()
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val chargeTime = bm.computeChargeTimeRemaining()
             if (chargeTime > 0) return chargeTime / 1000 / 60
@@ -810,7 +773,6 @@ class MainActivity : FlutterActivity() {
         val nsm        = getSystemService(Context.NETWORK_STATS_SERVICE) as NetworkStatsManager
         val intervalMs = intervalHours * 60L * 60L * 1000L
         var current    = startTime
-
         while (current < endTime) {
             val iEnd    = minOf(current + intervalMs, endTime)
             var rxBytes = 0L

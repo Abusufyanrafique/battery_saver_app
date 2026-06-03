@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
 import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
+import 'package:battery_saver_app/bloc/file_manager/file_manager_bloc.dart';
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/router.dart';
@@ -50,7 +51,10 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
         create: (context) => BatteryStatusCubit(),
-        )
+        ),
+        BlocProvider(
+        create: (_) => FileManagerBloc(),
+       )
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

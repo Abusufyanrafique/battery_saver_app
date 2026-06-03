@@ -27,6 +27,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
     AppModel(name: AppText.youTube, iconAsset: AppIcons.youtubeicon, sizeMB: 278),
     AppModel(name: AppText.telegram, iconAsset: AppIcons.telegram, sizeMB: 245),
     AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 234),
+     AppModel(name: AppText.threads, iconAsset: AppIcons.threads, sizeMB: 234),
   ];
 
   final List<AppModel> _apkFiles = [
@@ -36,7 +37,8 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
     AppModel(name: AppText.youTube, iconAsset: AppIcons.youtubeicon, sizeMB: 4.8),
     AppModel(name: AppText.telegram, iconAsset: AppIcons.telegram, sizeMB: 91.7),
     AppModel(name: AppText.spotify, iconAsset: AppIcons.spotify, sizeMB: 58.6),
-    AppModel(name: AppText.threads, iconAsset: AppIcons.spotify, sizeMB: 58.6),
+    AppModel(name: AppText.threads, iconAsset: AppIcons.threads, sizeMB: 58.6),
+    
   ];
 
   List<AppModel> get _currentList =>
@@ -78,6 +80,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
                   StatsCard(
                     totalApps: _currentList.length,
                     totalSizeGB: _totalSizeGB,
+                     isApkMode: _isApkMode,
                   ),
                   SizedBox(height: getHeight(20)),
                   AppListContainer(
@@ -85,7 +88,7 @@ class _AppManagerScreenState extends State<AppManagerScreen> {
                     onToggle: _toggleApp,
                     isApkMode: _isApkMode,
                   ),
-                  SizedBox(height: getHeight(120)),
+                  SizedBox(height: getHeight(75)),
               
                   // APK mode → ActionBarWidget, Apps mode → CleanButtonWidget
                   _isApkMode

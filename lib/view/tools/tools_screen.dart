@@ -94,13 +94,11 @@ class _ToolsGrid extends StatelessWidget {
 
         return ToolCardWidget(
           tool: tool,
-         onTap: () {
-    if (tool.route.isNotEmpty) {
-      context.push(tool.route);
-    } else {
-      debugPrint('No route set for ${tool.title}');
-    }
-  },
+        onTap: () {
+  if (tool.route != null && tool.route!.isNotEmpty) {
+    context.push(tool.route!);
+  }
+}
         );
       },
     );

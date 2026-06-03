@@ -42,7 +42,7 @@ class BatteryHealthScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         image: const DecorationImage(
-                          image: AssetImage(AppImages.batteryhealthimage),
+                          image: AssetImage(AppImages.batteryhealthimageq),
                           fit: BoxFit.contain,
                         ),
                       ),

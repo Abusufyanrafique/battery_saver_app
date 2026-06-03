@@ -15,8 +15,24 @@ class FileManagerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("📱 FILE MANAGER PAGE OPENED");
+
     return BlocProvider(
-      create: (_) => FileManagerBloc()..add(const FileManagerLoadEvent()),
+      create: (_) {
+        print("📦 BLOC CREATED");
+
+        final bloc = FileManagerBloc(
+          repository: FileManagerRepository(),
+        );
+
+        bloc.stream.listen((state) {
+          print("🔄 STATE: $state");
+        });
+
+        bloc.add(const FileManagerLoadEvent());
+
+        return bloc;
+      },
       child: const FileManagerScreen(),
     );
   }
@@ -62,13 +78,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => FileManagerBloc()..add(const FileManagerLoadEvent()),
-      child: Builder(builder: (ctx) => _buildContent(ctx)),
-    );
-  }
-
-  Widget _buildContent(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
       body: Stack(
@@ -77,11 +86,14 @@ class _FileManagerScreenState extends State<FileManagerScreen>
           SafeArea(
             child: BlocConsumer<FileManagerBloc, FileManagerState>(
               listener: (_, state) {
+                // FIX: Sirf jab scan complete ho tab animation chalao
                 if (state is FileManagerLoadedState && !state.isRefreshing) {
                   _animController.forward(from: 0);
                 }
               },
               builder: (ctx, state) {
+                // FIX: FileManagerLoadingState sirf permission check tak — storage
+                // resolve hone ke baad hum LoadedState emit karte hain isRefreshing:true ke saath
                 if (state is FileManagerLoadingState)          return _loadingView();
                 if (state is FileManagerPermissionDeniedState) return _permissionView(ctx, state.message);
                 if (state is FileManagerErrorState)            return _errorView(ctx, state.message);
@@ -105,7 +117,10 @@ class _FileManagerScreenState extends State<FileManagerScreen>
 
   Widget _header({bool showMore = true}) => Row(
     children: [
-      _GlassBtn(icon: Icons.arrow_back_ios_new, onTap: () => Navigator.of(context).maybePop()),
+      _GlassBtn(
+        icon: Icons.arrow_back_ios_new,
+        onTap: () => Navigator.of(context).maybePop(),
+      ),
       Expanded(
         child: Center(
           child: Text(
@@ -125,45 +140,48 @@ class _FileManagerScreenState extends State<FileManagerScreen>
 
   // ── SEARCH ─────────────────────────────────────────────────────────────────
 
-  Widget _searchBar(BuildContext context, FileManagerLoadedState state) => Container(
-    height: getHeight(40),
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        colors: [Color(0xFF232C6D), Color(0xFF13173A)],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: const Color(0xFF4103AC), width: 1),
-    ),
-    child: Row(
-      children: [
-        const Icon(Icons.search, color: Color(0xFFD9D9D9)),
-        const SizedBox(width: 10),
-        Expanded(
-          child: TextField(
-            controller: _searchController,
-            style: const TextStyle(color: Colors.white),
-            onChanged: (q) =>
-                context.read<FileManagerBloc>().add(FileManagerSearchEvent(q)),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Search files...',
-              hintStyle: TextStyle(color: Color(0xFFD9D9D9)),
-            ),
+  Widget _searchBar(BuildContext context, FileManagerLoadedState state) =>
+      Container(
+        height: getHeight(40),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF232C6D), Color(0xFF13173A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF4103AC), width: 1),
         ),
-        if (state.searchQuery.isNotEmpty)
-          Text(
-            '${state.filteredCategories.length}',
-            style: const TextStyle(color: Color(0xFF6C63FF), fontSize: 13),
-          ),
-      ],
-    ),
-  );
+        child: Row(
+          children: [
+            const Icon(Icons.search, color: Color(0xFFD9D9D9)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(color: Colors.white),
+                onChanged: (q) => context
+                    .read<FileManagerBloc>()
+                    .add(FileManagerSearchEvent(q)),
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Search files...',
+                  hintStyle: TextStyle(color: Color(0xFFD9D9D9)),
+                ),
+              ),
+            ),
+            if (state.searchQuery.isNotEmpty)
+              Text(
+                '${state.filteredCategories.length}',
+                style: const TextStyle(color: Color(0xFF6C63FF), fontSize: 13),
+              ),
+          ],
+        ),
+      );
 
   // ── LOADING ────────────────────────────────────────────────────────────────
+  // Sirf permission check aur storage resolve hone tak dikhta hai — bahut short
 
   Widget _loadingView() => Column(
     children: [
@@ -175,7 +193,10 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             children: [
               CircularProgressIndicator(color: Color(0xFF6C63FF)),
               SizedBox(height: 16),
-              Text('Scanning files...', style: TextStyle(color: Colors.white70, fontSize: 14)),
+              Text(
+                'Loading...',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
             ],
           ),
         ),
@@ -197,18 +218,21 @@ class _FileManagerScreenState extends State<FileManagerScreen>
               children: [
                 const Icon(Icons.folder_off, color: Colors.white38, size: 64),
                 const SizedBox(height: 16),
-                Text(message, textAlign: TextAlign.center,
+                Text(message,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(color: Colors.white70, fontSize: 15)),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
-                  onPressed: () =>
-                      context.read<FileManagerBloc>().add(const FileManagerRetryEvent()),
+                  onPressed: () => context
+                      .read<FileManagerBloc>()
+                      .add(const FileManagerRetryEvent()),
                   icon: const Icon(Icons.security),
                   label: const Text('Grant Permission'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6C63FF),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ],
@@ -231,13 +255,16 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             children: [
               const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
               const SizedBox(height: 12),
-              Text(message, textAlign: TextAlign.center,
+              Text(message,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white60, fontSize: 14)),
               const SizedBox(height: 20),
               TextButton(
-                onPressed: () =>
-                    context.read<FileManagerBloc>().add(const FileManagerRetryEvent()),
-                child: const Text('Retry', style: TextStyle(color: Color(0xFF6C63FF))),
+                onPressed: () => context
+                    .read<FileManagerBloc>()
+                    .add(const FileManagerRetryEvent()),
+                child: const Text('Retry',
+                    style: TextStyle(color: Color(0xFF6C63FF))),
               ),
             ],
           ),
@@ -257,35 +284,46 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             color: const Color(0xFF6C63FF),
             backgroundColor: const Color(0xFF13173A),
             onRefresh: () async {
-              context.read<FileManagerBloc>().add(const FileManagerRefreshEvent());
+              context
+                  .read<FileManagerBloc>()
+                  .add(const FileManagerRefreshEvent());
               await Future.doWhile(() async {
                 await Future.delayed(const Duration(milliseconds: 200));
+                if (!mounted) return false;
                 final s = context.read<FileManagerBloc>().state;
                 return s is FileManagerLoadedState && s.isRefreshing;
               });
             },
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics()),
               padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _header(),
+                  // FIX: isRefreshing:true pe thin progress bar — poori screen loading nahi
+                  if (state.isRefreshing) ...[
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: const LinearProgressIndicator(
+                        color: Color(0xFF6C63FF),
+                        backgroundColor: Color(0xFF232C6D),
+                        minHeight: 3,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   _searchBar(context, state),
                   const SizedBox(height: 24),
                   _categoryGrid(state),
                   const SizedBox(height: 24),
-
-                  // Internal Storage
                   _StorageCard(storage: state.internalStorage),
-
-                  // SD Card — sirf tab show hoga jab SD card ho
                   if (state.sdCardStorage != null) ...[
                     const SizedBox(height: 12),
                     _StorageCard(storage: state.sdCardStorage!),
                   ],
-
                   const SizedBox(height: 32),
                 ],
               ),
@@ -297,21 +335,53 @@ class _FileManagerScreenState extends State<FileManagerScreen>
   // ── CATEGORY GRID ──────────────────────────────────────────────────────────
 
   Widget _categoryGrid(FileManagerLoadedState state) {
+    // FIX: Scan chal rahi hai aur abhi koi data nahi — spinner dikhao
+    if (state.isRefreshing && state.categories.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 48),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: Color(0xFF6C63FF)),
+              SizedBox(height: 12),
+              Text(
+                'Scanning files...',
+                style: TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'This may take a few seconds',
+                style: TextStyle(color: Colors.white30, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Search se koi result nahi mila
     if (state.filteredCategories.isEmpty) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(32),
-          child: Text('No categories found', style: TextStyle(color: Colors.white54)),
+          child: Text(
+            'No categories found',
+            style: TextStyle(color: Colors.white54),
+          ),
         ),
       );
     }
+
     return Wrap(
       spacing: 10,
       runSpacing: 10,
-      children: state.filteredCategories.map((c) => SizedBox(
-        width: (MediaQuery.of(context).size.width - 72) / 3,
-        child: _CategoryCard(category: c),
-      )).toList(),
+      children: state.filteredCategories
+          .map((c) => SizedBox(
+                width: (MediaQuery.of(context).size.width - 72) / 3,
+                child: _CategoryCard(category: c),
+              ))
+          .toList(),
     );
   }
 }
@@ -361,9 +431,17 @@ class _CategoryCard extends StatelessWidget {
           Text(
             category.size,
             style: AppTextStyles.bodyMedium.copyWith(
-              fontSize: getFont(16),
+              fontSize: getFont(13),
               color: const Color(0xFFD9D9D9),
               fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            '${category.fileCount} files',
+            style: AppTextStyles.bodyMedium.copyWith(
+              fontSize: getFont(11),
+              color: const Color(0xFF9E9E9E),
+              fontWeight: FontWeight.w400,
             ),
           ),
         ],
@@ -382,7 +460,6 @@ class _StorageCard extends StatelessWidget {
 
   Color get _barColor {
     if (storage.percentage > 0.9) return Colors.redAccent;
-    if (storage.percentage > 0.7) return Colors.orangeAccent;
     return const Color(0xFF1F8EFF);
   }
 
@@ -401,14 +478,12 @@ class _StorageCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Material Icon — no SVG asset needed
           Icon(
             storage.isSdCard ? Icons.sd_card : Icons.storage,
             color: Colors.white70,
             size: 32,
           ),
           SizedBox(width: getWidth(12)),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,12 +512,12 @@ class _StorageCard extends StatelessWidget {
                         TextSpan(
                           text: ' / ',
                           style: AppTextStyles.bodyMedium.copyWith(
-                            fontSize: getFont(14), color: Colors.white70),
+                              fontSize: getFont(14), color: Colors.white70),
                         ),
                         TextSpan(
                           text: storage.totalLabel,
                           style: AppTextStyles.bodyMedium.copyWith(
-                            fontSize: getFont(13), color: Colors.white54),
+                              fontSize: getFont(13), color: Colors.white54),
                         ),
                       ]),
                     ),
@@ -477,20 +552,21 @@ class _StorageCard extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _GlassBtn extends StatelessWidget {
-  final IconData icon;
+  final IconData     icon;
   final VoidCallback onTap;
   const _GlassBtn({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: onTap,
-    child: Container(
-      width: getWidth(40),
-      height: getHeight(40),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
-      child: Icon(icon, color: Colors.white),
-    ),
-  );
+        onTap: onTap,
+        child: Container(
+          width:  getWidth(40),
+          height: getHeight(40),
+          decoration:
+              BoxDecoration(borderRadius: BorderRadius.circular(10)),
+          child: Icon(icon, color: Colors.white),
+        ),
+      );
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
