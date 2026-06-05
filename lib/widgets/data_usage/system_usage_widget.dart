@@ -1,11 +1,9 @@
 // system_usage_widget.dart
 
-import 'dart:math';
 import 'package:battery_saver_app/bloc/battery_status_cubit_usage/system_usage_cubit.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -20,14 +18,14 @@ class SystemUsageItem {
   final Color iconColor;
   final String label;
   final String value;
-  final List<Color> chartColors;
+  final String chartImagePath;
 
   const SystemUsageItem({
     required this.iconColor,
     required this.label,
     required this.value,
-    required this.chartColors,
     required this.imagepath,
+    required this.chartImagePath,
   });
 }
 
@@ -70,40 +68,40 @@ class _SystemUsageBody extends StatelessWidget {
 
         final List<SystemUsageItem> items = [
           SystemUsageItem(
-            imagepath:   AppImages.datausagecpu,
-            iconColor:   const Color(0xFF9A3CFF),
-            label:       'CPU Usage',
-            value:       cpuVal,
-            chartColors: [const Color(0xFF9A3CFF), const Color(0xFF4103AC)],
+            imagepath:      AppImages.datausagecpu,
+            iconColor:      const Color(0xFF9A3CFF),
+            label:          'CPU Usage',
+            value:          cpuVal,
+            chartImagePath: AppImages.graph1,
           ),
           SystemUsageItem(
-            imagepath:   AppImages.datausagetemp,
-            iconColor:   const Color(0xFFE53935),
-            label:       'Temperature',
-            value:       tempVal,
-            chartColors: [const Color(0xFFE53935), const Color(0xFF7B1FA2)],
+            imagepath:      AppImages.datausagetemp,
+            iconColor:      const Color(0xFFE53935),
+            label:          'Temperature',
+            value:          tempVal,
+            chartImagePath: AppImages.graph2,
           ),
           SystemUsageItem(
-            imagepath:   AppImages.datausageram,
-            iconColor:   const Color(0xFF1E88E5),
-            label:       'RAM Usage',
-            value:       ramVal,
-            chartColors: [const Color(0xFF1E88E5), const Color(0xFF0D47A1)],
+            imagepath:      AppImages.datausageram,
+            iconColor:      const Color(0xFF1E88E5),
+            label:          'RAM Usage',
+            value:          ramVal,
+            chartImagePath: AppImages.graph3,
           ),
           SystemUsageItem(
-            imagepath:   AppImages.time,
-            iconColor:   const Color(0xFFE040FB),
-            label:       'Charge Cycles',
-            value:       cyclesVal,
-            chartColors: [const Color(0xFFE040FB), const Color(0xFF9A3CFF)],
+            imagepath:      AppImages.time,
+            iconColor:      const Color(0xFFE040FB),
+            label:          'Charge Cycles',
+            value:          cyclesVal,
+            chartImagePath: AppImages.graph4,
           ),
         ];
 
         return Container(
           width: double.infinity,
           padding: EdgeInsets.symmetric(
-            horizontal: getWidth(14),
-            vertical:   getHeight(3),
+            horizontal: getWidth(12),
+            vertical:   getHeight(4),
           ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -137,7 +135,7 @@ class _SystemUsageBody extends StatelessWidget {
                         color:      Colors.white,
                       ),
                     ),
-                    SizedBox(height: getHeight(5)),
+                    SizedBox(height: getHeight(4)),
 
                     // ── Cards Row ──
                     Row(
@@ -148,7 +146,7 @@ class _SystemUsageBody extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(child: _SystemCard(item: item)),
-                              if (!isLast) SizedBox(width: getWidth(8)),
+                              if (!isLast) SizedBox(width: getWidth(3)),
                             ],
                           ),
                         );
@@ -209,18 +207,8 @@ class _SystemCard extends StatelessWidget {
   final SystemUsageItem item;
   const _SystemCard({required this.item});
 
-  List<FlSpot> _generateSpots() {
-    final rand = Random(item.label.hashCode);
-    return List.generate(
-      12,
-      (i) => FlSpot(i.toDouble(), 20 + rand.nextDouble() * 60),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final spots = _generateSpots();
-
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -240,7 +228,7 @@ class _SystemCard extends StatelessWidget {
           // ── Icon + Label + Value ──
           Padding(
             padding: EdgeInsets.fromLTRB(
-              getWidth(8), getHeight(2), getWidth(8), getHeight(0),
+              getWidth(10), getHeight(4), getWidth(10), getHeight(4),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +239,7 @@ class _SystemCard extends StatelessWidget {
                   height: getWidth(16),
                   color:  item.iconColor,
                 ),
-                SizedBox(height: getHeight(6)),
+                SizedBox(height: getHeight(4)),
                 Text(
                   item.label,
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -262,7 +250,7 @@ class _SystemCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: getHeight(2)),
+                // SizedBox(height: getHeight(2)),
                 Text(
                   item.value,
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -275,46 +263,16 @@ class _SystemCard extends StatelessWidget {
             ),
           ),
 
-          // ── Spark Line Chart ──
-          SizedBox(
-            height: getHeight(20),
-            child: LineChart(
-              LineChartData(
-                minY: 0,
-                maxY: 100,
-                clipData:   const FlClipData.all(),
-                gridData:   const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                titlesData: const FlTitlesData(
-                  leftTitles:   AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles:  AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles:    AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                lineTouchData: const LineTouchData(enabled: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots:            spots,
-                    isCurved:         true,
-                    curveSmoothness:  0.2,
-                    barWidth:         1.5,
-                    isStrokeCapRound: true,
-                    dotData:          const FlDotData(show: false),
-                    color:            item.chartColors.first,
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end:   Alignment.bottomCenter,
-                        colors: [
-                          item.chartColors.first.withOpacity(0.4),
-                          item.chartColors.last.withOpacity(0.05),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+          // ── Chart Image ──
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              getWidth(3), getHeight(0), getWidth(3), getHeight(0),
+            ),
+            child: Image.asset(
+              item.chartImagePath,
+              width:  double.infinity,
+              height: getHeight(16),
+              fit:    BoxFit.fill,
             ),
           ),
         ],

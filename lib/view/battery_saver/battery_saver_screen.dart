@@ -158,28 +158,37 @@ BlocBuilder<BatterySaverBloc, BatterySaverState>(
                   ),
 
                   // Percentage text inside battery
-                  Text(
-                    state.batteryLevel == 0
-                        ? '...'
-                        : '${state.batteryLevel}%',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  // Text(
+                  //   state.batteryLevel == 0
+                  //       ? '...'
+                  //       : '${state.batteryLevel}%',
+                  //   style: const TextStyle(
+                  //     fontSize: 12,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
                 ],
               ),
 
               const SizedBox(height: 6),
-
+                Text(
+                    state.batteryLevel == 0
+                        ? '...'
+                        : '${state.batteryLevel}%',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
               // Charging bolt / remaining time
-              if (state.isCharging)
-                const Icon(
-                  Icons.bolt,
-                  color: Color(0xFF2FE55D),
-                  size: 16,
-                ),
+              // if (state.isCharging)
+              //   const Icon(
+              //     Icons.bolt,
+              //     color: Color(0xFF2FE55D),
+              //     size: 16,
+              //   ),
 
               Text(
                 state.isCharging ? 'Charging' : state.remainingTime,

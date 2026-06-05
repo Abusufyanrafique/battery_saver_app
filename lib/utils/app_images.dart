@@ -110,5 +110,8 @@ static const String containeroptimizeappmanage = "assets/images/home/containerop
 static const String batteryhealthimageq ="assets/images/battery_saver/batteryhealthimage.png";
 static const String threads = "assets/images/home/threads.png";
 static const String batterysavercricle = "assets/images/battery_saver/battery_saver_cricle.png";
-
+static const String graph1 = "assets/images/data_usage/graph1.png";
+static const String graph2 = "assets/images/data_usage/graph2.png";
+static const String graph3 = "assets/images/data_usage/graph3.png";
+static const String graph4 = "assets/images/data_usage/graph4.png";
 } 

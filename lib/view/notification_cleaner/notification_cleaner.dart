@@ -3,7 +3,6 @@ import 'package:battery_saver_app/bloc/notification_cleaner/notification_event.d
 import 'package:battery_saver_app/bloc/notification_cleaner/notification_state.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
