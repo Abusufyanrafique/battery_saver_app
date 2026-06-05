@@ -84,5 +84,5 @@ class AppIcons {
   static const String chargecycleicon ="assets/icons/optimize/chargecycleicon.svg";
   static const String threads = "assets/icons/optimize/threads.svg";
   static const String apkfile = "assets/icons/optimize/apkfile.svg";
-
+  static const String batterycricleicon = "assets/icons/battery_saver/battery_cricleicon.svg";
     } 

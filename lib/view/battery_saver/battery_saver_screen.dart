@@ -11,6 +11,7 @@ import 'package:battery_saver_app/widgets/battery_saver/battery_mode_list_widget
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 class BatterySaverScreen extends StatelessWidget {
   const BatterySaverScreen({super.key});
@@ -107,70 +108,93 @@ class _BatterySaverBody extends StatelessWidget {
                 SizedBox(height: getHeight(63)),
 
                 // ── BATTERY UI ─────────────────────────
-                BlocBuilder<BatterySaverBloc, BatterySaverState>(
-                  buildWhen: (p, c) =>
-                      p.batteryLevel != c.batteryLevel ||
-                      p.isCharging != c.isCharging ||
-                      p.remainingTime != c.remainingTime,
-                  builder: (context, state) {
-                    return SizedBox(
-                      height: getHeight(200),
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                                Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const FileManagerPage(),
-    ),
-  );
-                            },
-                            child: Image.asset(
-                              AppImages.batterysaverimage,
-                              height: getHeight(200),
-                            ),
-                          ),
+               // ── BATTERY UI ─────────────────────────
+BlocBuilder<BatterySaverBloc, BatterySaverState>(
+  buildWhen: (p, c) =>
+      p.batteryLevel != c.batteryLevel ||
+      p.isCharging != c.isCharging ||
+      p.remainingTime != c.remainingTime,
+  builder: (context, state) {
+    return SizedBox(
+      height: getHeight(200),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // ── Background Image ──
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FileManagerPage(),
+                ),
+              );
+            },
+            child: Image.asset(
+              AppImages.batterysavercricle, // ← apni nayi
+              height: getHeight(200),
+              fit: BoxFit.contain,
+            ),
+          ),
 
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (state.isCharging)
-                                const Icon(
-                                  Icons.bolt,
-                                  color: Color(0xFF2FE55D),
-                                  size: 16,
-                                ),
+          // ── Battery SVG Icon + Info ──
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Battery body (SVG-style via CustomPaint or SvgPicture)
+                  SvgPicture.asset(
+                    AppIcons.batterycricleicon, // ← apna battery SVG icon
+                    height: getHeight(23),
+                    width: getWidth(42),
+                    colorFilter: ColorFilter.mode(
+                      state.isCharging
+                          ? const Color(0xFF2FE55D)
+                          : Colors.white,
+                      BlendMode.srcIn,
+                    ),
+                  ),
 
-                              Text(
-                                state.batteryLevel == 0
-                                    ? '...'
-                                    : '${state.batteryLevel}%',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
+                  // Percentage text inside battery
+                  Text(
+                    state.batteryLevel == 0
+                        ? '...'
+                        : '${state.batteryLevel}%',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
 
-                              Text(
-                                state.isCharging
-                                    ? 'Charging'
-                                    : state.remainingTime,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.white70,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+              const SizedBox(height: 6),
+
+              // Charging bolt / remaining time
+              if (state.isCharging)
+                const Icon(
+                  Icons.bolt,
+                  color: Color(0xFF2FE55D),
+                  size: 16,
                 ),
 
+              Text(
+                state.isCharging ? 'Charging' : state.remainingTime,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  },
+),
                 SizedBox(height: getHeight(64)),
 
                 // ── STATUS ─────────────────────────────
@@ -180,11 +204,12 @@ class _BatterySaverBody extends StatelessWidget {
                   builder: (context, state) {
                     return Center(
                       child: Text(
-                        'Battery Status: ${state.healthStatus}',
-                        style: TextStyle(
-                          // color: healthColor(state.healthStatus),
+                        'Battery Status: ${batteryHealthLabel(state.healthStatus)}',
+                        style:AppTextStyles.bodyMedium.copyWith(
+                          color: batteryHealthColor(state.healthStatus),
                           fontWeight: FontWeight.bold,
-                        ),
+                        )
+                       
                       ),
                     );
                   },

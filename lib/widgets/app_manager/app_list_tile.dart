@@ -1,12 +1,11 @@
+import 'package:battery_saver_app/bloc/app_manager/app_manager_bloc.dart'; // ← sirf yeh
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/view/app_manager/app_manager_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class AppListTile extends StatelessWidget {
-  final AppModel app;
+  final dynamic app;
   final VoidCallback onToggle;
   final bool showDivider;
   final bool isApkMode;
@@ -19,6 +18,46 @@ class AppListTile extends StatelessWidget {
     this.isApkMode = false,
   });
 
+  String get _name => app.name as String;
+  String get _size => app.formattedSize as String;
+  bool get _isSelected => app.isSelected as bool;
+
+  String get _version {
+    if (isApkMode) return (app as ApkFileModel).version;
+    return (app as RealAppModel).versionName ?? '';
+  }
+
+  Widget _buildIcon() {
+    if (!isApkMode) {
+      final model = app as RealAppModel;
+      if (model.icon != null) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.memory(
+            model.icon!,
+            width: getWidth(36),
+            height: getHeight(36),
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => _fallbackIcon(),
+          ),
+        );
+      }
+    }
+    return _fallbackIcon();
+  }
+
+  Widget _fallbackIcon() {
+    return Container(
+      width: getWidth(36),
+      height: getHeight(36),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Colors.white.withOpacity(0.05),
+      ),
+      child: const Icon(Icons.android, color: Colors.white54, size: 20),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -27,40 +66,14 @@ class AppListTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
-              // ── App Icon ─────────────────────────
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: SvgPicture.asset(
-                  app.iconAsset,
-                  width: getWidth(30),
-                  height: getHeight(30),
-                  fit: BoxFit.contain,
-                  placeholderBuilder: (context) => Container(
-                    width: getWidth(36),
-                    height: getHeight(36),
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white.withOpacity(0.05),
-                    ),
-                    child: const Icon(
-                      Icons.apps,
-                      size: 18,
-                      // color: Colors.grey,
-                    ),
-                  ),
-                ),
-              ),
-
+              _buildIcon(),
               SizedBox(width: getWidth(12)),
-
-              // ── App Name + Version (ONLY APK MODE) ─────────────────────────
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      app.name,
+                      _name,
                       overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(14),
@@ -68,27 +81,21 @@ class AppListTile extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-
                     SizedBox(height: getHeight(2)),
-
-                    //  ONLY SHOW IN APK MODE
                     if (isApkMode)
                       Row(
                         children: [
                           Text(
-                            "Version 1.0.0",
-                            overflow: TextOverflow.ellipsis,
+                            'Version $_version',
                             style: AppTextStyles.bodySmall.copyWith(
                               fontSize: getFont(11),
                               color: AppColors.allsmalltextcolor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-
                           SizedBox(width: getWidth(6)),
-
                           Text(
-                            app.formattedSize,
+                            _size,
                             style: AppTextStyles.bodySmall.copyWith(
                               fontSize: getFont(11),
                               color: AppColors.allsmalltextcolor,
@@ -98,9 +105,8 @@ class AppListTile extends StatelessWidget {
                         ],
                       )
                     else
-                      // Normal mode → only size OR empty space behavior
                       Text(
-                        app.formattedSize,
+                        _size,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: getFont(11),
                           color: AppColors.allsmalltextcolor,
@@ -110,21 +116,14 @@ class AppListTile extends StatelessWidget {
                   ],
                 ),
               ),
-
               SizedBox(width: getWidth(8)),
-
-              // ── Action Buttons ─────────────────────────
               if (isApkMode) ...[
                 GestureDetector(
                   onTap: onToggle,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 5),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: const Color(0xFF55D0FF),
-                        width: 1.2,
-                      ),
+                      border: Border.all(color: const Color(0xFF55D0FF), width: 1.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -137,14 +136,8 @@ class AppListTile extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 SizedBox(width: getWidth(4)),
-
-                const Icon(
-                  Icons.more_vert,
-                  color: Color(0xFFD9D9D9),
-                  size: 20,
-                ),
+                const Icon(Icons.more_vert, color: Color(0xFFD9D9D9), size: 20),
               ] else ...[
                 GestureDetector(
                   onTap: onToggle,
@@ -153,21 +146,12 @@ class AppListTile extends StatelessWidget {
                     width: getWidth(20),
                     height: getHeight(20),
                     decoration: BoxDecoration(
-                      color: app.isSelected
-                          ? Color(0xFF232C6D)
-                          : Colors.transparent,
-                      border: Border.all(
-                        color: Color(0xFF838283),
-                        width: 1.5,
-                      ),
+                      color: _isSelected ? const Color(0xFF232C6D) : Colors.transparent,
+                      border: Border.all(color: const Color(0xFF838283), width: 1.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: app.isSelected
-                        ? const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 14,
-                          )
+                    child: _isSelected
+                        ? const Icon(Icons.check, color: Colors.white, size: 14)
                         : null,
                   ),
                 ),
@@ -175,8 +159,6 @@ class AppListTile extends StatelessWidget {
             ],
           ),
         ),
-
-        // ── Divider ─────────────────────────────────────────
         if (showDivider)
           Padding(
             padding: EdgeInsets.only(left: getWidth(60)),

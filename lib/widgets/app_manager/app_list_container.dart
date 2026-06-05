@@ -1,17 +1,17 @@
-import 'package:battery_saver_app/view/app_manager/app_manager_screen.dart';
+import 'package:battery_saver_app/bloc/app_manager/app_manager_bloc.dart';
 import 'package:flutter/material.dart';
 import 'app_list_tile.dart';
 
 class AppListContainer extends StatelessWidget {
-  final List<AppModel> apps;
+  final List<dynamic> apps; // RealAppModel ya ApkFileModel dono
   final Function(int index) onToggle;
-  final bool isApkMode; // ← new
+  final bool isApkMode;
 
   const AppListContainer({
     super.key,
     required this.apps,
     required this.onToggle,
-    this.isApkMode = false, // ← new
+    this.isApkMode = false,
   });
 
   @override
@@ -32,15 +32,15 @@ class AppListContainer extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(4),
         child: ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: false,
+          physics: const BouncingScrollPhysics(),
           itemCount: apps.length,
           itemBuilder: (context, index) {
             return AppListTile(
               app: apps[index],
               onToggle: () => onToggle(index),
               showDivider: index != apps.length - 1,
-              isApkMode: isApkMode, // ← pass karo
+              isApkMode: isApkMode,
             );
           },
         ),

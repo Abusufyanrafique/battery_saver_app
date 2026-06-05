@@ -51,7 +51,36 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-
+       // ======== APP SIZE CHANNEL ===========
+MethodChannel(
+    flutterEngine.dartExecutor.binaryMessenger,
+    "com.example.battery_saver_app/app_size"
+).setMethodCallHandler { call, result ->
+    when (call.method) {
+        "getInstalledAppSizes" -> {
+            Thread {
+                try {
+                    val packageNames = call.argument<List<String>>("packageNames") ?: emptyList()
+                    val sizeMap = mutableMapOf<String, Double>()
+                    for (pkg in packageNames) {
+                        try {
+                            val ai = packageManager.getApplicationInfo(pkg, 0)
+                            val apkFile = java.io.File(ai.sourceDir)
+                            val sizeMB = apkFile.length() / (1024.0 * 1024.0)
+                            sizeMap[pkg] = sizeMB
+                        } catch (_: Exception) {
+                            sizeMap[pkg] = 0.0
+                        }
+                    }
+                    runOnUiThread { result.success(sizeMap) }
+                } catch (e: Exception) {
+                    runOnUiThread { result.error("SIZE_ERROR", e.message, null) }
+                }
+            }.start()
+        }
+        else -> result.notImplemented()
+    }
+}
         // ======== SECURITY SCAN CHANNEL ===========
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

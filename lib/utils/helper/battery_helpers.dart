@@ -72,3 +72,23 @@ String remainingTimeFromLevel(int level, {int modeIndex = 0}) {
   if (hours > 0) return '${hours}h ${minutes}m left';
   return '${minutes}m left';
 }
+
+
+Color healthColor(BatteryHealthStatus status) {
+  switch (status) {
+    case BatteryHealthStatus.full:
+      return Colors.green;
+
+    case BatteryHealthStatus.good:
+      return Colors.lightGreen;
+
+    case BatteryHealthStatus.moderate:
+      return Colors.orange;
+
+    case BatteryHealthStatus.low:
+      return Colors.deepOrange;
+
+    default:
+      return Colors.red;
+  }
+}

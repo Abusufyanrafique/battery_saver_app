@@ -20,6 +20,9 @@
     tools:ignore="ProtectedPermissions"/>
 <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
 <uses-permission android:name="android.permission.GET_TASKS" />
+<!-- Android 11+ ke liye -->
+<uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+    tools:ignore="QueryAllPackagesPermission"/>
 
     <application
         android:label="battery_saver_app"

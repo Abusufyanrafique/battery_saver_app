@@ -109,5 +109,6 @@ static const String containeroptimizeappmanage = "assets/images/home/containerop
 // static const String time = "assets/images/data_usage/Time.png";
 static const String batteryhealthimageq ="assets/images/battery_saver/batteryhealthimage.png";
 static const String threads = "assets/images/home/threads.png";
+static const String batterysavercricle = "assets/images/battery_saver/battery_saver_cricle.png";
 
 } 

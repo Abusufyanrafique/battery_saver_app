@@ -75,12 +75,13 @@ class StatsCard extends StatelessWidget {
             ),
           ),
           SizedBox(width: getWidth(15)),
-          _StatItem(
-            label: 'Total Size',
-            value: '${totalSizeGB.toStringAsFixed(2)} GB',
-            labelColor: labelColor,
-            valueColor: valueColor,
-          ),
+         // stats_card.dart mein
+_StatItem(
+  label: 'Total Size',
+  value: totalSizeGB == 0 ? 'N/A' : '${totalSizeGB.toStringAsFixed(2)} GB',
+  labelColor: labelColor,
+  valueColor: valueColor,
+),
         ],
       ),
     );
