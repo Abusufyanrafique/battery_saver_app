@@ -114,4 +114,5 @@ static const String graph1 = "assets/images/data_usage/graph1.png";
 static const String graph2 = "assets/images/data_usage/graph2.png";
 static const String graph3 = "assets/images/data_usage/graph3.png";
 static const String graph4 = "assets/images/data_usage/graph4.png";
+static const String cleanbackg = "assets/images/battery_saver/cleanbackg.png";
 } 

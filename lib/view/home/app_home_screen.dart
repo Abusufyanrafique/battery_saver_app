@@ -786,34 +786,40 @@ class _CleanBanner extends StatelessWidget {
               ),
               child: Image(image: AssetImage(AppImages.checkbox1))
             ),
-            const SizedBox(width: 10),
-            Container(
-              height: getHeight(32),
-              width: getWidth(94),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF9DF474), Color(0xFF5B8E44)],
+             SizedBox(width: getWidth(10),),
+            Padding(
+              padding: const EdgeInsets.only(top:8.0),
+              child: Container(
+                height: getHeight(32),
+                width: getWidth(94),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF9DF474),
+                       Color(0xFF5B8E44),
+                       ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    Text(
-                      AppText.cleanNow,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: getFont(10),
-                        fontWeight: FontWeight.w500,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        AppText.cleanNow,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          fontSize: getFont(10),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: getWidth(10),),
-                    Center(child: Image(
-                      image: AssetImage(AppImages.cleaneNow),
-                      height: getHeight(22),
-                      width: getWidth(10),
-                      )),
-                  ],
+                      SizedBox(width: getWidth(10),),
+                      Center(child: Image(
+                        image: AssetImage(AppImages.cleaneNow),
+                        height: getHeight(40),
+                        width: getWidth(10),
+                        )),
+                    ],
+                  ),
                 ),
               ),
             ),

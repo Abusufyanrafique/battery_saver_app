@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -29,36 +30,38 @@ class CleanResultGridWidget extends StatelessWidget {
     required this.items,
   });
 
-  factory CleanResultGridWidget.defaultValues() {
-    return  CleanResultGridWidget(
+  // Real data se items banao
+  factory CleanResultGridWidget.fromData(CleanResultData data) {
+    // print("CACHE VALUE FROM SCAN: ${data.cacheCleared}");
+    return CleanResultGridWidget(
       items: [
         CleanResultItem(
           iconPath: AppIcons.files,
           title: 'Junk Removed',
-          value: '433 MB',
+          value: data.junkRemoved,
           subtitle: 'Space Freed',
-          valueColor: Color(0xFFFE39C6),
+          valueColor: const Color(0xFFFE39C6),
         ),
         CleanResultItem(
           iconPath: AppIcons.appsClosed,
           title: 'Apps Closed',
-          value: '18 Apps',
+          value: data.appsClosed,
           subtitle: 'Background',
-          valueColor: Color(0xFFEDB309),
+          valueColor: const Color(0xFFEDB309),
         ),
         CleanResultItem(
           iconPath: AppIcons.cacheCleared,
           title: 'Cache Cleared',
-          value: '236 MB',
+          value: data.cacheCleared,
           subtitle: 'Cache',
-          valueColor: Color(0xFF55D0FF),
+          valueColor: const Color(0xFF55D0FF),
         ),
         CleanResultItem(
           iconPath: AppIcons.files2,
           title: 'Residual Files Removed',
-          value: '102 MB',
+          value: data.residualFiles,
           subtitle: 'Files',
-          valueColor: Color(0xFF9A3CFF),
+          valueColor: const Color(0xFF9A3CFF),
         ),
       ],
     );
@@ -66,9 +69,9 @@ class CleanResultGridWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicHeight( // Sab cards ki height equal
+    return IntrinsicHeight(
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to max height
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: List.generate(items.length, (index) {
           final item = items[index];
           final isLast = index == items.length - 1;
@@ -117,16 +120,13 @@ class _CleanResultCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: getHeight(6),),
+          SizedBox(height: getHeight(6)),
           SvgPicture.asset(
             item.iconPath,
             width: getWidth(20),
             height: getHeight(20),
           ),
-
           SizedBox(height: getHeight(4)),
-
-          // Title
           Text(
             item.title,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -135,10 +135,6 @@ class _CleanResultCard extends StatelessWidget {
               color: AppColors.textwhitecolor,
             ),
           ),
-
-          // SizedBox(height: getHeight()),
-
-          // Value
           Text(
             item.value,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -147,16 +143,12 @@ class _CleanResultCard extends StatelessWidget {
               color: item.valueColor,
             ),
           ),
-
           SizedBox(height: getHeight(4)),
-
-          // Subtitle
           Text(
             item.subtitle,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(10),
-              
               fontWeight: FontWeight.w500,
               color: AppColors.allsmalltextcolor,
             ),

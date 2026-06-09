@@ -25,17 +25,17 @@ class QuickWidgetCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: const Color(0xFF151A30),
           borderRadius: BorderRadius.circular(6),
-           border: Border.all(color: item.borderColor, width: 1),   
-          
+          border: Border.all(color: item.borderColor, width: 1),
         ),
-        // padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
 
-           
-            _PlainIcon(item: item),
+            // ── Icon + optional percentage badge ──
+            _IconWithBadge(item: item),
+
             const SizedBox(height: 8),
+
             Text(
               item.label,
               textAlign: TextAlign.center,
@@ -43,7 +43,7 @@ class QuickWidgetCard extends StatelessWidget {
                 fontSize: getFont(12),
                 fontWeight: FontWeight.w600,
                 color: AppColors.textwhitecolor,
-              )
+              ),
             ),
           ],
         ),
@@ -52,27 +52,56 @@ class QuickWidgetCard extends StatelessWidget {
   }
 }
 
-
-
-/// ─────────────────────────────────────────────
-/// SVG ICON (NO RING)
-/// ─────────────────────────────────────────────
-class _PlainIcon extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────
+// ICON + PERCENTAGE BADGE (Stack)
+// ─────────────────────────────────────────────────────────────
+class _IconWithBadge extends StatelessWidget {
   final QuickWidgetItem item;
 
-  const _PlainIcon({required this.item});
+  const _IconWithBadge({required this.item});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Center(
-        child: SvgPicture.asset(
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        // ── SVG Icon ──
+        SvgPicture.asset(
           item.svgIcon,
           width: getWidth(46),
           height: getHeight(46),
         ),
-      ),
+
+        // ── Percentage badge — sirf tab show ho jab value ho ──
+        if (item.percentage != null)
+          Positioned(
+            top: -getHeight(4),
+            right: -getWidth(10),
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: getWidth(4),
+                vertical: getHeight(2),
+              ),
+              decoration: BoxDecoration(
+                color: item.borderColor.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: item.borderColor,
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                '${item.percentage}%',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontSize: getFont(9),
+                  fontWeight: FontWeight.w700,
+                  color: item.borderColor,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
-

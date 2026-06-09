@@ -138,4 +138,32 @@ static const String batteryUsage ="Battery Usage";
   static const String delete = "Delete";
   static const String  share =  "Share";
   static const String systemUsage ='System Usage';
+  static const String junkCleaner = 'Junk Cleaner';
+  static const String removeunnecessaryfilesandcache = 'Remove unnecessary\n files and cache';
+  static const String phoneBoostcreentext = 'Phone Boost';
+  static const String boostandimproveperformance = 'Boost RAM and improve performance';
+  static const String batterySavertext = 'Battery Saver';
+  static const String saverpowerandextendbatterylife = 'Saver power and\nextend battery life';
+  static const String cpuCooler = 'CPU Cooler';
+  static const String cooldownandreducetemperature = 'Cool down CPU and\nreduce temperature';
+  static const String securityScantext = 'Security Scan';
+  static const String protectyourdevicefromthreats = 'Protect your device\nfrom threats';
+  static const String notificationCleanertext = 'Notification Cleaner';
+  static const String cleanunnecessarynotification = 'Clean unnecessary\nnotification';
+  static const String appManagertext = 'App Manager';
+  static const String manageinstalledappseasily = 'Manage installed\napps easily';
+  static const String fileManager = 'File Manager';
+  static const String managefilesandfreeupspace = 'Manage files and\nfree up space';
+  static const String dataUsagetext = 'Data Usage';
+  static const String monitordatausageinrealtime = 'Monitor data usage\nin real-time';
+  static const String batterytext = 'Battery';
+  static const String  optimizetext =  'Optimize';
+  static const String  cleantext =  'Clean';
+  static const String boost = 'Boost';
+  // login screen text ============================================================================
+  static const String welcomeBack = 'Welcome Back';
+  static const String signContinue = 'Sign in to continue';
+  static const String emailorPhone = 'Email or Phone';
+  static const String password = 'Password';
+  
 }

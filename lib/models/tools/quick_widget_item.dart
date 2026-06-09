@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/models/tools/tool_item.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/view/file_manager/file_manager_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -26,8 +27,8 @@ class QuickWidgetItem {
  
 final List<ToolItem> toolsData = [
   ToolItem(
-    title: 'Junk Cleaner',
-    subtitle: 'Remove unnecessary\n files and cache',
+    title: AppText.junkCleaner,
+    subtitle: AppText.removeunnecessaryfilesandcache,
     iconColor: const Color(0xFFB39DDB),
     // iconBgColor: const Color(0xFF3D2B6B),
     imagepath: AppImages.containerrocket,
@@ -35,56 +36,49 @@ final List<ToolItem> toolsData = [
      route: '/JunkCleanerScreen',
   ),
   ToolItem(
-    title: 'Phone Boost',
-    subtitle: 'Boost RAM and improve performance',
+    title: AppText.phoneBoostcreentext,
+    subtitle:AppText.boostandimproveperformance,
     imagepath: AppImages.containerphoneboost,
     iconColor: const Color(0xFF80DEEA),
     // iconBgColor: const Color(0xFF1A3A4A), 
     route: '/PhoneBoostScreen',
   ),
   ToolItem(
-    title: 'Battery Saver',
-    subtitle: 'Saver power and\nextend battery life',
+    title: AppText.batterySavertext,
+    subtitle: AppText.saverpowerandextendbatterylife,
     imagepath: AppImages.containerbattery,
     iconColor: const Color(0xFF69F0AE), 
     route: '/BatterySaverScreen',
   ),
   ToolItem(
-    title: 'CPU Cooler',
-    subtitle: 'Cool down CPU and\nreduce temperature',
+    title: AppText.cpuCooler,
+    subtitle: AppText.cooldownandreducetemperature,
     imagepath: AppImages.containercpucooler,
     route: '/CpuCoolerScreen',
   ),
   ToolItem(
-    title: 'Security Scan',
-    subtitle: 'Protect your device\nfrom threats',
+    title: AppText.securityScantext,
+    subtitle: AppText.protectyourdevicefromthreats,
     imagepath: AppImages.containersecurity,
-    // icon: Icons.shield_rounded,
-    // iconColor: const Color(0xFF69F0AE),
-    // iconBgColor: const Color(0xFF1A3A2A), 
     route: '/SecurityScanScreen',
   ),
   ToolItem(
-    title: 'Notification Cleaner',
-    subtitle: 'Clean unnecessary\nnotification',
-    // icon: Icons.notifications_rounded,
+    title: AppText.notificationCleanertext,
+    subtitle: AppText.cleanunnecessarynotification,
     imagepath: AppImages.containernotification,
     iconColor: const Color(0xFF80DEEA),
-    // iconBgColor: const Color(0xFF1A3A4A), 
     route: '/NotificationCleanerScreen',
   ),
   ToolItem(
-    title: 'App Manager',
-    subtitle: 'Manage installed\napps easily',
-    // icon: Icons.apps_rounded,
+    title: AppText.appManagertext,
+    subtitle: AppText.manageinstalledappseasily,
     imagepath: AppImages.containerappmanager,
     iconColor: const Color(0xFFB39DDB),
-    // iconBgColor: const Color(0xFF3D2B6B),
      route: '/appManagerScreen',
   ),
   ToolItem(
-    title: 'File Manager',
-    subtitle: 'Manage files and\nfree up space',
+    title: AppText.fileManager,
+    subtitle: AppText.managefilesandfreeupspace,
     imagepath: AppImages.containerfile,
     // icon: Icons.folder_rounded,
     iconColor: const Color(0xFFFFCC80),
@@ -100,8 +94,8 @@ final List<ToolItem> toolsData = [
     //  route: '/FileManagerScreen',
   ),
   ToolItem(
-    title: 'Data Usage',
-    subtitle: 'Monitor data usage\nin real-time',
+    title: AppText.dataUsagetext,
+    subtitle: AppText.monitordatausageinrealtime,
     imagepath: AppImages.containerdatausage,
     // icon: Icons.data_usage_rounded,
     iconColor: const Color(0xFF80DEEA),
@@ -113,26 +107,26 @@ final List<ToolItem> toolsData = [
 final List<QuickWidgetItem> quickWidgetsData = [
  
   QuickWidgetItem(
-    label: 'Battery',
+    label: AppText.batterytext,
     svgIcon:AppIcons.quikwidgetBatteryIcon,
     // color: const Color(0xFF69F0AE),
     borderColor: const Color(0xFF00FF09),
     percentage: 72,
   ),
   QuickWidgetItem(
-    label: 'Optimize',
+    label: AppText.optimizetext,
     svgIcon:AppIcons.quickwidgetOptimize,
     // color: const Color(0xFFE040FB),
     borderColor: const Color(0xFF9A3CFF),
   ),
   QuickWidgetItem(
-    label: 'Clean',
-    svgIcon:"assets/icons/tools_screen/deleteicon.svg",
+    label: AppText.cleantext,
+    svgIcon:AppIcons.deleteicon,
     borderColor: const Color(0xFFFF00D9),
     
   ),
   QuickWidgetItem(
-    label: 'Boost',
+    label: AppText.boost,
     svgIcon:AppIcons.quickwidgetBoost,
     borderColor: const Color(0xFF5592FF),
     percentage: 68,

@@ -30,8 +30,12 @@ class MainActivity : FlutterActivity() {
     private val APP_STATS_CHANNEL      = "com.example.battery_saver_app/app_stats"
     private val BATTERY_CHANNEL        = "com.example.battery_saver_app/battery_status"
     private val BATTERY_HEALTH_CHANNEL = "com.example.battery_saver_app/battery_health"
-    private val SECURITY_CHANNEL       = "com.yourapp/security"
+    private val SECURITY_CHANNEL       = "com.example.battery_saver_app/security"
     private val NOTIFICATION_CHANNEL   = "notification_scanner"
+    private val CACHE_CHANNEL          = "com.example.battery_saver_app/device"
+    private val STORAGE_CHANNEL        = "com.example.battery_saver_app/device_storage"
+
+    private val storageManager = StorageManager()
 
     private val dangerousPermissions = listOf(
         android.Manifest.permission.READ_CONTACTS,
@@ -52,6 +56,148 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        // ======== STORAGE CHANNEL ===========
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+
+                    "getStorageStats" -> {
+                        try {
+                            val stats = storageManager.getStorageStats(this)
+                            result.success(stats)
+                        } catch (e: Exception) {
+                            result.error("SCAN_ERROR", e.message, null)
+                        }
+                    }
+
+                    "cleanResidualFiles" -> {
+                        try {
+                            val cleaned = storageManager.cleanResidualFiles(this)
+                            result.success(cleaned)
+                        } catch (e: Exception) {
+                            result.error("CLEAN_ERROR", e.message, null)
+                        }
+                    }
+
+                    else -> result.notImplemented()
+                }
+            }
+
+        // ======== CACHE / DEVICE CHANNEL ===========
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            CACHE_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+
+                "getCacheSize" -> {
+                    var total = getFolderSize(cacheDir)
+                    externalCacheDir?.let { total += getFolderSize(it) }
+                    result.success(total)
+                }
+
+                "clearCache" -> {
+                    var before = getFolderSize(cacheDir)
+                    externalCacheDir?.let { before += getFolderSize(it) }
+
+                    cacheDir.deleteRecursively()
+                    cacheDir.mkdirs()
+
+                    externalCacheDir?.let {
+                        it.deleteRecursively()
+                        it.mkdirs()
+                    }
+
+                    result.success(before)
+                }
+
+                "getRunningAppsCount" -> {
+                    Thread {
+                        try {
+                            val count = getRunningApps()
+                            runOnUiThread { result.success(count) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("RUNNING_APPS_ERROR", e.message, null) }
+                        }
+                    }.start()
+                }
+
+                // ✅ NEW: Cache files list fetch karo
+                "getCacheFiles" -> {
+                    Thread {
+                        try {
+                            val files = mutableListOf<Map<String, Any>>()
+
+                            // Internal cache scan
+                            cacheDir?.walkTopDown()?.filter { it.isFile }?.forEach { file ->
+                                files.add(
+                                    mapOf(
+                                        "name"         to file.name,
+                                        "path"         to file.absolutePath,
+                                        "size"         to file.length(),
+                                        "lastModified" to file.lastModified()
+                                    )
+                                )
+                            }
+
+                            // External cache scan
+                            externalCacheDir?.walkTopDown()?.filter { it.isFile }?.forEach { file ->
+                                files.add(
+                                    mapOf(
+                                        "name"         to file.name,
+                                        "path"         to file.absolutePath,
+                                        "size"         to file.length(),
+                                        "lastModified" to file.lastModified()
+                                    )
+                                )
+                            }
+
+                            runOnUiThread { result.success(files) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("CACHE_FILES_ERROR", e.message, null) }
+                        }
+                    }.start()
+                }
+
+                // ✅ NEW: Residual files list fetch karo
+                "getResidualFiles" -> {
+                    Thread {
+                        try {
+                            val files    = mutableListOf<Map<String, Any>>()
+                            // Yeh folders skip karo — baaki sab residual hain
+                            val skipDirs = setOf(
+                                "cache", "files", "shared_prefs",
+                                "databases", "code_cache", "app_webview"
+                            )
+                            // /data/data/com.example.battery_saver_app/
+                            val dataDir = filesDir.parentFile
+
+                            dataDir?.listFiles()?.forEach { dir ->
+                                if (dir.isDirectory && dir.name !in skipDirs) {
+                                    dir.walkTopDown().filter { it.isFile }.forEach { file ->
+                                        files.add(
+                                            mapOf(
+                                                "name"         to file.name,
+                                                "path"         to file.absolutePath,
+                                                "size"         to file.length(),
+                                                "lastModified" to file.lastModified()
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+
+                            runOnUiThread { result.success(files) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("RESIDUAL_FILES_ERROR", e.message, null) }
+                        }
+                    }.start()
+                }
+
+                else -> result.notImplemented()
+            }
+        }
 
         // ======== NOTIFICATION SCANNER CHANNEL ===========
         MethodChannel(
@@ -289,6 +435,18 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
+    // CACHE SIZE
+    // ─────────────────────────────────────────────────────────────────
+    private fun getFolderSize(dir: File): Long {
+        var size = 0L
+        if (!dir.exists()) return size
+        dir.walkTopDown().forEach { file ->
+            if (file.isFile) size += file.length()
+        }
+        return size
+    }
+
+    // ─────────────────────────────────────────────────────────────────
     // ACTIVE NOTIFICATIONS
     // ─────────────────────────────────────────────────────────────────
     private fun getActiveNotifs(): List<Map<String, Any>> {
@@ -480,10 +638,12 @@ class MainActivity : FlutterActivity() {
                 } catch (_: Exception) {}
             }
             try { am.getRunningServices(200).forEach { runningPackages.add(it.service.packageName) } } catch (_: Exception) {}
-            try { am.getRunningTasks(50).forEach {
-                it.topActivity?.packageName?.let  { p -> runningPackages.add(p) }
-                it.baseActivity?.packageName?.let { p -> runningPackages.add(p) }
-            }} catch (_: Exception) {}
+            try {
+                am.getRunningTasks(50).forEach {
+                    it.topActivity?.packageName?.let  { p -> runningPackages.add(p) }
+                    it.baseActivity?.packageName?.let { p -> runningPackages.add(p) }
+                }
+            } catch (_: Exception) {}
         } else {
             try { am.runningAppProcesses?.forEach { proc -> proc.pkgList?.forEach { runningPackages.add(it) } } } catch (_: Exception) {}
         }

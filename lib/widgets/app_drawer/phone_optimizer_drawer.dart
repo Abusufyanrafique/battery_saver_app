@@ -4,8 +4,10 @@
 import 'package:battery_saver_app/configs/routes/app_routes.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 
 
@@ -294,11 +296,15 @@ class PhoneOptimizerDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              child: const Icon(
-                Icons.phone_android_rounded,
-                color: Color(0xFF55D0FF),
-                size: 20,
-              ),
+              child: SvgPicture.asset(
+  AppIcons.cleanicon,
+  width: getWidth(20),
+  height: getHeight(20),
+  colorFilter: const ColorFilter.mode(
+    Color(0xFF55D0FF),
+    BlendMode.srcIn,
+  ),
+)
             ),
           ),
 
@@ -354,8 +360,8 @@ class _DrawerTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: () {
-            item.onTap?.call(); // ✅ ADD THIS (IMPORTANT)
-            onTap(); // existing selection callback
+            item.onTap?.call(); 
+            onTap(); 
           },
           borderRadius: BorderRadius.circular(12),
           child: AnimatedContainer(
@@ -401,7 +407,7 @@ class _DrawerTile extends StatelessWidget {
 
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.white.withOpacity(0.25),
+                  color: Color(0xFF989CDF),
                 ),
               ],
             ),

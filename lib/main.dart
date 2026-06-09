@@ -1,5 +1,6 @@
 import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
+import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
 import 'package:battery_saver_app/bloc/file_manager/file_manager_bloc.dart';
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
@@ -36,7 +37,9 @@ class MyApp extends StatelessWidget {
           create: (_) => BatterySaverBloc()
             ..add(const BatterySaverInitialized()),
         ),
-
+         BlocProvider(
+      create: (_) => CleanBackgroundBloc(),
+    ),
 
         //  ADD MORE BLOCS HERE
        BlocProvider<BatterySaverHomeBloc>(

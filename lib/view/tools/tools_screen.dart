@@ -1,5 +1,6 @@
 // tools_screen.dart
 
+import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/models/tools/quick_widget_item.dart';
@@ -9,6 +10,7 @@ import 'package:battery_saver_app/widgets/tools/quick_widget_card.dart';
 import 'package:battery_saver_app/widgets/tools/tool_card_widget.dart';
 import 'package:battery_saver_app/widgets/tools/tools_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class ToolsScreen extends StatelessWidget {
@@ -16,9 +18,9 @@ class ToolsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     SizeConfig().init(context);
+    SizeConfig().init(context);
     return Scaffold(
-      backgroundColor:AppColors.allscreenBackgroundColor,
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: ToolsAppBar(),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -27,7 +29,7 @@ class ToolsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               _ToolsGrid(),
-              SizedBox(height:20),
+              SizedBox(height: 20),
               _QuickWidgetsSection(),
             ],
           ),
@@ -49,15 +51,6 @@ class ToolsScreen extends StatelessWidget {
         ),
         onPressed: () => Navigator.maybePop(context),
       ),
-      // title: const Text(
-      //   'Tools',
-      //   style: TextStyle(
-      //     color: Colors.white,
-      //     fontSize: 19,
-      //     fontWeight: FontWeight.w700,
-      //     letterSpacing: 0.3,
-      //   ),
-      // ),
       actions: const [
         Padding(
           padding: EdgeInsets.only(right: 12),
@@ -91,18 +84,15 @@ class _ToolsGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final tool = toolsData[index];
-
         return ToolCardWidget(
           tool: tool,
-        onTap: () {
-
-           if (tool.onTap != null) {
-        tool.onTap!(context);
-      } else if (tool.route != null && tool.route!.isNotEmpty) {
-        context.push(tool.route!);
-      }
-  
-}
+          onTap: () {
+            if (tool.onTap != null) {
+              tool.onTap!(context);
+            } else if (tool.route != null && tool.route!.isNotEmpty) {
+              context.push(tool.route!);
+            }
+          },
         );
       },
     );
@@ -119,55 +109,73 @@ class _QuickWidgetsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height:getHeight(173),
-      // width: getWidth(390),
       padding: const EdgeInsets.all(16),
-     decoration: BoxDecoration(
-  gradient: const LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
-    colors: [
-      Color(0xFF07082C), // left
-      Color(0xFF0C27A7), // right
-    ],
-  ),
-  borderRadius: BorderRadius.circular(12),
-),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF07082C),
+            Color(0xFF0C27A7),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text(
-           AppText.quickWidgets,
+          Text(
+            AppText.quickWidgets,
             style: AppTextStyles.bodySmall.copyWith(
               fontSize: getFont(12),
               fontWeight: FontWeight.w600,
-              color: AppColors.textwhitecolor
-            )
+              color: AppColors.textwhitecolor,
+            ),
           ),
 
-           SizedBox(height:getHeight(16)),
+          SizedBox(height: getHeight(16)),
 
-          Row(
-            children: List.generate(
-              quickWidgetsData.length,
-              (index) {
-                final item = quickWidgetsData[index];
+          // ✅ BlocBuilder — sirf battery percentage ke liye rebuild hoga
+          BlocBuilder<BatterySaverBloc, BatterySaverState>(
+            buildWhen: (prev, curr) =>
+                prev.batteryLevel != curr.batteryLevel,
+            builder: (context, batteryState) {
+              // Battery item mein real level inject karo
+              final items = quickWidgetsData.map((item) {
+                if (item.label == AppText.batterytext) {
+                  return QuickWidgetItem(
+                    label:       item.label,
+                    svgIcon:     item.svgIcon,
+                    borderColor: item.borderColor,
+                    color:       item.color,
+                    percentage:  batteryState.batteryLevel, // ✅ real value
+                  );
+                }
+                return item;
+              }).toList();
 
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      right: index == quickWidgetsData.length - 1 ? 0 : 10,
-                    ),
-                    child: QuickWidgetCard(
-                      item: item,
-                      onTap: () {
-                        debugPrint('Quick Widget: ${item.label}');
-                      },
-                    ),
-                  ),
-                );
-              },
-            ),
+              return Row(
+                children: List.generate(
+                  items.length,
+                  (index) {
+                    final item = items[index];
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          right: index == items.length - 1 ? 0 : 10,
+                        ),
+                        child: QuickWidgetCard(
+                          item: item,
+                          onTap: () {
+                            debugPrint('Quick Widget: ${item.label}');
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),

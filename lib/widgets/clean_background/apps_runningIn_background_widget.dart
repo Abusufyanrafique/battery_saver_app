@@ -11,7 +11,7 @@ class AppItem {
   final Color iconBgColor;
   final String imagepath;
 
-  AppItem({
+  const AppItem({
     required this.name,
     required this.size,
     required this.iconBgColor,
@@ -19,65 +19,49 @@ class AppItem {
   });
 }
 
-class AppsRunningInBackgroundWidget extends StatefulWidget {
-  const AppsRunningInBackgroundWidget({super.key});
+/// Static app list — kept here so the BLoC doesn't need to know about assets.
+const List<AppItem> kDefaultApps = [
+  AppItem(
+    name: 'Instagram',
+    size: '135 MB',
+    iconBgColor: Color(0xFFE1306C),
+    imagepath: AppIcons.instagramicon,
+  ),
+  AppItem(
+    name: 'YouTube',
+    size: '98 MB',
+    iconBgColor: Color(0xFFFF0000),
+    imagepath: AppIcons.youtubeicon,
+  ),
+  AppItem(
+    name: 'WhatsApp',
+    size: '78 MB',
+    iconBgColor: Color(0xFF25D366),
+    imagepath: AppIcons.whatsappicon,
+  ),
+  AppItem(
+    name: 'Facebook',
+    size: '64 MB',
+    iconBgColor: Color(0xFF1877F2),
+    imagepath: AppIcons.facebookicon,
+  ),
+];
 
-  @override
-  State<AppsRunningInBackgroundWidget> createState() =>
-      _AppsRunningInBackgroundWidgetState();
-}
+/// Stateless widget: selection state is now owned by the BLoC.
+/// The parent passes [selected], [allSelected], and the two callbacks.
+class AppsRunningInBackgroundWidget extends StatelessWidget {
+  final List<bool> selected;
+  final bool allSelected;
+  final ValueChanged<int> onToggleItem;
+  final VoidCallback onToggleAll;
 
-class _AppsRunningInBackgroundWidgetState
-    extends State<AppsRunningInBackgroundWidget> {
-  final List<AppItem> _apps = [
-    AppItem(
-      name: 'Instagram',
-      size: '135 MB',
-      iconBgColor: const Color(0xFFE1306C),
-      imagepath: AppIcons.instagramicon,
-    ),
-    AppItem(
-      name: 'YouTube',
-      size: '98 MB',
-      iconBgColor: const Color(0xFFFF0000),
-      imagepath: AppIcons.youtubeicon,
-    ),
-    AppItem(
-      name: 'WhatsApp',
-      size: '78 MB',
-      iconBgColor: const Color(0xFF25D366),
-      imagepath: AppIcons.whatsappicon,
-    ),
-    AppItem(
-      name: 'Facebook',
-      size: '64 MB',
-      iconBgColor: const Color(0xFF1877F2),
-      imagepath: AppIcons.facebookicon,
-    ),
-  ];
-
-  late List<bool> _selected;
-
-  @override
-  void initState() {
-    super.initState();
-    _selected = List.generate(_apps.length, (_) => true);
-  }
-
-  bool get _allSelected => _selected.every((s) => s);
-
-  void _toggleAll() {
-    setState(() {
-      final newValue = !_allSelected;
-      _selected = List.generate(_apps.length, (_) => newValue);
-    });
-  }
-
-  void _toggleItem(int index) {
-    setState(() {
-      _selected[index] = !_selected[index];
-    });
-  }
+  const AppsRunningInBackgroundWidget({
+    super.key,
+    required this.selected,
+    required this.allSelected,
+    required this.onToggleItem,
+    required this.onToggleAll,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -94,13 +78,13 @@ class _AppsRunningInBackgroundWidgetState
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Color(0xFF6C63FF).withOpacity(0.3),
+          color: const Color(0xFF6C63FF).withOpacity(0.3),
           width: 1,
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
-        mainAxisSize: MainAxisSize.min, 
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
@@ -116,7 +100,7 @@ class _AppsRunningInBackgroundWidgetState
                 ),
               ),
               GestureDetector(
-                onTap: _toggleAll,
+                onTap: onToggleAll,
                 child: Text(
                   'Select All',
                   style: AppTextStyles.bodyMedium.copyWith(
@@ -135,22 +119,21 @@ class _AppsRunningInBackgroundWidgetState
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: _apps.length,
+            itemCount: kDefaultApps.length,
             itemBuilder: (context, index) {
-              final app = _apps[index];
-              final isLast = index == _apps.length - 1;
+              final app = kDefaultApps[index];
+              final isLast = index == kDefaultApps.length - 1;
               return Column(
                 children: [
                   _AppTile(
                     app: app,
-                    isSelected: _selected[index],
-                    onTap: () => _toggleItem(index),
+                    isSelected: selected[index],
+                    onTap: () => onToggleItem(index),
                   ),
-                  //  Divider sirf icon size ke baad start ho
                   if (!isLast)
                     Padding(
                       padding: EdgeInsets.only(
-                        left: getWidth(22) + getWidth(12), // icon width + gap
+                        left: getWidth(22) + getWidth(12),
                       ),
                       child: const Divider(
                         color: Color(0xFF838283),

@@ -2,6 +2,7 @@ import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -45,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // ── Heading ──────────────────────────────────────────────────
                Text(
-                'Welcome Back',
+                AppText.welcomeBack,
                 textAlign: TextAlign.center,
                 style:AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(30),
@@ -55,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 8),
                Text(
-                'Sign in to continue',
+                AppText.signContinue,
                 textAlign: TextAlign.center,
                 style:AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(16),
@@ -69,7 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // ── Email / Phone Field ───────────────────────────────────────
               _buildTextField(
                 controller: _emailController,
-                hint: 'Email or Phone',
+                hint: AppText.emailorPhone,
                 icon: null,
                 obscure: false,
               ),
@@ -79,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
               // ── Password Field ────────────────────────────────────────────
               _buildTextField(
                 controller: _passwordController,
-                hint: 'Password',
+                hint:AppText.password,
                 icon: IconButton(
                   icon: Icon(
                     _obscurePassword
