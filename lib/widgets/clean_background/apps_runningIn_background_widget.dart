@@ -1,55 +1,11 @@
+import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
-class AppItem {
-  final String name;
-  final String size;
-  final Color iconBgColor;
-  final String imagepath;
-
-  const AppItem({
-    required this.name,
-    required this.size,
-    required this.iconBgColor,
-    required this.imagepath,
-  });
-}
-
-/// Static app list — kept here so the BLoC doesn't need to know about assets.
-const List<AppItem> kDefaultApps = [
-  AppItem(
-    name: 'Instagram',
-    size: '135 MB',
-    iconBgColor: Color(0xFFE1306C),
-    imagepath: AppIcons.instagramicon,
-  ),
-  AppItem(
-    name: 'YouTube',
-    size: '98 MB',
-    iconBgColor: Color(0xFFFF0000),
-    imagepath: AppIcons.youtubeicon,
-  ),
-  AppItem(
-    name: 'WhatsApp',
-    size: '78 MB',
-    iconBgColor: Color(0xFF25D366),
-    imagepath: AppIcons.whatsappicon,
-  ),
-  AppItem(
-    name: 'Facebook',
-    size: '64 MB',
-    iconBgColor: Color(0xFF1877F2),
-    imagepath: AppIcons.facebookicon,
-  ),
-];
-
-/// Stateless widget: selection state is now owned by the BLoC.
-/// The parent passes [selected], [allSelected], and the two callbacks.
 class AppsRunningInBackgroundWidget extends StatelessWidget {
+  final List<RunningAppInfo> apps;       //  Real data
   final List<bool> selected;
   final bool allSelected;
   final ValueChanged<int> onToggleItem;
@@ -57,6 +13,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
 
   const AppsRunningInBackgroundWidget({
     super.key,
+    required this.apps,
     required this.selected,
     required this.allSelected,
     required this.onToggleItem,
@@ -65,6 +22,9 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Koi app nahi — widget hide karo
+    if (apps.isEmpty) return const SizedBox.shrink();
+
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
@@ -102,7 +62,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
               GestureDetector(
                 onTap: onToggleAll,
                 child: Text(
-                  'Select All',
+                  allSelected ? 'Deselect All' : 'Select All',
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w600,
@@ -119,22 +79,21 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: kDefaultApps.length,
+            itemCount: apps.length,
             itemBuilder: (context, index) {
-              final app = kDefaultApps[index];
-              final isLast = index == kDefaultApps.length - 1;
+              // selected list bounds check — safety
+              final isSelected = index < selected.length ? selected[index] : false;
+              final isLast = index == apps.length - 1;
               return Column(
                 children: [
                   _AppTile(
-                    app: app,
-                    isSelected: selected[index],
+                    app: apps[index],
+                    isSelected: isSelected,
                     onTap: () => onToggleItem(index),
                   ),
                   if (!isLast)
                     Padding(
-                      padding: EdgeInsets.only(
-                        left: getWidth(22) + getWidth(12),
-                      ),
+                      padding: EdgeInsets.only(left: getWidth(34)),
                       child: const Divider(
                         color: Color(0xFF838283),
                         height: 1,
@@ -152,7 +111,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
 }
 
 class _AppTile extends StatelessWidget {
-  final AppItem app;
+  final RunningAppInfo app;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -167,19 +126,27 @@ class _AppTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            // App Icon
+            // ✅ Package initial se placeholder icon
             Container(
+              width: getWidth(36),
+              height: getHeight(36),
               decoration: BoxDecoration(
-                color: app.iconBgColor,
+                color: _colorFromPackage(app.packageName),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: SvgPicture.asset(
-                app.imagepath,
-                width: getWidth(22),
-                height: getHeight(22),
+              alignment: Alignment.center,
+              child: Text(
+                app.appName.isNotEmpty
+                    ? app.appName[0].toUpperCase()
+                    : '?',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: getFont(16),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
@@ -191,18 +158,19 @@ class _AppTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    app.name,
+                    app.appName,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(10),
+                      fontSize: getFont(13),
                       fontWeight: FontWeight.w600,
                       color: AppColors.textwhitecolor,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    app.size,
+                    app.sizeFormatted,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(10),
+                      fontSize: getFont(11),
                       fontWeight: FontWeight.w500,
                       color: AppColors.allsmalltextcolor,
                     ),
@@ -219,11 +187,27 @@ class _AppTile extends StatelessWidget {
               color: isSelected
                   ? const Color(0xFF4CAF50)
                   : Colors.white.withOpacity(0.3),
-              size: 16,
+              size: 18,
             ),
           ],
         ),
       ),
     );
+  }
+
+  /// Package name se consistent color generate karo
+  Color _colorFromPackage(String packageName) {
+    final colors = [
+      const Color(0xFF6C63FF),
+      const Color(0xFFE1306C),
+      const Color(0xFF1877F2),
+      const Color(0xFF25D366),
+      const Color(0xFFFF6B35),
+      const Color(0xFF0099CC),
+      const Color(0xFFAA00FF),
+      const Color(0xFFFF5722),
+    ];
+    final index = packageName.codeUnits.fold(0, (a, b) => a + b) % colors.length;
+    return colors[index];
   }
 }

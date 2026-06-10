@@ -46,7 +46,7 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
       currentPackage: _packages[0],
       totalJunkDisplay: '0 MB',
     ));
-
+     
     // Ticker — UI mein package names cycle karo scan ke dauran
     _scanTimer?.cancel();
     _scanTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
@@ -75,6 +75,9 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
       currentPackage: _packages.last,
       totalJunkDisplay: _calcTotal(items),
     ));
+    //  DEBUG PRINTS YAHAN LAGAO
+  
+  print("ITEMS: ${items.length}");
   }
 
   void _onScanTick(ScanTickEvent event, Emitter<JunkState> emit) {

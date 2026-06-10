@@ -16,8 +16,8 @@ class TemperatureWidget extends StatelessWidget {
     return BlocBuilder<TemperatureBloc, TemperatureState>(
       builder: (context, state) {
         return Container(
-          width: 390,
-          height: 270,
+          width: getWidth(390),
+          height: getHeight(270),
           padding: const EdgeInsets.only(left: 20, right: 20, top: 0),
           decoration: BoxDecoration(
             gradient: const LinearGradient(

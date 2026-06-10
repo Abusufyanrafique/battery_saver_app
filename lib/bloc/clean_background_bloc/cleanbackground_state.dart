@@ -34,6 +34,32 @@ class DeviceFile {
 }
 
 // ─────────────────────────────────────────────────────────────────
+// ✅ NEW: RUNNING APP MODEL
+// ─────────────────────────────────────────────────────────────────
+class RunningAppInfo {
+  final String packageName;
+  final String appName;
+  final double sizeMb;
+
+  const RunningAppInfo({
+    required this.packageName,
+    required this.appName,
+    required this.sizeMb,
+  });
+
+  factory RunningAppInfo.fromMap(Map map) => RunningAppInfo(
+        packageName: map['packageName'] as String? ?? '',
+        appName:     map['appName']     as String? ?? '',
+        sizeMb:      (map['sizeMb'] as num?)?.toDouble() ?? 0.0,
+      );
+
+  String get sizeFormatted {
+    if (sizeMb < 1.0) return '${(sizeMb * 1024).toStringAsFixed(0)} KB';
+    return '${sizeMb.toStringAsFixed(1)} MB';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
 // RESULT DATA
 // ─────────────────────────────────────────────────────────────────
 class CleanResultData {
@@ -44,10 +70,10 @@ class CleanResultData {
   final double beforeGB;
   final double afterGB;
   final double totalGB;
-
-  // ✅ File lists
-  final List<DeviceFile> cacheFileList;
-  final List<DeviceFile> residualFileList;
+  final List<DeviceFile>     cacheFileList;
+  final List<DeviceFile>     residualFileList;
+  // ✅ Real running apps
+  final List<RunningAppInfo> runningApps;
 
   const CleanResultData({
     required this.junkRemoved,
@@ -59,9 +85,9 @@ class CleanResultData {
     required this.totalGB,
     this.cacheFileList    = const [],
     this.residualFileList = const [],
+    this.runningApps      = const [],   // ✅
   });
 
-  // Shortcut getters
   int get cacheCount    => cacheFileList.length;
   int get residualCount => residualFileList.length;
 }
@@ -85,26 +111,28 @@ class CleanBackgroundState {
   });
 
   factory CleanBackgroundState.initial() => const CleanBackgroundState(
-        phase:       CleanPhase.idle,
+        phase:        CleanPhase.idle,
         scanProgress: 0.0,
-        appsSelected: [true, true, true, true, true],
+        appsSelected: [],   // ✅ empty — real data aane pe dynamically resize hoga
         cleanResult:  null,
         errorMessage: null,
       );
 
-  bool get allSelected => appsSelected.every((s) => s);
+  bool get allSelected =>
+      appsSelected.isNotEmpty && appsSelected.every((s) => s);
 
-  // Convenient getters — null-safe
-  List<DeviceFile> get cacheFiles    => cleanResult?.cacheFileList    ?? [];
-  List<DeviceFile> get residualFiles => cleanResult?.residualFileList ?? [];
+  // Convenient getters
+  List<DeviceFile>     get cacheFiles    => cleanResult?.cacheFileList    ?? [];
+  List<DeviceFile>     get residualFiles => cleanResult?.residualFileList ?? [];
+  List<RunningAppInfo> get runningApps   => cleanResult?.runningApps      ?? []; // ✅
 
   CleanBackgroundState copyWith({
-    CleanPhase?     phase,
-    double?         scanProgress,
-    List<bool>?     appsSelected,
+    CleanPhase?      phase,
+    double?          scanProgress,
+    List<bool>?      appsSelected,
     CleanResultData? cleanResult,
-    bool            clearResult  = false,
-    String?         errorMessage,
+    bool             clearResult  = false,
+    String?          errorMessage,
   }) =>
       CleanBackgroundState(
         phase:        phase        ?? this.phase,

@@ -1,7 +1,9 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
 
 class PerformanceBoostWidget extends StatelessWidget {
@@ -9,6 +11,11 @@ class PerformanceBoostWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final performanceData = context
+        .watch<CleanBackgroundBloc>()
+        .state
+        .performanceData;
+
     return Container(
       padding: EdgeInsets.all(getWidth(16)),
       decoration: BoxDecoration(
@@ -31,7 +38,6 @@ class PerformanceBoostWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Title
           Text(
             'Performance Boost',
             style: AppTextStyles.bodyMedium.copyWith(
@@ -43,39 +49,35 @@ class PerformanceBoostWidget extends StatelessWidget {
 
           SizedBox(height: getHeight(6)),
 
-          // Three Items Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // Speed Improved
               _BoostItem(
                 icon: Icons.rocket_launch_rounded,
                 iconColor: const Color(0xFF00E676),
                 arcColor: const Color(0xFF00E676),
                 title: 'Speed Improved',
-                value: '+35%',
+                value: performanceData?.speedImproved ?? '+0%',
                 valueColor: const Color(0xFF00E676),
                 subtitle: 'Performance Boost',
               ),
 
-              // RAM Freed
               _BoostItem(
                 icon: Icons.memory_rounded,
                 iconColor: const Color(0xFF55D0FF),
                 arcColor: const Color(0xFF55D0FF),
                 title: 'RAM Freed',
-                value: '+1.0 GB',
+                value: performanceData?.ramFreed ?? '+0.0 GB',
                 valueColor: const Color(0xFF55D0FF),
                 subtitle: 'Memory Boost',
               ),
 
-              // Battery Saved
               _BoostItem(
                 icon: Icons.battery_charging_full_rounded,
                 iconColor: const Color(0xFF9A3CFF),
                 arcColor: const Color(0xFF9A3CFF),
                 title: 'Battery Saved',
-                value: '+1h 20m',
+                value: performanceData?.batterySaved ?? '+0m',
                 valueColor: const Color(0xFF9A3CFF),
                 subtitle: 'Extra Battery Life',
               ),
@@ -111,7 +113,6 @@ class _BoostItem extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Circle with Arc
         SizedBox(
           width: getWidth(40),
           height: getWidth(40),
@@ -134,10 +135,7 @@ class _BoostItem extends StatelessWidget {
             ),
           ),
         ),
-
         SizedBox(height: getHeight(10)),
-
-        // Title
         Text(
           title,
           textAlign: TextAlign.center,
@@ -147,10 +145,7 @@ class _BoostItem extends StatelessWidget {
             color: AppColors.textwhitecolor,
           ),
         ),
-
         SizedBox(height: getHeight(4)),
-
-        // Value
         Text(
           value,
           textAlign: TextAlign.center,
@@ -160,10 +155,7 @@ class _BoostItem extends StatelessWidget {
             color: valueColor,
           ),
         ),
-
         SizedBox(height: getHeight(2)),
-
-        // Subtitle
         Text(
           subtitle,
           textAlign: TextAlign.center,
@@ -180,7 +172,6 @@ class _BoostItem extends StatelessWidget {
 
 class _ArcPainter extends CustomPainter {
   final Color color;
-
   _ArcPainter({required this.color});
 
   @override
@@ -188,7 +179,6 @@ class _ArcPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 3;
 
-    // Background arc
     final bgPaint = Paint()
       ..color = Colors.white.withOpacity(0.08)
       ..style = PaintingStyle.stroke
@@ -203,7 +193,6 @@ class _ArcPainter extends CustomPainter {
       bgPaint,
     );
 
-    // Foreground arc
     final fgPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke

@@ -59,6 +59,7 @@ class _CleanBackGroundView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // ── Banner Image ──────────────────────────────────
                 Container(
                   height: getHeight(150),
                   width: double.infinity,
@@ -73,6 +74,7 @@ class _CleanBackGroundView extends StatelessWidget {
 
                 SizedBox(height: getHeight(14)),
 
+                // ── Title ─────────────────────────────────────────
                 Center(
                   child: Text(
                     AppText.scanning,
@@ -101,6 +103,7 @@ class _CleanBackGroundView extends StatelessWidget {
 
                 SizedBox(height: getHeight(32)),
 
+                // ── Progress Bar ──────────────────────────────────
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
                   buildWhen: (prev, curr) =>
                       prev.scanProgress != curr.scanProgress,
@@ -111,9 +114,7 @@ class _CleanBackGroundView extends StatelessWidget {
 
                 SizedBox(height: getHeight(24)),
 
-                // FIX: BlocBuilder se cleanResult check karo
-                // cleanResult null ho (scanning chal rahi ho) toh placeholder show karo
-                // cleanResult aa jaye toh real data show karo
+                // ── Result Grid ───────────────────────────────────
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
                   buildWhen: (prev, curr) =>
                       prev.cleanResult != curr.cleanResult,
@@ -121,9 +122,9 @@ class _CleanBackGroundView extends StatelessWidget {
                     if (state.cleanResult == null) {
                       return CleanResultGridWidget.fromData(
                         const CleanResultData(
-                          junkRemoved:  '-- MB',
-                          appsClosed:   '-- Apps',
-                          cacheCleared: '-- MB',
+                          junkRemoved:   '-- MB',
+                          appsClosed:    '-- Apps',
+                          cacheCleared:  '-- MB',
                           residualFiles: '-- MB',
                           beforeGB: 0,
                           afterGB:  0,
@@ -137,12 +138,18 @@ class _CleanBackGroundView extends StatelessWidget {
 
                 SizedBox(height: getHeight(24)),
 
+                // ── Running Apps Widget ───────────────────────────
+                // buildWhen: runningApps ya appsSelected koi bhi
+                //    change ho — rebuild karo
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
                   buildWhen: (prev, curr) =>
-                      prev.appsSelected != curr.appsSelected,
+                      prev.runningApps   != curr.runningApps ||
+                      prev.appsSelected  != curr.appsSelected ||
+                      prev.allSelected   != curr.allSelected,
                   builder: (context, state) {
                     return AppsRunningInBackgroundWidget(
-                      selected: state.appsSelected,
+                      apps:        state.runningApps,   
+                      selected:    state.appsSelected,
                       allSelected: state.allSelected,
                       onToggleItem: (index) => context
                           .read<CleanBackgroundBloc>()
@@ -156,28 +163,27 @@ class _CleanBackGroundView extends StatelessWidget {
 
                 SizedBox(height: getHeight(24)),
 
+                // ── Clean Button ──────────────────────────────────
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
-                  buildWhen: (prev, curr) => prev.phase != curr.phase,
+                  buildWhen: (prev, curr) =>
+                      prev.phase       != curr.phase ||
+                      prev.cleanResult != curr.cleanResult,
                   builder: (context, state) {
                     final isReady = state.phase == CleanPhase.cleanReady;
+
+                    //  Real cache size button mein show karo
+                    final buttonText = state.cleanResult != null
+                        ? 'Clean Now (${state.cleanResult!.cacheCleared})'
+                        : 'Clean Now';
+
                     return CleanButtonWidget(
-                      text: 'Clean Now (375 MB)',
+                      text: buttonText,
                       onPressed: isReady
                           ? () {
                               context.push('/CleaningCompleteScreen');
                               context
                                   .read<CleanBackgroundBloc>()
                                   .add(StartCleaningEvent());
-                              Future.delayed(
-                                const Duration(milliseconds: 1500),
-                                () {
-                                  if (context.mounted) {
-                                    context
-                                        .read<CleanBackgroundBloc>()
-                                        .add(StartCleaningEvent());
-                                  }
-                                },
-                              );
                             }
                           : null,
                     );

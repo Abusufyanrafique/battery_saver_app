@@ -61,7 +61,6 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-
                     "getStorageStats" -> {
                         try {
                             val stats = storageManager.getStorageStats(this)
@@ -70,7 +69,6 @@ class MainActivity : FlutterActivity() {
                             result.error("SCAN_ERROR", e.message, null)
                         }
                     }
-
                     "cleanResidualFiles" -> {
                         try {
                             val cleaned = storageManager.cleanResidualFiles(this)
@@ -79,7 +77,6 @@ class MainActivity : FlutterActivity() {
                             result.error("CLEAN_ERROR", e.message, null)
                         }
                     }
-
                     else -> result.notImplemented()
                 }
             }
@@ -100,22 +97,19 @@ class MainActivity : FlutterActivity() {
                 "clearCache" -> {
                     var before = getFolderSize(cacheDir)
                     externalCacheDir?.let { before += getFolderSize(it) }
-
                     cacheDir.deleteRecursively()
                     cacheDir.mkdirs()
-
                     externalCacheDir?.let {
                         it.deleteRecursively()
                         it.mkdirs()
                     }
-
                     result.success(before)
                 }
 
                 "getRunningAppsCount" -> {
                     Thread {
                         try {
-                            val count = getRunningApps()
+                            val count = getRunningApps().size
                             runOnUiThread { result.success(count) }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("RUNNING_APPS_ERROR", e.message, null) }
@@ -123,36 +117,37 @@ class MainActivity : FlutterActivity() {
                     }.start()
                 }
 
-                // ✅ NEW: Cache files list fetch karo
+                "getRunningAppsList" -> {
+                    Thread {
+                        try {
+                            val list = getRunningApps()
+                            runOnUiThread { result.success(list) }
+                        } catch (e: Exception) {
+                            runOnUiThread { result.error("RUNNING_APPS_LIST_ERROR", e.message, null) }
+                        }
+                    }.start()
+                }
+
                 "getCacheFiles" -> {
                     Thread {
                         try {
                             val files = mutableListOf<Map<String, Any>>()
-
-                            // Internal cache scan
                             cacheDir?.walkTopDown()?.filter { it.isFile }?.forEach { file ->
-                                files.add(
-                                    mapOf(
-                                        "name"         to file.name,
-                                        "path"         to file.absolutePath,
-                                        "size"         to file.length(),
-                                        "lastModified" to file.lastModified()
-                                    )
-                                )
+                                files.add(mapOf(
+                                    "name"         to file.name,
+                                    "path"         to file.absolutePath,
+                                    "size"         to file.length(),
+                                    "lastModified" to file.lastModified()
+                                ))
                             }
-
-                            // External cache scan
                             externalCacheDir?.walkTopDown()?.filter { it.isFile }?.forEach { file ->
-                                files.add(
-                                    mapOf(
-                                        "name"         to file.name,
-                                        "path"         to file.absolutePath,
-                                        "size"         to file.length(),
-                                        "lastModified" to file.lastModified()
-                                    )
-                                )
+                                files.add(mapOf(
+                                    "name"         to file.name,
+                                    "path"         to file.absolutePath,
+                                    "size"         to file.length(),
+                                    "lastModified" to file.lastModified()
+                                ))
                             }
-
                             runOnUiThread { result.success(files) }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("CACHE_FILES_ERROR", e.message, null) }
@@ -160,34 +155,27 @@ class MainActivity : FlutterActivity() {
                     }.start()
                 }
 
-                // ✅ NEW: Residual files list fetch karo
                 "getResidualFiles" -> {
                     Thread {
                         try {
                             val files    = mutableListOf<Map<String, Any>>()
-                            // Yeh folders skip karo — baaki sab residual hain
                             val skipDirs = setOf(
                                 "cache", "files", "shared_prefs",
                                 "databases", "code_cache", "app_webview"
                             )
-                            // /data/data/com.example.battery_saver_app/
                             val dataDir = filesDir.parentFile
-
                             dataDir?.listFiles()?.forEach { dir ->
                                 if (dir.isDirectory && dir.name !in skipDirs) {
                                     dir.walkTopDown().filter { it.isFile }.forEach { file ->
-                                        files.add(
-                                            mapOf(
-                                                "name"         to file.name,
-                                                "path"         to file.absolutePath,
-                                                "size"         to file.length(),
-                                                "lastModified" to file.lastModified()
-                                            )
-                                        )
+                                        files.add(mapOf(
+                                            "name"         to file.name,
+                                            "path"         to file.absolutePath,
+                                            "size"         to file.length(),
+                                            "lastModified" to file.lastModified()
+                                        ))
                                     }
                                 }
                             }
-
                             runOnUiThread { result.success(files) }
                         } catch (e: Exception) {
                             runOnUiThread { result.error("RESIDUAL_FILES_ERROR", e.message, null) }
@@ -229,10 +217,9 @@ class MainActivity : FlutterActivity() {
                             val sizeMap = mutableMapOf<String, Double>()
                             for (pkg in packageNames) {
                                 try {
-                                    val ai = packageManager.getApplicationInfo(pkg, 0)
+                                    val ai      = packageManager.getApplicationInfo(pkg, 0)
                                     val apkFile = java.io.File(ai.sourceDir)
-                                    val sizeMB = apkFile.length() / (1024.0 * 1024.0)
-                                    sizeMap[pkg] = sizeMB
+                                    sizeMap[pkg] = apkFile.length() / (1024.0 * 1024.0)
                                 } catch (_: Exception) {
                                     sizeMap[pkg] = 0.0
                                 }
@@ -259,9 +246,9 @@ class MainActivity : FlutterActivity() {
                     }
                     result.success(granted)
                 }
-                "getBuildTags" -> result.success(Build.TAGS ?: "")
+                "getBuildTags"  -> result.success(Build.TAGS ?: "")
                 "getSdkVersion" -> result.success(Build.VERSION.SDK_INT)
-                else -> result.notImplemented()
+                else            -> result.notImplemented()
             }
         }
 
@@ -272,9 +259,7 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             when (call.method) {
                 "getBatteryStatus" -> {
-                    val batteryIntent = registerReceiver(
-                        null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)
-                    )
+                    val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
                     val level     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                     val statusInt = batteryIntent?.getIntExtra(BatteryManager.EXTRA_STATUS, -1) ?: -1
                     val status = when (statusInt) {
@@ -283,14 +268,12 @@ class MainActivity : FlutterActivity() {
                         BatteryManager.BATTERY_STATUS_DISCHARGING -> "discharging"
                         else                                       -> "unknown"
                     }
-                    result.success(
-                        mapOf(
-                            "level"            to level,
-                            "status"           to status,
-                            "remainingMinutes" to getRealRemainingTimeMinutes(),
-                            "cycleCount"       to getChargingCycles()
-                        )
-                    )
+                    result.success(mapOf(
+                        "level"            to level,
+                        "status"           to status,
+                        "remainingMinutes" to getRealRemainingTimeMinutes(),
+                        "cycleCount"       to getChargingCycles()
+                    ))
                 }
                 else -> result.notImplemented()
             }
@@ -324,13 +307,11 @@ class MainActivity : FlutterActivity() {
                                 val temperature = getCpuTemperature()
                                 val runningApps = getRunningApps()
                                 runOnUiThread {
-                                    result.success(
-                                        mapOf(
-                                            "cpuUsage"    to cpuUsage,
-                                            "temperature" to temperature,
-                                            "runningApps" to runningApps
-                                        )
-                                    )
+                                    result.success(mapOf(
+                                        "cpuUsage"    to cpuUsage,
+                                        "temperature" to temperature,
+                                        "runningApps" to runningApps.size
+                                    ))
                                 }
                             } catch (e: Exception) {
                                 runOnUiThread { result.error("CPU_INFO_ERROR", e.message, null) }
@@ -452,7 +433,7 @@ class MainActivity : FlutterActivity() {
     private fun getActiveNotifs(): List<Map<String, Any>> {
         val list = mutableListOf<Map<String, Any>>()
         try {
-            val service = NotifListenerBridge.instance ?: return list
+            val service       = NotifListenerBridge.instance ?: return list
             val notifications = service.activeNotifications ?: return list
             for (sbn in notifications) {
                 list.add(mapOf("packageName" to sbn.packageName))
@@ -595,9 +576,26 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // CPU TEMPERATURE
+    // CPU TEMPERATURE  — sysfs first, battery fallback
     // ─────────────────────────────────────────────────────────────────
     private fun getCpuTemperature(): Double {
+        val thermalPaths = listOf(
+            "/sys/class/thermal/thermal_zone0/temp",
+            "/sys/class/thermal/thermal_zone1/temp",
+            "/sys/class/thermal/thermal_zone2/temp",
+            "/sys/devices/virtual/thermal/thermal_zone0/temp",
+            "/sys/devices/system/cpu/cpu0/cpufreq/cpu_temp",
+            "/sys/class/hwmon/hwmon0/temp1_input",
+            "/sys/class/hwmon/hwmon1/temp1_input"
+        )
+        for (path in thermalPaths) {
+            try {
+                val raw = File(path).readText().trim().toLongOrNull() ?: continue
+                if (raw <= 0L) continue
+                val celsius = if (raw > 1000L) raw / 1000.0 else raw.toDouble()
+                if (celsius in 10.0..120.0) return celsius
+            } catch (_: Exception) {}
+        }
         return try {
             val intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val temp   = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
@@ -609,9 +607,10 @@ class MainActivity : FlutterActivity() {
     // RUNNING APPS
     // ─────────────────────────────────────────────────────────────────
     @Suppress("DEPRECATION")
-    private fun getRunningApps(): Int {
-        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    private fun getRunningApps(): List<Map<String, Any>> {
+        val am              = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val runningPackages = mutableSetOf<String>()
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (hasUsagePermission()) {
                 try {
@@ -624,40 +623,7 @@ class MainActivity : FlutterActivity() {
                             runningPackages.add(stat.packageName)
                     }
                 } catch (_: Exception) {}
-                try {
-                    val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                    val now    = System.currentTimeMillis()
-                    val start  = now - 8 * 60 * 60 * 1000L
-                    val events = usm.queryEvents(start, now)
-                    val event  = UsageEvents.Event()
-                    while (events.hasNextEvent()) {
-                        events.getNextEvent(event)
-                        if (!event.packageName.isNullOrEmpty())
-                            runningPackages.add(event.packageName)
-                    }
-                } catch (_: Exception) {}
-            }
-            try { am.getRunningServices(200).forEach { runningPackages.add(it.service.packageName) } } catch (_: Exception) {}
-            try {
-                am.getRunningTasks(50).forEach {
-                    it.topActivity?.packageName?.let  { p -> runningPackages.add(p) }
-                    it.baseActivity?.packageName?.let { p -> runningPackages.add(p) }
-                }
-            } catch (_: Exception) {}
-        } else {
-            try { am.runningAppProcesses?.forEach { proc -> proc.pkgList?.forEach { runningPackages.add(it) } } } catch (_: Exception) {}
-        }
-        return runningPackages.size
-    }
 
-    // ─────────────────────────────────────────────────────────────────
-    // KILL BACKGROUND APPS
-    // ─────────────────────────────────────────────────────────────────
-    @Suppress("DEPRECATION")
-    private fun killBackgroundApps() {
-        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (hasUsagePermission()) {
                 try {
                     val usm       = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
                     val now       = System.currentTimeMillis()
@@ -677,23 +643,102 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     lastEvent.forEach { (pkg, type) ->
-                        if (type == UsageEvents.Event.MOVE_TO_BACKGROUND && pkg != packageName)
-                            try { am.killBackgroundProcesses(pkg) } catch (_: Exception) {}
+                        if (type == UsageEvents.Event.MOVE_TO_BACKGROUND)
+                            runningPackages.add(pkg)
                     }
                 } catch (_: Exception) {}
             }
+            try { am.getRunningServices(200).forEach { runningPackages.add(it.service.packageName) } } catch (_: Exception) {}
             try {
-                am.getRunningServices(200).forEach { si ->
-                    if (si.service.packageName != packageName)
-                        try { am.killBackgroundProcesses(si.service.packageName) } catch (_: Exception) {}
+                am.getRunningTasks(50).forEach {
+                    it.topActivity?.packageName?.let  { p -> runningPackages.add(p) }
+                    it.baseActivity?.packageName?.let { p -> runningPackages.add(p) }
                 }
             } catch (_: Exception) {}
         } else {
-            am.runningAppProcesses
-                ?.filter { it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED }
-                ?.flatMap { it.pkgList?.toList() ?: emptyList() }
-                ?.forEach { pkg -> if (pkg != packageName) am.killBackgroundProcesses(pkg) }
+            try { am.runningAppProcesses?.forEach { proc -> proc.pkgList?.forEach { runningPackages.add(it) } } } catch (_: Exception) {}
         }
+
+        val pm = packageManager
+        return runningPackages
+            .filter { pkg ->
+                pkg != packageName &&
+                try {
+                    val ai = pm.getApplicationInfo(pkg, 0)
+                    (ai.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
+                } catch (_: Exception) { false }
+            }
+            .mapNotNull { pkg ->
+                try {
+                    val ai     = pm.getApplicationInfo(pkg, 0)
+                    val sizeMb = java.io.File(ai.sourceDir).length() / (1024.0 * 1024.0)
+                    mapOf(
+                        "packageName" to pkg,
+                        "appName"     to pm.getApplicationLabel(ai).toString(),
+                        "sizeMb"      to sizeMb
+                    )
+                } catch (_: Exception) { null }
+            }
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // KILL BACKGROUND APPS
+    // ─────────────────────────────────────────────────────────────────
+    @Suppress("DEPRECATION")
+    private fun killBackgroundApps() {
+        val am             = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val killedPackages = mutableSetOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && hasUsagePermission()) {
+            try {
+                val usm       = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                val now       = System.currentTimeMillis()
+                val start     = now - 8 * 60 * 60 * 1000L
+                val events    = usm.queryEvents(start, now)
+                val event     = UsageEvents.Event()
+                val lastEvent = mutableMapOf<String, Int>()
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(event)
+                    when (event.eventType) {
+                        UsageEvents.Event.MOVE_TO_FOREGROUND,
+                        UsageEvents.Event.ACTIVITY_RESUMED ->
+                            lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_FOREGROUND
+                        UsageEvents.Event.MOVE_TO_BACKGROUND,
+                        UsageEvents.Event.ACTIVITY_PAUSED ->
+                            lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
+                    }
+                }
+                lastEvent.forEach { (pkg, type) ->
+                    if (type == UsageEvents.Event.MOVE_TO_BACKGROUND && pkg != packageName) {
+                        try { am.killBackgroundProcesses(pkg); killedPackages.add(pkg) } catch (_: Exception) {}
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        try {
+            am.getRunningServices(200).forEach { si ->
+                val pkg = si.service.packageName
+                if (pkg != packageName && !killedPackages.contains(pkg)) {
+                    try { am.killBackgroundProcesses(pkg); killedPackages.add(pkg) } catch (_: Exception) {}
+                }
+            }
+        } catch (_: Exception) {}
+
+        try {
+            am.runningAppProcesses
+                ?.filter { proc -> proc.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE }
+                ?.forEach { proc ->
+                    proc.pkgList?.forEach { pkg ->
+                        if (pkg != packageName && !killedPackages.contains(pkg)) {
+                            try { am.killBackgroundProcesses(pkg); killedPackages.add(pkg) } catch (_: Exception) {}
+                        }
+                    }
+                }
+        } catch (_: Exception) {}
+
+        System.gc()
+        Runtime.getRuntime().gc()
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -703,10 +748,10 @@ class MainActivity : FlutterActivity() {
         val am      = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memInfo = ActivityManager.MemoryInfo()
         am.getMemoryInfo(memInfo)
-        val totalMb       = (memInfo.totalMem / 1024 / 1024).toInt()
-        val availMb       = (memInfo.availMem / 1024 / 1024).toInt()
-        val powerManager  = getSystemService(Context.POWER_SERVICE) as PowerManager
-        val thermalStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        val totalMb           = (memInfo.totalMem / 1024 / 1024).toInt()
+        val availMb           = (memInfo.availMem / 1024 / 1024).toInt()
+        val powerManager      = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val thermalStatus     = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             powerManager.currentThermalStatus else 0
         val thermalPenalty      = thermalStatus * 15
         val ramAvailablePercent = (memInfo.availMem.toDouble() / memInfo.totalMem.toDouble()) * 100
@@ -737,6 +782,7 @@ class MainActivity : FlutterActivity() {
         val appsList         = mutableListOf<Map<String, Any>>()
         val fallbackResponse = mapOf("totalScreenOnTimeSec" to 0L, "apps" to appsList)
         if (!hasUsagePermission()) return fallbackResponse
+
         val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val pm     = packageManager
         val events = usm.queryEvents(startTime, endTime)
@@ -745,6 +791,7 @@ class MainActivity : FlutterActivity() {
         val appTotalTime            = mutableMapOf<String, Long>()
         var lastInteractiveTime: Long = -1L
         var totalScreenOnTimeMs: Long = 0L
+
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val pkg = event.packageName ?: continue
@@ -771,8 +818,10 @@ class MainActivity : FlutterActivity() {
         }
         if (lastInteractiveTime != -1L && endTime > lastInteractiveTime)
             totalScreenOnTimeMs += (endTime - lastInteractiveTime)
+
         val totalForegroundMs   = appTotalTime.values.sum()
         val finalScreenOnTimeMs = if (totalScreenOnTimeMs > 0L) totalScreenOnTimeMs else totalForegroundMs
+
         if (totalForegroundMs > 0L) {
             val batteryIntent     = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val batteryLevel      = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 100) ?: 100
@@ -931,8 +980,10 @@ class MainActivity : FlutterActivity() {
                 rxBytes += b.rxBytes; txBytes += b.txBytes
             } catch (_: Exception) {}
             result.add(mapOf(
-                "timestamp" to current, "rx" to rxBytes,
-                "tx"        to txBytes, "total" to (rxBytes + txBytes)
+                "timestamp" to current,
+                "rx"        to rxBytes,
+                "tx"        to txBytes,
+                "total"     to (rxBytes + txBytes)
             ))
             current += intervalMs
         }

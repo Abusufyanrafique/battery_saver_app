@@ -55,6 +55,10 @@ dependencies:
   android_intent_plus: ^4.0.0
   disk_space_plus: ^0.2.6
   home_widget: ^0.5.0
+  system_info2: ^4.0.0
+  shared_preferences: ^2.5.5
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
   # device_apps: ^2.2.0
   # android_package_manager: ^0.7.1
   # battery_info: ^1.1.1

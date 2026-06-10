@@ -76,21 +76,14 @@ class _IconWithBadge extends StatelessWidget {
         // ── Percentage badge — sirf tab show ho jab value ho ──
         if (item.percentage != null)
           Positioned(
-            top: -getHeight(4),
-            right: -getWidth(10),
+            top: getHeight(15),
+            right: getWidth(10),
             child: Container(
               padding: EdgeInsets.symmetric(
                 horizontal: getWidth(4),
                 vertical: getHeight(2),
               ),
-              decoration: BoxDecoration(
-                color: item.borderColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: item.borderColor,
-                  width: 1,
-                ),
-              ),
+              
               child: Text(
                 '${item.percentage}%',
                 style: AppTextStyles.bodyMedium.copyWith(

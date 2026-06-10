@@ -7,13 +7,23 @@ import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/router.dart';
 import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
-import 'package:battery_saver_app/services/notification_scanner_service.dart';
+import 'package:battery_saver_app/utils/helper/battery_history_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 void main()async {
   WidgetsFlutterBinding.ensureInitialized();
+    // ── Hive initialize karo (Flutter path automatically set karta hai)
+  await Hive.initFlutter();
+ 
+  // ── BatteryReading ka adapter register karo
+  Hive.registerAdapter(BatteryReadingAdapter());
+ 
+  // ── Box pehle se kholo taake BLoC fast ho
+  await Hive.openBox<BatteryReadingHive>('battery_history');
   // Notification listener initialize
   // await NotificationScannerService.startListening();
   SystemChrome.setSystemUIOverlayStyle(

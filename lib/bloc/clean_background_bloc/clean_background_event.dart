@@ -1,33 +1,30 @@
 part of 'clean_background_bloc.dart';
 
-abstract class CleanBackgroundEvent {}
+abstract class CleanBackgroundEvent {
+  const CleanBackgroundEvent();
+}
 
-class StartScanningEvent extends CleanBackgroundEvent {}
+class StartScanningEvent extends CleanBackgroundEvent {
+  const StartScanningEvent();
+}
 
-class UpdateProgressEvent extends CleanBackgroundEvent {
-  final double progress;
-  UpdateProgressEvent(this.progress);
+class _ScanTickEvent extends CleanBackgroundEvent {
+  const _ScanTickEvent();
 }
 
 class ToggleAppSelectionEvent extends CleanBackgroundEvent {
   final int index;
-  ToggleAppSelectionEvent(this.index);
+  const ToggleAppSelectionEvent(this.index);
 }
 
-class ToggleSelectAllAppsEvent extends CleanBackgroundEvent {}
-
-class StartCleaningEvent extends CleanBackgroundEvent {}
-
-// Result DeviceDataService se aata hai
-class CleaningCompletedEvent extends CleanBackgroundEvent {
-  final CleanResultData result;
-  CleaningCompletedEvent(this.result);
+class ToggleSelectAllAppsEvent extends CleanBackgroundEvent {
+  const ToggleSelectAllAppsEvent();
 }
 
-// Error case
-class CleaningFailedEvent extends CleanBackgroundEvent {
-  final String message;
-  CleaningFailedEvent(this.message);
+class StartCleaningEvent extends CleanBackgroundEvent {
+  const StartCleaningEvent();
 }
 
-class CleanAgainEvent extends CleanBackgroundEvent {}
+class CleanAgainEvent extends CleanBackgroundEvent {
+  const CleanAgainEvent();
+}

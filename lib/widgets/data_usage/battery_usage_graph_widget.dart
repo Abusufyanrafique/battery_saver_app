@@ -19,7 +19,7 @@ class BatteryUsageGraphWidget extends StatefulWidget {
 class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
   GraphFilter _selected = GraphFilter.h24;
 
-  // ── Filter history list by selected range
+  // ── Selected range ke according history filter karo
   List<BatteryReading> _filterHistory(
     List<BatteryReading> history,
     GraphFilter filter,
@@ -41,29 +41,35 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
     return history.where((r) => r.time.isAfter(cutoff)).toList();
   }
 
-  // ── Convert BatteryReading list → FlSpot list
+  // ── BatteryReading list ko FlSpot list mein convert karo
+  // X axis = minutes since first reading, Y axis = battery level %
   List<FlSpot> _toSpots(List<BatteryReading> readings) {
     if (readings.isEmpty) return [const FlSpot(0, 0)];
-    final first = readings.first.time.millisecondsSinceEpoch.toDouble();
+    final firstMs = readings.first.time.millisecondsSinceEpoch.toDouble();
     return readings.map((r) {
-      final x = (r.time.millisecondsSinceEpoch.toDouble() - first) / 60000; // minutes
+      final x =
+          (r.time.millisecondsSinceEpoch.toDouble() - firstMs) / 60000; // minutes
       return FlSpot(x, r.level.toDouble());
     }).toList();
   }
 
-  // ── Bottom axis labels
+  // ── Bottom axis ke liye time labels
   Widget _bottomLabel(double value, List<BatteryReading> filtered) {
     if (filtered.isEmpty) return const SizedBox.shrink();
 
-    final first = filtered.first.time.millisecondsSinceEpoch.toDouble();
-    final last = filtered.last.time.millisecondsSinceEpoch.toDouble();
-    final totalMinutes = (last - first) / 60000;
-    final step = totalMinutes / 4; // 5 labels
+    final firstMs = filtered.first.time.millisecondsSinceEpoch.toDouble();
+    final lastMs = filtered.last.time.millisecondsSinceEpoch.toDouble();
+    final totalMinutes = (lastMs - firstMs) / 60000;
+
+    // Edge case: agar sirf ek reading hai toh koi label nahi
+    if (totalMinutes == 0) return const SizedBox.shrink();
+
+    final step = totalMinutes / 4; // 5 labels (0,1,2,3,4)
 
     String label = '';
     for (int i = 0; i <= 4; i++) {
       if ((value - i * step).abs() < step * 0.15) {
-        final ms = first + i * step * 60000;
+        final ms = firstMs + i * step * 60000;
         final dt = DateTime.fromMillisecondsSinceEpoch(ms.toInt());
         switch (_selected) {
           case GraphFilter.h24:
@@ -83,11 +89,12 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
     }
 
     if (label.isEmpty) return const SizedBox.shrink();
+
     return Padding(
       padding: EdgeInsets.only(top: getHeight(4)),
       child: Text(
         label,
-        style: TextStyle(fontSize: getFont(7), color: Colors.white),
+        style: TextStyle(fontSize: getFont(7), color: Colors.white70),
       ),
     );
   }
@@ -95,12 +102,16 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BatterySaverBloc, BatterySaverState>(
+      // ── Sirf history change hone par rebuild karo, performance ke liye
       buildWhen: (prev, curr) => prev.batteryHistory != curr.batteryHistory,
       builder: (context, state) {
         final filtered = _filterHistory(state.batteryHistory, _selected);
         final spots = _toSpots(filtered);
+
+        // maxX = last spot ka X value (minutes mein)
         final maxX = spots.last.x;
-        final interval = maxX > 0 ? maxX / 4 : 1;
+        // interval = X axis ke 4 equal parts
+        final interval = maxX > 0 ? maxX / 4 : 1.0;
 
         return SizedBox(
           height: getHeight(178),
@@ -127,7 +138,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── HEADER
+                // ── HEADER ROW: Title + Filter tabs
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -174,14 +185,14 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
 
                 SizedBox(height: getHeight(4)),
 
-                // ── CHART
+                // ── CHART AREA
                 Expanded(
                   child: filtered.isEmpty
                       ? Center(
                           child: Text(
                             'No data yet',
                             style: TextStyle(
-                              color: Color(0xFF4103AC),
+                              color: const Color(0xFF9A3CFF),
                               fontSize: getFont(11),
                             ),
                           ),
@@ -193,23 +204,27 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                             minX: 0,
                             maxX: maxX == 0 ? 1 : maxX,
                             clipData: const FlClipData.all(),
+
+                            // ── Grid lines
                             gridData: FlGridData(
                               show: true,
                               drawVerticalLine: true,
                               drawHorizontalLine: true,
                               horizontalInterval: 25,
-                              verticalInterval:
-                                  interval > 0 ? interval.toDouble() : 1,
-                              getDrawingHorizontalLine: (_) => FlLine(
+                              verticalInterval: interval,
+                              getDrawingHorizontalLine: (_) => const FlLine(
                                 color: Color(0xFF4103AC),
-                                strokeWidth: 1,
+                                strokeWidth: 0.8,
                               ),
-                              getDrawingVerticalLine: (_) => FlLine(
+                              getDrawingVerticalLine: (_) => const FlLine(
                                 color: Color(0xFF4103AC),
-                                strokeWidth: 1,
+                                strokeWidth: 0.8,
                               ),
                             ),
+
                             borderData: FlBorderData(show: false),
+
+                            // ── Axis labels
                             titlesData: FlTitlesData(
                               leftTitles: AxisTitles(
                                 sideTitles: SideTitles(
@@ -220,7 +235,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                     '${value.toInt()}%',
                                     style: TextStyle(
                                       fontSize: getFont(8),
-                                      color: Colors.white,
+                                      color: Colors.white70,
                                     ),
                                   ),
                                 ),
@@ -229,7 +244,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   reservedSize: getHeight(22),
-                                  interval: interval > 0 ? interval.toDouble() : 1.0,
+                                  interval: interval,
                                   getTitlesWidget: (value, meta) =>
                                       _bottomLabel(value, filtered),
                                 ),
@@ -241,6 +256,8 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                 sideTitles: SideTitles(showTitles: false),
                               ),
                             ),
+
+                            // ── Line data
                             lineBarsData: [
                               LineChartBarData(
                                 spots: spots,
@@ -249,6 +266,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                 color: const Color(0xFFAA44FF),
                                 barWidth: 2,
                                 isStrokeCapRound: true,
+                                // ── Sirf last point par dot dikhao
                                 dotData: FlDotData(
                                   show: true,
                                   checkToShowDot: (spot, _) =>
@@ -261,6 +279,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                     strokeColor: Colors.white,
                                   ),
                                 ),
+                                // ── Line ke neeche gradient fill
                                 belowBarData: BarAreaData(
                                   show: true,
                                   gradient: LinearGradient(
@@ -275,6 +294,8 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                 ),
                               ),
                             ],
+
+                            // ── Touch tooltip: battery % dikhao
                             lineTouchData: LineTouchData(
                               touchTooltipData: LineTouchTooltipData(
                                 getTooltipColor: (_) =>
@@ -334,7 +355,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
   }
 }
 
-// ── FILTER TAB (same as before)
+// ── FILTER TAB WIDGET
 class _FilterTab extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -382,7 +403,7 @@ class _FilterTab extends StatelessWidget {
   }
 }
 
-// ── LEGEND DOT (same as before)
+// ── LEGEND DOT WIDGET
 class _LegendDot extends StatelessWidget {
   final Color color;
   const _LegendDot({required this.color});

@@ -108,7 +108,7 @@ final List<QuickWidgetItem> quickWidgetsData = [
  
   QuickWidgetItem(
     label: AppText.batterytext,
-    svgIcon:AppIcons.quikwidgetBatteryIcon,
+    svgIcon:AppIcons.greencricle,
     // color: const Color(0xFF69F0AE),
     borderColor: const Color(0xFF00FF09),
     percentage: 72,
@@ -127,7 +127,7 @@ final List<QuickWidgetItem> quickWidgetsData = [
   ),
   QuickWidgetItem(
     label: AppText.boost,
-    svgIcon:AppIcons.quickwidgetBoost,
+    svgIcon:AppIcons.bluecricle,
     borderColor: const Color(0xFF5592FF),
     percentage: 68,
   ),

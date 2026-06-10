@@ -3,8 +3,10 @@ import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/data/repositories/file_manager_repository.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // ENTRY POINT
@@ -478,11 +480,17 @@ class _StorageCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            storage.isSdCard ? Icons.sd_card : Icons.storage,
-            color: Colors.white70,
-            size: 32,
-          ),
+          SvgPicture.asset(
+  storage.isSdCard
+      ? AppIcons.card
+      : AppIcons.internalstorage,
+  colorFilter: const ColorFilter.mode(
+    Colors.white70,
+    BlendMode.srcIn,
+  ),
+  width: getWidth(32),
+  height: getHeight(32),
+),
           SizedBox(width: getWidth(12)),
           Expanded(
             child: Column(

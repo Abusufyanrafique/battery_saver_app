@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:battery_plus/battery_plus.dart';
 import 'package:battery_saver_app/utils/helper/battery_helpers.dart';
+import 'package:battery_saver_app/utils/helper/battery_history_storage.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -32,10 +33,28 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
     final isCharging =
         batState == BatteryState.charging || batState == BatteryState.full;
 
-    // ── First reading save karo
-    final initialHistory = [
-      BatteryReading(level: level, time: DateTime.now()),
-    ];
+    // ── Step 1: Hive se purani history load karo
+    final savedHistory = await BatteryHistoryStorage.load();
+
+    // ── Step 2: Startup par purani readings purge karo (30 din se zyada)
+    await BatteryHistoryStorage.purgeOld();
+
+    // ── Step 3: Naya reading banao
+    final now = DateTime.now();
+    final initialReading = BatteryReading(level: level, time: now);
+
+    // Duplicate avoid: last reading 1 minute se kam purani ho toh mat add karo
+    final bool isDuplicate = savedHistory.isNotEmpty &&
+        now.difference(savedHistory.last.time).inMinutes < 1;
+
+    final List<BatteryReading> history = isDuplicate
+        ? savedHistory
+        : [...savedHistory, initialReading];
+
+    // ── Step 4: Hive mein append karo (sirf naya reading)
+    if (!isDuplicate) {
+      await BatteryHistoryStorage.append(initialReading);
+    }
 
     emit(state.copyWith(
       batteryLevel: level,
@@ -44,7 +63,7 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
       remainingTime: isCharging
           ? 'Charging'
           : remainingTimeFromLevel(level, modeIndex: state.appliedIndex),
-      batteryHistory: initialHistory,
+      batteryHistory: history,
     ));
 
     // ── Har 5 second mein level check karo
@@ -94,17 +113,19 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
     ));
   }
 
-  void _onLevelChanged(
+  Future<void> _onLevelChanged(
     _BatteryLevelChanged event,
     Emitter<BatterySaverState> emit,
-  ) {
-    // ── Naya reading banao
+  ) async {
     final newReading = BatteryReading(
       level: event.level,
       time: DateTime.now(),
     );
 
-    // ── 30 din se purani readings hatao, naya append karo
+    // ── Hive mein sirf naya reading append karo
+    await BatteryHistoryStorage.append(newReading);
+
+    // ── State ke liye 30 din ka filter lagao
     final cutoff = DateTime.now().subtract(const Duration(days: 30));
     final updatedHistory = [
       ...state.batteryHistory.where((r) => r.time.isAfter(cutoff)),
@@ -120,7 +141,7 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
               event.level,
               modeIndex: state.appliedIndex,
             ),
-      batteryHistory: updatedHistory, // ← yahan history update hoti hai
+      batteryHistory: updatedHistory,
     ));
   }
 
