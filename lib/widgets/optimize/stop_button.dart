@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 
 class StopButton extends StatelessWidget {
   final VoidCallback onPressed;
+  final String label; // 'Stop' ya 'Optimize Again' — Bloc se aayega
 
   const StopButton({
     super.key,
     required this.onPressed,
+    this.label = 'Stop', // default same rakha
   });
 
   @override
@@ -17,12 +19,11 @@ class StopButton extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: getHeight(60),
-        // padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [
               Color(0xFF55D0FF),
-               Color(0xFF0E5AA7),
+              Color(0xFF0E5AA7),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -30,14 +31,18 @@ class StopButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
-          child: const Row(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.stop, color: Colors.white, size: 20),
-              SizedBox(width: 6),
+              Icon(
+                label == 'Stop' ? Icons.stop : Icons.refresh,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 6),
               Text(
-                'Stop',
-                style: TextStyle(
+                label,
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),

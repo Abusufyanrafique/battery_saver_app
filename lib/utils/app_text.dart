@@ -165,5 +165,43 @@ static const String batteryUsage ="Battery Usage";
   static const String signContinue = 'Sign in to continue';
   static const String emailorPhone = 'Email or Phone';
   static const String password = 'Password';
-  
+  // optimization screen ===========================================
+  static const String batterySaved = 'Battery Saved';
+  static const String ramFreed = 'RAM Freed';
+  static const String junkCleared = 'Junk Cleared';
+  static const String temperatureChange = 'Temperature Change';
+  static const String memoryCleared = 'Memory Cleared';
+  static const String spaceFreed = 'Space Freed';
+  static const String health = 'Health';
+  // home screen text ==================================================================================
+  static const String batterySaverhome = 'Battery Saver';
+  static const String savepowerandextendbatterylife = 'Save power and extend battery life';
+  static const String  powerBoosthome =  'Power Boost';
+  static const String boostperformancewhenneeded = 'Boost performance when needed';
+  static const String temperatureControlhome = 'Temperature Control';
+  static const String keepyourdevicecool = 'Keep your device cool';
+  static const String batteryHealthhome = 'Battery Health';
+  static const String monitorandprotectyourbattery = 'Monitor and protect your battery';
+  // profile screen =======================
+  static const String signOut = 'Sign Out';
+  static const String areyousureyouwanttosignout = 'Are you sure you want to sign out?';
+  static const String cancel  = 'Cancel';
+  static const String personalInformation = 'Personal Information';
+  static const String notificationsprofile = 'Notifications';
+  static const String  theme =  'Theme';
+  static const String dark = 'Dark';
+  static const String language = 'Language';
+  static const String  english =  'English';
+  static const String backupRestore = 'Backup & Restore';
+  static const String helpSupport = 'Help & Support';
+  static const String aboutBatteryOptimizer = 'About Battery Optimizer';
+  static const String version = 'v2.4.1';
+  static const String retry = 'Retry';
+  static const String failedtoloadprofile = 'Failed to load profile';
+  static const String clearram = 'Clear RAM';
+  static const String freeupmemorforbatteryperformance = 'Free up memory for\nbattery performance';
+  static const String optimizeCPU = 'Optimize CPU';
+  static const String  improveprocessorperformance =  'Improve processor\nperformance';
+  static const String closeBackgroundApps = 'Close Background Apps';
+  static const String stoprunningappstospeedupdevice = 'Stop running apps to\nspeed up device';
 }

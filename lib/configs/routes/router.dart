@@ -10,7 +10,6 @@ import 'package:battery_saver_app/view/bottom_nav/bottom_bar_screen.dart';
 import 'package:battery_saver_app/view/clean_background/clean_background_screen.dart';
 import 'package:battery_saver_app/view/clean_background/cleaning_complete_screen.dart';
 import 'package:battery_saver_app/view/cpu_cooler/cpu_cooler.dart';
-import 'package:battery_saver_app/view/data_usage/data_usage_screen.dart';
 import 'package:battery_saver_app/view/file_manager/file_manager_screen.dart';
 import 'package:battery_saver_app/view/home/app_home_screen.dart';
 import 'package:battery_saver_app/view/junk_cleaner/junk_cleaner_screen.dart';
@@ -75,9 +74,11 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const PowerBoostHomeScreen(),
     ),
     GoRoute(
-      path: AppRoutes.resultPowerBoost,
-      builder: (context, state) => const ResultPowerBoostScreen(),
-    ),
+  path: '/ResultPowerBoostScreen',
+  builder: (context, state) {
+    return const ResultPowerBoostScreen();
+  },
+),
      GoRoute(
       path: AppRoutes.temperatureControlScreen,
       builder: (context, state) => const TemperatureControlScreen(),

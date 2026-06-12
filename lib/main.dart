@@ -3,6 +3,8 @@ import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status
 import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
 import 'package:battery_saver_app/bloc/file_manager/file_manager_bloc.dart';
+import 'package:battery_saver_app/bloc/optimization_bloc/optimization_bloc.dart';
+import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart';
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/router.dart';
@@ -67,7 +69,17 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
         create: (_) => FileManagerBloc(),
-       )
+       ),
+        BlocProvider<OptimizationBloc>(
+          create: (_) => OptimizationBloc(),
+        ),
+       BlocProvider<PowerBoostBloc>(
+  create: (_) => PowerBoostBloc()
+    ..add(LoadPowerBoostDataEvent()),
+),
+  BlocProvider<PowerBoostBloc>(
+      create: (_) => PowerBoostBloc(),
+    ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

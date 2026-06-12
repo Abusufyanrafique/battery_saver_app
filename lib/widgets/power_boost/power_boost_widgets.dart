@@ -1,7 +1,10 @@
+import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class SystemOptimizeWidget extends StatelessWidget {
@@ -9,57 +12,55 @@ class SystemOptimizeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF4103AC),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children:  [
-          _OptimizeRow(
-            svgPath: AppIcons.clearram,
-            title: 'Clear RAM',
-            subtitle: 'Free up memory for\nbattery performance',
-            badge: '1.2 GB',
-            isLast: false,
+    return BlocBuilder<PowerBoostBloc, PowerBoostState>(
+      builder: (context, state) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF4103AC), width: 1),
           ),
-          _OptimizeRow(
-            svgPath: AppIcons.optimizecup,
-            title: 'Optimize CPU',
-            subtitle: 'Improve processor\nperformance',
-            badge: null,
-            isLast: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _OptimizeRow(
+                svgPath: AppIcons.clearram,
+                title: AppText.clearram,
+                subtitle: AppText.freeupmemorforbatteryperformance,
+                badge: state.isLoading ? '...' : state.ramUsedGB,
+                isLast: false,
+              ),
+              _OptimizeRow(
+                svgPath: AppIcons.optimizecup,
+                title: AppText.optimizeCPU,
+                subtitle:AppText.improveprocessorperformance,
+                badge: null,
+                isLast: false,
+              ),
+              _OptimizeRow(
+                svgPath: AppIcons.closebackgroundapps,
+                title: AppText.closeBackgroundApps,
+                subtitle: AppText.stoprunningappstospeedupdevice,
+                badge: state.isLoading
+                    ? '...'
+                    : '${state.runningAppsCount} Apps',
+                isLast: true,
+              ),
+            ],
           ),
-          _OptimizeRow(
-            svgPath:AppIcons.closebackgroundapps,
-            title: 'Close Background Apps',
-            subtitle: 'Stop running apps to\nspeed up device',
-            badge: '12 Apps',
-            isLast: true,
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-// ─── ROW ─────────────────────────────────────────────
-
+// ─── ROW (same as before, no change needed) ────────────────────────────────
 class _OptimizeRow extends StatelessWidget {
   final String svgPath;
   final String title;
@@ -84,17 +85,13 @@ class _OptimizeRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // SVG ICON
               Container(
                 width: getWidth(40),
                 height: getHeight(40),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF232C6D),
-                  border: Border.all(
-                    color: const Color(0xFF4103AC),
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: const Color(0xFF4103AC), width: 1.5),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -108,10 +105,7 @@ class _OptimizeRow extends StatelessWidget {
                   ),
                 ),
               ),
-
-               SizedBox(width:getWidth(16)),
-
-              // TEXT
+              SizedBox(width: getWidth(16)),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,10 +130,7 @@ class _OptimizeRow extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(width: 10),
-
-              // BADGE + CHECK
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -160,19 +151,12 @@ class _OptimizeRow extends StatelessWidget {
             ],
           ),
         ),
-
         if (!isLast)
-          const Divider(
-            color: Color(0xFF838283),
-            thickness: 1,
-            height: 1,
-          ),
+          const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
       ],
     );
   }
 }
-
-// ─── CHECK ICON ─────────────────────────────────────
 
 class _GreenCheckIcon extends StatelessWidget {
   const _GreenCheckIcon();
@@ -184,17 +168,10 @@ class _GreenCheckIcon extends StatelessWidget {
       height: getHeight(16),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: const Color(0xFF3DDC84),
-          width: 2,
-        ),
+        border: Border.all(color: const Color(0xFF3DDC84), width: 1),
       ),
       child: const Center(
-        child: Icon(
-          Icons.check,
-          size: 10,
-          color: Color(0xFF3DDC84),
-        ),
+        child: Icon(Icons.check, size: 10, color: Color(0xFF3DDC84)),
       ),
     );
   }

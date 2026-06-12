@@ -1,92 +1,84 @@
+import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart'; 
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-// ─── Status Enum ────────────────────────────────────────────────────────────
-enum RowStatus { done, inProgress, pending }
-
-// ─── Data Model ─────────────────────────────────────────────────────────────
-class OptimizeItem {
-  final String svgPath;
-  final String title;
-  final String? badge;
-  final RowStatus status;
-
-  const OptimizeItem({
-    required this.svgPath,
-    required this.title,
-    this.badge,
-    required this.status,
-  });
-}
-
-// ─── MAIN WIDGET ─────────────────────────────────────────────────────────────
 class ResultPowerBoostWidget extends StatelessWidget {
   const ResultPowerBoostWidget({super.key});
 
-  static  List<OptimizeItem> items = [
-    OptimizeItem(
-      svgPath: AppIcons.clearram,
-      title: 'Clear RAM',
-      badge: '1.2 GB',
-      status: RowStatus.done,
-    ),
-    OptimizeItem(
-      svgPath: AppIcons.optimizecup,
-      title: 'Optimize CPU',
-      badge: 'In Progress',
-      status: RowStatus.inProgress,
-    ),
-    OptimizeItem(
-      svgPath: AppIcons.closebackgroundapps,
-      title: 'Close Background Apps',
-      badge: 'Pending',
-      status: RowStatus.pending,
-    ),
-  ];
+  String _badgeText(BoostStep step, PowerBoostState state) {
+    final status = state.stepStatuses[step]!;
+    switch (step) {
+      case BoostStep.clearRam:
+        return status == StepStatus.done ? state.ramUsedGB : '—';
+      case BoostStep.optimizeCpu:
+        return status == StepStatus.done ? 'Done' : '—';
+      case BoostStep.closeApps:
+        return status == StepStatus.done
+            ? '${state.runningAppsCount} Apps'
+            : '—';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-          gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF3A3FCC),
-          width: 1.2,
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: List.generate(items.length, (index) {
-          return _StatusRow(
-            item: items[index],
-            isLast: index == items.length - 1,
-          );
-        }),
-      ),
+    return BlocBuilder<PowerBoostBloc, PowerBoostState>(
+      builder: (context, state) {
+        final steps = [
+          (BoostStep.clearRam, AppIcons.clearram, 'Clear RAM'),
+          (BoostStep.optimizeCpu, AppIcons.optimizecup, 'Optimize CPU'),
+          (BoostStep.closeApps, AppIcons.closebackgroundapps, 'Close Background Apps'),
+        ];
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFF3A3FCC), width: 1.2),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(steps.length, (index) {
+              final (step, icon, title) = steps[index];
+              final status = state.stepStatuses[step]!;
+              return _StatusRow(
+                svgPath: icon,
+                title: title,
+                badge: _badgeText(step, state),
+                status: status,
+                isLast: index == steps.length - 1,
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 }
 
-// ─── ROW ──────────────────────────────────────────────────────────────
 class _StatusRow extends StatelessWidget {
-  final OptimizeItem item;
+  final String svgPath;
+  final String title;
+  final String badge;
+  final StepStatus status;
   final bool isLast;
 
-  const _StatusRow({required this.item, required this.isLast});
+  const _StatusRow({
+    required this.svgPath,
+    required this.title,
+    required this.badge,
+    required this.status,
+    required this.isLast,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,21 +88,17 @@ class _StatusRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             children: [
-              // SVG ICON
               Container(
                 width: getWidth(40),
                 height: getHeight(40),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF232C6D),
-                  border: Border.all(
-                    color: const Color(0xFF4103AC),
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: const Color(0xFF4103AC), width: 1.5),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
-                    item.svgPath,
+                    svgPath,
                     width: getWidth(15),
                     height: getHeight(15),
                     colorFilter: const ColorFilter.mode(
@@ -120,68 +108,44 @@ class _StatusRow extends StatelessWidget {
                   ),
                 ),
               ),
-
               const SizedBox(width: 16),
-
-              // TITLE
               Expanded(
                 child: Text(
-                  item.title,
-                 style: AppTextStyles.bodyMedium.copyWith(
-                  fontSize: getFont(14),
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                 ),
+                  title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: getFont(14),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-
-              // BADGE + STATUS
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (item.badge != null)
-                    Text(
-                      item.badge!,
-                      style:AppTextStyles.bodyMedium.copyWith(
-                        fontSize: getFont(12),
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF55D0FF)
-                      )
+                  Text(
+                    badge,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(12),
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF55D0FF),
                     ),
+                  ),
                   const SizedBox(width: 10),
-                  _StatusIcon(status: item.status),
+                  _StatusIcon(status: status),
                 ],
               ),
             ],
           ),
         ),
-
         if (!isLast)
-          const Divider(
-            color: Color(0xFF838283),
-            thickness: 1,
-            height: 1,
-          ),
+          const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
       ],
     );
   }
-
-  Color _badgeColor(RowStatus status) {
-    switch (status) {
-      case RowStatus.done:
-        return const Color(0xFF4A8EFF);
-      case RowStatus.inProgress:
-        return const Color(0xFF7B7FFF);
-      case RowStatus.pending:
-        return const Color(0xFF7B7FFF);
-    }
-  }
 }
 
-// ─── STATUS ICON (UNCHANGED) ───────────────────────────────────────────────
 class _StatusIcon extends StatefulWidget {
-  final RowStatus status;
-
+  final StepStatus status;
   const _StatusIcon({required this.status});
 
   @override
@@ -210,27 +174,19 @@ class _StatusIconState extends State<_StatusIcon>
   @override
   Widget build(BuildContext context) {
     switch (widget.status) {
-      case RowStatus.done:
+      case StepStatus.done:
         return Container(
           width: getWidth(16),
           height: getHeight(16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFFEDC009), 
-              width: 2
-              ),
+            border: Border.all(color: const Color(0xFFEDC009), width: 2),
           ),
-          child: const Icon(
-            Icons.check,
-            size: 10,
-            color: Color(0xFFFFCC00),
-          ),
+          child: const Icon(Icons.check, size: 10, color: Color(0xFFFFCC00)),
         );
-
-      case RowStatus.inProgress:
+      case StepStatus.inProgress:
         return SizedBox(
-          width:getWidth(16),
+          width: getWidth(16),
           height: getHeight(16),
           child: RotationTransition(
             turns: _controller,
@@ -239,21 +195,24 @@ class _StatusIconState extends State<_StatusIcon>
             ),
           ),
         );
-
-      case RowStatus.pending:
-        return Container(
-          // width: ,
-          
+      case StepStatus.pending:
+        return SizedBox(
+          width: getWidth(16),
+          height: getHeight(16),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF838283), width: 1.5),
+            ),
+          ),
         );
     }
   }
 }
 
-// ─── ARC PAINTER ────────────────────────────────────────────────────────────
 class _ArcPainter extends CustomPainter {
   final Color color;
-
-  _ArcPainter({required this.color});
+  const _ArcPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -262,7 +221,6 @@ class _ArcPainter extends CustomPainter {
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
-
     final rect = Rect.fromLTWH(2, 2, size.width - 4, size.height - 4);
     canvas.drawArc(rect, 0, 4.5, false, paint);
   }

@@ -90,3 +90,4 @@ class AppIcons {
   static const String greencricle = "assets/icons/battery_saver/greencricle.svg";
   static const String bluecricle = "assets/icons/battery_saver/bluecricle.svg";
     } 
+  

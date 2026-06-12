@@ -1,5 +1,6 @@
 // sign_out_button_widget.dart
 
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
@@ -47,7 +48,7 @@ class SignOutButtonWidget extends StatelessWidget {
               ),
               SizedBox(width: getWidth(8)),
               Text(
-                'Sign Out',
+                AppText.signOut,
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(16),
                   fontWeight: FontWeight.w600,

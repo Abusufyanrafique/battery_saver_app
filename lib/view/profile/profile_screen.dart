@@ -32,7 +32,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      // ✅ RealProfileRepository inject kar diya — real battery data aayega
+      //  RealProfileRepository inject kar diya — real battery data aayega
       create: (_) => ProfileBloc(repository: RealProfileRepository())
         ..add(const ProfileLoadRequested()),
       child: const _ProfileView(),
@@ -104,7 +104,7 @@ class _ProfileView extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Failed to load profile',
+              AppText.failedtoloadprofile,
               style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
             ),
             const SizedBox(height: 12),
@@ -115,7 +115,7 @@ class _ProfileView extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4103AC),
               ),
-              child: const Text('Retry'),
+              child:  Text(AppText.retry),
             ),
           ],
         ),
@@ -144,7 +144,7 @@ class _ProfileView extends StatelessWidget {
 
             SizedBox(height: getHeight(20)),
 
-            // ✅ Real battery data pass ho raha hai yahan
+            //  Real battery data pass ho raha hai yahan
             BatterySummaryWidget(
               batteryLife: data.batteryLife,
               chargingCycles: data.chargingCycles,
@@ -198,40 +198,40 @@ class _ProfileView extends StatelessWidget {
     return [
       SettingsItem(
         svgicon: AppIcons.profileperson,
-        title: 'Personal Information',
+        title: AppText.personalInformation,
         onTap: () => dispatch(SettingsItemType.personalInformation),
       ),
       SettingsItem(
         svgicon: AppIcons.profilenoti,
-        title: 'Notifications',
+        title: AppText.notificationsprofile,
         onTap: () => dispatch(SettingsItemType.notifications),
       ),
       SettingsItem(
         svgicon: AppIcons.profiletheme,
-        title: 'Theme',
-        trailingText: 'Dark',
+        title:AppText.theme,
+        trailingText: AppText.dark,
         onTap: () => dispatch(SettingsItemType.theme),
       ),
       SettingsItem(
         svgicon: AppIcons.profilelanguage,
-        title: 'Language',
-        trailingText: 'English',
+        title: AppText.language,
+        trailingText:AppText.english,
         onTap: () => dispatch(SettingsItemType.language),
       ),
       SettingsItem(
         svgicon: AppIcons.profilebackaup,
-        title: 'Backup & Restore',
+        title: AppText.backupRestore,
         onTap: () => dispatch(SettingsItemType.backupRestore),
       ),
       SettingsItem(
         svgicon: AppIcons.profilehelp,
-        title: 'Help & Support',
+        title: AppText.helpSupport,
         onTap: () => dispatch(SettingsItemType.helpSupport),
       ),
       SettingsItem(
         svgicon: AppIcons.profileinfo,
-        title: 'About Battery Optimizer',
-        trailingText: 'v2.4.1',
+        title: AppText.aboutBatteryOptimizer,
+        trailingText: AppText.version,
         onTap: () => dispatch(SettingsItemType.aboutApp),
       ),
     ];
@@ -248,14 +248,14 @@ class _ProfileView extends StatelessWidget {
           side: const BorderSide(color: Color(0xFF4103AC), width: 1.2),
         ),
         title: Text(
-          'Sign Out',
+       AppText.signOut,
           style: AppTextStyles.bodyLarge.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
           ),
         ),
         content: Text(
-          'Are you sure you want to sign out?',
+          AppText.areyousureyouwanttosignout,
           style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
         ),
         actions: [
@@ -267,7 +267,7 @@ class _ProfileView extends StatelessWidget {
                   .add(const ProfileSignOutCancelled());
             },
             child: Text(
-              'Cancel',
+              AppText.cancel,
               style: AppTextStyles.bodyMedium
                   .copyWith(color: const Color(0xFF9A3CFF)),
             ),
@@ -280,7 +280,7 @@ class _ProfileView extends StatelessWidget {
                   .add(const ProfileSignOutConfirmed());
             },
             child: Text(
-              'Sign Out',
+              AppText.signOut,
               style: AppTextStyles.bodyMedium.copyWith(
                 color: const Color(0xFFAD2020),
                 fontWeight: FontWeight.w600,

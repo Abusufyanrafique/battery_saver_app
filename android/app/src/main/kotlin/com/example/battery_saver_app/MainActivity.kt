@@ -34,6 +34,7 @@ class MainActivity : FlutterActivity() {
     private val NOTIFICATION_CHANNEL   = "notification_scanner"
     private val CACHE_CHANNEL          = "com.example.battery_saver_app/device"
     private val STORAGE_CHANNEL        = "com.example.battery_saver_app/device_storage"
+    private val POWER_BOOST_CHANNEL    = "com.example.battery_saver_app/power_boost"
 
     private val storageManager = StorageManager()
 
@@ -56,6 +57,63 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        
+MethodChannel(
+    flutterEngine.dartExecutor.binaryMessenger,
+    POWER_BOOST_CHANNEL
+).setMethodCallHandler { call, result ->
+
+    when (call.method) {
+
+        "getPowerBoostData" -> {
+
+            try {
+                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val memInfo = ActivityManager.MemoryInfo()
+                am.getMemoryInfo(memInfo)
+
+                val totalBytes = memInfo.totalMem
+                val availBytes = memInfo.availMem
+                val usedBytes  = totalBytes - availBytes
+
+                result.success(mapOf(
+                    "ramUsedBytes" to usedBytes,
+                    "totalRamBytes" to totalBytes,
+                    "availableRamBytes" to availBytes,
+                    "runningAppsCount" to getRunningApps().size
+                ))
+
+            } catch (e: Exception) {
+                result.error("BOOST_ERROR", e.message, null)
+            }
+        }
+
+        "clearRam" -> {
+            try {
+                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                am.runningAppProcesses?.forEach {
+                    if (it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED) {
+                        it.pkgList?.forEach { pkg ->
+                            if (pkg != packageName) {
+                                am.killBackgroundProcesses(pkg)
+                            }
+                        }
+                    }
+                }
+                result.success(true)
+            } catch (e: Exception) {
+                result.error("CLEAR_RAM_ERROR", e.message, null)
+            }
+        }
+
+        "closeBackgroundApps" -> {
+            killBackgroundApps()
+            result.success(true)
+        }
+
+        else -> result.notImplemented()
+    }
+}
 
         // ======== STORAGE CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)

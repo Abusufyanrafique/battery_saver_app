@@ -42,17 +42,17 @@ class _AppHomeScreenState extends State<AppHomeScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           child: Column(
-            children: const [
+            children:  [
               _TopBar(),
-              SizedBox(height: 16),
+              SizedBox(height: getHeight(16)),
               _BatteryCard(),
-              SizedBox(height: 14),
+              SizedBox(height: getHeight(14)),
               _StatsRow(),
-              SizedBox(height: 14),
+              SizedBox(height: getHeight(14)),
               _OptimizeBanner(),
-              SizedBox(height: 14),
+              SizedBox(height: getHeight(14)),
               _FeatureGrid(),
-              SizedBox(height: 14),
+              SizedBox(height: getHeight(14)),
               _CleanBanner(),
             ],
           ),
@@ -195,7 +195,7 @@ class _BatteryCard extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                     SizedBox(height: getHeight(8)),
 
                     // 🔋 REAL BATTERY
                     Row(
@@ -207,7 +207,7 @@ class _BatteryCard extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                         SizedBox(width: getWidth(6)),
                         Icon(
                           Icons.bolt,
                           color: state.isCharging
@@ -218,7 +218,7 @@ class _BatteryCard extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 10),
+                     SizedBox(height: getHeight(10)),
 
                     // ⚡ CHARGING
                     Row(
@@ -233,7 +233,7 @@ class _BatteryCard extends StatelessWidget {
                                 : Colors.grey,
                           ),
                         ),
-                        const SizedBox(width: 6),
+                         SizedBox(width: getWidth(6)),
                         Text(
                           state.isCharging ? "Charging" : "Not Charging",
                           style: AppTextStyles.bodyLarge.copyWith(
@@ -244,7 +244,7 @@ class _BatteryCard extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 10),
+                     SizedBox(height: getHeight(10)),
 
                     // 💚 HEALTH
                     Row(
@@ -269,8 +269,8 @@ class _BatteryCard extends StatelessWidget {
               ),
 
               SizedBox(
-                width: 110,
-                height: 120,
+                width: getWidth(110),
+                height: getHeight(120),
                 child: Image.asset(
                   AppImages.bigbattery,
                   fit: BoxFit.contain,
@@ -317,7 +317,7 @@ class _StatsRow extends StatelessWidget {
               ),
               decoration: BoxDecoration(
                 color: const Color(0xFF181C3B),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
                   color: const Color(0xFF414669),
                   width: 1,
@@ -356,7 +356,7 @@ class _StatsRow extends StatelessWidget {
                     iconPath: AppImages.goodhe,
                     iconColor: batteryHealthColor(cpuHealth),
                     value: batteryHealthLabel(cpuHealth),
-                    label: 'Health',
+                    label: AppText.health,
                   ),
                 ],
               ),
@@ -455,7 +455,7 @@ class _OptimizeBanner extends StatelessWidget {
             ],
             stops: [0.0, 0.25, 1.0],
           ),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFCDD0E4), width: 1),
         ),
         child: Row(
@@ -554,38 +554,42 @@ class _FeatureGrid extends StatelessWidget {
       iconPath: AppImages.batteryhome1,
       chevronColor: Color(0xFF9A3CFF),
       gradientColors: [Color(0xFF181C3B)],
-      title: 'Battery Saver',
-      subtitle: 'Save power and extend battery life',
+      title: AppText.batterySaverhome,
+      subtitle: AppText.savepowerandextendbatterylife,
       iconBgColor: Color(0xFF9A3CFF),
-       route: '/BatterySaverHomeScreen',
+       route: '/BatterySaverHomeScreen', 
+       trailingIconPath: AppImages.homearrow1,
      
     ),
     _FeatureData(
       iconPath: AppImages.powerboost1,
       chevronColor: Color(0xFF9A3CFF),
       gradientColors: [Color(0xFF1A1000)],
-      title: 'Power Boost',
-      subtitle: 'Boost performance when needed',
+      title:AppText.powerBoosthome,
+      subtitle: AppText.boostperformancewhenneeded,
       iconBgColor: Color(0xFF55D0FF).withOpacity(0.20), route: '/PowerBoostHomeScreen',
+      trailingIconPath: AppImages.powerboostarrow,
          
     ),
     _FeatureData(
       iconPath: AppImages.tempcontrol1,
       gradientColors: [Color(0xFF001A3A), Color(0xFF000D1F)],
-      title: 'Temperature Control',
-      subtitle: 'Keep your device cool',
+      title: AppText.temperatureControlhome,
+      subtitle: AppText.keepyourdevicecool,
       chevronColor: Color(0xFF5C0EE3),
       iconBgColor: Color(0xFF5C0EE3),
-       route: '/TemperatureControlScreen',
+       route: '/TemperatureControlScreen', 
+       trailingIconPath: AppImages.tempcontrolarrow,
          
     ),
     _FeatureData(
       iconPath: AppImages.battery1,
       chevronColor: Color(0xFFFE39E0),
       gradientColors: [Color(0xFF001A10), Color(0xFF000D08)],
-      title: 'Battery Health',
-      subtitle: 'Monitor and protect your battery',
+      title: AppText.batteryHealthhome,
+      subtitle: AppText.monitorandprotectyourbattery,
       iconBgColor: Color(0xFFFE39C6),
+        trailingIconPath: AppImages.batteryhealtharrow,
        iconGradient: [
     Color(0xFFFE39C6),
     Color(0xFF5C0EE3),
@@ -618,6 +622,7 @@ class _FeatureData {
   final Color iconBgColor;
   final String route;
   final List<Color>? iconGradient;
+  final String trailingIconPath;
 
   const _FeatureData({
     required this.gradientColors,
@@ -628,6 +633,7 @@ class _FeatureData {
     required this.iconBgColor,
      required this.route, 
      this.iconGradient, 
+     required this.trailingIconPath, 
     
   });
 }
@@ -684,14 +690,14 @@ class _FeatureCard extends StatelessWidget {
   child: Center(
     child: Image.asset(
       data.iconPath,
-      width: 20,
-      height: 20,
+      width: getWidth(20),
+      height: getHeight(20),
       fit: BoxFit.contain,
     ),
   ),
 ),
             ),
-            const SizedBox(width: 10),
+             SizedBox(width: getWidth(6)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -707,7 +713,7 @@ class _FeatureCard extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 3),
+                   SizedBox(height: getHeight(3)),
                   Text(
                     data.subtitle,
                     style: AppTextStyles.bodyMedium.copyWith(
@@ -720,11 +726,12 @@ class _FeatureCard extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: data.chevronColor,
-              size: 20,
-            ),
+           Image.asset(
+  data.trailingIconPath,
+  width: 18,
+  height: 18,
+  fit: BoxFit.contain,
+)
           ],
         ),
       ),

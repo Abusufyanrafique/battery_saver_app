@@ -27,9 +27,9 @@ class ToolsScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children:  [
               _ToolsGrid(),
-              SizedBox(height: 20),
+              SizedBox(height: getHeight(20)),
               _QuickWidgetsSection(),
             ],
           ),
@@ -135,7 +135,7 @@ class _QuickWidgetsSection extends StatelessWidget {
 
           SizedBox(height: getHeight(16)),
 
-          // ✅ BlocBuilder — sirf battery percentage ke liye rebuild hoga
+          // BlocBuilder — sirf battery percentage ke liye rebuild hoga
           BlocBuilder<BatterySaverBloc, BatterySaverState>(
             buildWhen: (prev, curr) =>
                 prev.batteryLevel != curr.batteryLevel,
@@ -148,9 +148,21 @@ class _QuickWidgetsSection extends StatelessWidget {
                     svgIcon:     item.svgIcon,
                     borderColor: item.borderColor,
                     color:       item.color,
-                    percentage:  batteryState.batteryLevel, // ✅ real value
+                    percentage:  batteryState.batteryLevel, //  real value
                   );
                 }
+                //  BOOST dynamic (LAST CARD)
+  if (item.label == AppText.boost) {
+    final boostValue = 100 - batteryState.batteryLevel;
+
+    return QuickWidgetItem(
+      label: item.label,
+      svgIcon: item.svgIcon,
+      borderColor: item.borderColor,
+      color: item.color,
+      percentage: boostValue, // REAL BOOST VALUE
+    );
+  }
                 return item;
               }).toList();
 

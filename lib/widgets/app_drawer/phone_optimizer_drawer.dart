@@ -296,14 +296,14 @@ class PhoneOptimizerDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              child: SvgPicture.asset(
-  AppIcons.cleanicon,
-  width: getWidth(20),
-  height: getHeight(20),
-  colorFilter: const ColorFilter.mode(
-    Color(0xFF55D0FF),
-    BlendMode.srcIn,
+              child: SizedBox(
+  // width: getWidth(0),
+  // height: getHeight(10),
+  child: SvgPicture.asset(
+    AppIcons.cleanicon,
+    fit: BoxFit.contain,
   ),
+  
 )
             ),
           ),

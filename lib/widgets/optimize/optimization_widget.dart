@@ -1,134 +1,137 @@
+import 'package:battery_saver_app/bloc/optimization_bloc/optimization_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
-import 'package:battery_saver_app/utils/app_images.dart';
-import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/configs/text_style/text_style.dart';
-import 'package:battery_saver_app/configs/colors/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-
-enum TaskStatus { completed, inProgress, pending, done }
-
-class OptimizationTask {
+// ─── Task metadata (sirf display info) ───────────────────────────────────────
+class _TaskMeta {
   final String title;
   final String subtitle;
   final String imagePath;
   final Color iconColor;
-  final TaskStatus status;
   final bool isSpecial;
 
-  const OptimizationTask({
+  const _TaskMeta({
     required this.title,
     required this.subtitle,
     required this.imagePath,
     required this.iconColor,
-    required this.status,
     this.isSpecial = false,
   });
 }
 
-class OptimizationWidget extends StatelessWidget {
-  OptimizationWidget({super.key});
+// Task ki real status ab Bloc se aayegi — is list mein sirf UI info hai
+const List<_TaskMeta> _tasksMeta = [
+  _TaskMeta(
+    title: AppText.cleaningJunkFiles,
+    subtitle: AppText.removingUnnecessaryFiles,
+    imagePath: AppImages.deleteimage,
+    iconColor: AppColors.junkFiles,
+  ),
+  _TaskMeta(
+    title: AppText.closingBackgroundApps,
+    subtitle: AppText.stoppingBackgroundProcesses,
+    imagePath: AppImages.optimizerocket,
+    iconColor: AppColors.backgroundApps,
+  ),
+  _TaskMeta(
+    title: AppText.optimizingSystemResources,
+    subtitle: AppText.improvingSystemPerformance,
+    imagePath: AppImages.optimizeresource,
+    iconColor: AppColors.systemResources,
+  ),
+  _TaskMeta(
+    title: AppText.checkingBatteryHealth,
+    subtitle: AppText.analyzingBatteryStatus,
+    imagePath: AppImages.checkingoptimize,
+    iconColor: AppColors.batteryHealth,
+    isSpecial: true,
+  ),
+  _TaskMeta(
+    title: AppText.balancingTemperature,
+    subtitle: AppText.ensuringOptimalTemperature,
+    imagePath: AppImages.optimizetemp,
+    iconColor: AppColors.temperature,
+    isSpecial: true,
+  ),
+];
 
-  final List<OptimizationTask> tasks = const [
-    OptimizationTask(
-      title: AppText.cleaningJunkFiles,
-      subtitle: AppText.removingUnnecessaryFiles,
-      imagePath: AppImages.deleteimage,
-      iconColor: AppColors.junkFiles,
-      status: TaskStatus.completed,
-    ),
-    OptimizationTask(
-      title: AppText.closingBackgroundApps,
-      subtitle: AppText.stoppingBackgroundProcesses,
-      imagePath: AppImages.optimizerocket,
-      iconColor: AppColors.backgroundApps,
-      status: TaskStatus.completed,
-    ),
-    OptimizationTask(
-      title: AppText.optimizingSystemResources,
-      subtitle: AppText.improvingSystemPerformance,
-      imagePath: AppImages.optimizeresource,
-      iconColor: AppColors.systemResources,
-      status: TaskStatus.inProgress,
-    ),
-    OptimizationTask(
-      title: AppText.checkingBatteryHealth,
-      subtitle: AppText.analyzingBatteryStatus,
-      imagePath: AppImages.checkingoptimize,
-      iconColor: AppColors.batteryHealth,
-      status: TaskStatus.pending,
-      isSpecial: true,
-    ),
-    OptimizationTask(
-      title: AppText.balancingTemperature,
-      subtitle: AppText.ensuringOptimalTemperature,
-      imagePath: AppImages.optimizetemp,
-      iconColor: AppColors.temperature,
-      status: TaskStatus.pending,
-      isSpecial: true,
-    ),
-  ];
+// ─── Main Widget ─────────────────────────────────────────────────────────────
+class OptimizationWidget extends StatelessWidget {
+  const OptimizationWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: getHeight(375),
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border, width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppText.optimizationInProgress,
-            style: AppTextStyles.bodyLarge.copyWith(
-              fontSize: getFont(16),
-              fontWeight: FontWeight.w600,
+    return BlocBuilder<OptimizationBloc, OptimizationState>(
+      builder: (context, state) {
+        return Container(
+          height: getHeight(375),
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF232C6D),
+                Color(0xFF1B2153),
+                Color(0xFF13173A),
+              ],
             ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border, width: 1),
           ),
-          SizedBox(height: getHeight(10)),
-
-          Expanded(
-            child: ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: tasks.length,
-              separatorBuilder: (_, __) => const Divider(
-                color: Color(0xFF838283),
-                height: 1,
-                thickness: 0.5,
-                indent: 17,
-                endIndent: 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppText.optimizationInProgress,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  fontSize: getFont(16),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-              itemBuilder: (context, index) {
-                return _TaskTile(task: tasks[index]);
-              },
-            ),
+              SizedBox(height: getHeight(10)),
+              Expanded(
+                child: ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _tasksMeta.length,
+                  separatorBuilder: (_, __) => const Divider(
+                    color: Color(0xFF838283),
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 17,
+                    endIndent: 20,
+                  ),
+                  itemBuilder: (context, index) {
+                    // Bloc state se real status le rahe hain
+                    final taskStatus = state.taskStatuses[index];
+                    final meta = _tasksMeta[index];
+                    return _TaskTile(meta: meta, status: taskStatus);
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
+// ─── Task Tile ────────────────────────────────────────────────────────────────
 class _TaskTile extends StatelessWidget {
-  final OptimizationTask task;
+  final _TaskMeta meta;
+  final TaskStatus status;
 
-  const _TaskTile({required this.task});
+  const _TaskTile({required this.meta, required this.status});
 
   Widget _buildStatus() {
-    switch (task.status) {
+    switch (status) {
       case TaskStatus.completed:
         return Container(
           width: 16,
@@ -137,22 +140,21 @@ class _TaskTile extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.completed, width: 1.5),
           ),
-          child: Icon(Icons.check,
-              size: 10, color: AppColors.completed),
+          child: Icon(Icons.check, size: 10, color: AppColors.completed),
         );
 
       case TaskStatus.inProgress:
         return SizedBox(
           width: getWidth(12),
           height: getHeight(12),
-          child: CircularProgressIndicator(
+          child: const CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor:
-                const AlwaysStoppedAnimation(AppColors.inProgress),
+            valueColor: AlwaysStoppedAnimation(AppColors.inProgress),
           ),
         );
 
       case TaskStatus.pending:
+      case TaskStatus.done:
         return const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -163,9 +165,6 @@ class _TaskTile extends StatelessWidget {
             _DotIndicator(),
           ],
         );
-      case TaskStatus.done:
-        // TODO: Handle this case.
-        throw UnimplementedError();
     }
   }
 
@@ -180,26 +179,24 @@ class _TaskTile extends StatelessWidget {
             height: getHeight(40),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: task.isSpecial
+              color: meta.isSpecial
                   ? const Color(0xFF1A1F4E)
                   : const Color(0xFF232C6D),
               border: Border.all(color: AppColors.border),
             ),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Image.asset(task.imagePath),
+              child: Image.asset(meta.imagePath),
             ),
           ),
-
           SizedBox(width: getWidth(12)),
-
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  task.title,
+                  meta.title,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w600,
@@ -207,7 +204,7 @@ class _TaskTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  task.subtitle,
+                  meta.subtitle,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(10),
                     fontWeight: FontWeight.w600,
@@ -217,7 +214,6 @@ class _TaskTile extends StatelessWidget {
               ],
             ),
           ),
-
           _buildStatus(),
         ],
       ),
@@ -225,6 +221,7 @@ class _TaskTile extends StatelessWidget {
   }
 }
 
+// ─── Dot Indicator (same as before) ──────────────────────────────────────────
 class _DotIndicator extends StatelessWidget {
   const _DotIndicator();
 
@@ -236,10 +233,7 @@ class _DotIndicator extends StatelessWidget {
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
-          colors: [
-            AppColors.dotGradient1,
-            AppColors.dotGradient2,
-          ],
+          colors: [AppColors.dotGradient1, AppColors.dotGradient2],
         ),
       ),
     );

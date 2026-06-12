@@ -41,40 +41,40 @@ class AccountSettingsWidget extends StatelessWidget {
   List<SettingsItem> _defaultItems(BuildContext context) => [
         SettingsItem(
          svgicon:AppIcons.profileperson ,
-          title: 'Personal Information',
+          title: AppText.personalInformation,
           onTap: () {},
         ),
         SettingsItem(
        svgicon:AppIcons.profilenoti ,
-          title: 'Notifications',
+          title: AppText.notificationsprofile,
           onTap: () {},
         ),
         SettingsItem(
           svgicon:AppIcons.profiletheme ,
-          title: 'Theme',
-          trailingText: 'Dark',
+          title: AppText.theme,
+          trailingText: AppText.dark,
           onTap: () {},
         ),
         SettingsItem(
           svgicon:AppIcons.profilelanguage ,
-          title: 'Language',
-          trailingText: 'English',
+          title: AppText.language,
+          trailingText: AppText.english,
           onTap: () {},
         ),
         SettingsItem(
           svgicon: AppIcons.profilebackaup,
-          title: 'Backup & Restore',
+          title: AppText.backupRestore,
           onTap: () {},
         ),
         SettingsItem(
           svgicon:AppIcons.profilehelp ,
-          title: 'Help & Support',
+          title: AppText.helpSupport,
           onTap: () {},
         ),
         SettingsItem(
          svgicon:AppIcons.profileinfo ,
-          title: 'About Battery Optimizer',
-          trailingText: 'v2.4.1',
+          title: AppText.aboutBatteryOptimizer,
+          trailingText:AppText.version,
           onTap: () {},
         ),
       ];
@@ -130,18 +130,20 @@ class AccountSettingsWidget extends StatelessWidget {
                   final item = settingsList[index];
                   final isLast = index == settingsList.length - 1;
 
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _SettingsRow(item: item),
-                      if (!isLast)
-                        Divider(
-                          color: Colors.white.withOpacity(0.08),
-                          height: 1,
-                          thickness: 1,
-                        ),
-                    ],
-                  );
+                 return Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    _SettingsRow(item: item),
+    if (!isLast)
+      Divider(
+        color: Color(0xFF838283),
+        height: 1,
+        thickness: 1,
+         indent: 33,
+         endIndent: 10,
+      ),
+  ],
+);
                 }),
               ),
             ),
@@ -184,6 +186,8 @@ class _SettingsRow extends StatelessWidget {
               ),
               child: Center(
                 child: SvgPicture.asset(
+                  height: getHeight(14),
+                  width: getWidth(14),
                   item.svgicon,
                 )
               ),

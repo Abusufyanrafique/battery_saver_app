@@ -405,7 +405,11 @@ class _CategoryCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+          colors: [
+            Color(0xFF232C6D),
+             Color(0xFF1B2153),
+              Color(0xFF13173A),
+              ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFF4103AC), width: 1),

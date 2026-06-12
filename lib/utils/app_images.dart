@@ -116,4 +116,9 @@ static const String graph3 = "assets/images/data_usage/graph3.png";
 static const String graph4 = "assets/images/data_usage/graph4.png";
 static const String cleanbackg = "assets/images/battery_saver/cleanbackg.png";
 
+static const String homearrow1 = "assets/images/home/homearrow1.png";
+static const String powerboostarrow = "assets/images/home/powerboostarrow.png";
+static const String tempcontrolarrow = "assets/images/home/tempcontrolarrow.png";
+static const String batteryhealtharrow = "assets/images/home/batteryhealtharrow.png";
+ 
 } 

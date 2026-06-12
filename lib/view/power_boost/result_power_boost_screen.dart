@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -10,7 +11,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class ResultPowerBoostScreen extends StatelessWidget {
-  const ResultPowerBoostScreen({super.key});
+  final PowerBoostBloc? bloc;
+  const ResultPowerBoostScreen({
+  super.key, 
+  this.bloc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +30,10 @@ class ResultPowerBoostScreen extends StatelessWidget {
 
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16, 
+            vertical: 10
+            ),
           child: Column(
             children: [
               SizedBox(height: getHeight(20)),
