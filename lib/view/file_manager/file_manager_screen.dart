@@ -58,6 +58,9 @@ class _FileManagerScreenState extends State<FileManagerScreen>
   late Animation<Offset>   _slideAnim;
   final TextEditingController _searchController = TextEditingController();
 
+  // FIX: Track karo ke initial load animation ek baar chal chuka hai
+  bool _hasAnimated = false;
+
   @override
   void initState() {
     super.initState();
@@ -68,7 +71,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
     _fadeAnim  = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
         .animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
-    _animController.forward();
   }
 
   @override
@@ -88,14 +90,16 @@ class _FileManagerScreenState extends State<FileManagerScreen>
           SafeArea(
             child: BlocConsumer<FileManagerBloc, FileManagerState>(
               listener: (_, state) {
-                // FIX: Sirf jab scan complete ho tab animation chalao
-                if (state is FileManagerLoadedState && !state.isRefreshing) {
+                // FIX: Animation sirf tab chalao jab pehli baar data load ho
+                // Search query change pe BILKUL nahi — warna UI uper neeche naachta hai
+                if (state is FileManagerLoadedState &&
+                    !state.isRefreshing &&
+                    !_hasAnimated) {
+                  _hasAnimated = true;
                   _animController.forward(from: 0);
                 }
               },
               builder: (ctx, state) {
-                // FIX: FileManagerLoadingState sirf permission check tak — storage
-                // resolve hone ke baad hum LoadedState emit karte hain isRefreshing:true ke saath
                 if (state is FileManagerLoadingState)          return _loadingView();
                 if (state is FileManagerPermissionDeniedState) return _permissionView(ctx, state.message);
                 if (state is FileManagerErrorState)            return _errorView(ctx, state.message);
@@ -183,7 +187,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       );
 
   // ── LOADING ────────────────────────────────────────────────────────────────
-  // Sirf permission check aur storage resolve hone tak dikhta hai — bahut short
 
   Widget _loadingView() => Column(
     children: [
@@ -286,6 +289,9 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             color: const Color(0xFF6C63FF),
             backgroundColor: const Color(0xFF13173A),
             onRefresh: () async {
+              // FIX: Refresh pe _hasAnimated reset karo taake pull-to-refresh
+              // pe smooth entry animation dobara chale
+              _hasAnimated = false;
               context
                   .read<FileManagerBloc>()
                   .add(const FileManagerRefreshEvent());
@@ -304,7 +310,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _header(),
-                  // FIX: isRefreshing:true pe thin progress bar — poori screen loading nahi
                   if (state.isRefreshing) ...[
                     const SizedBox(height: 8),
                     ClipRRect(
@@ -322,10 +327,10 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                   _categoryGrid(state),
                   const SizedBox(height: 24),
                   _StorageCard(storage: state.internalStorage),
-                if (state.sdCardStorage != null) ...[
-  const SizedBox(height: 12),
-  _StorageCard(storage: state.sdCardStorage!),
-],
+                  if (state.sdCardStorage != null) ...[
+                    const SizedBox(height: 12),
+                    _StorageCard(storage: state.sdCardStorage!),
+                  ],
                   const SizedBox(height: 32),
                 ],
               ),
@@ -337,7 +342,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
   // ── CATEGORY GRID ──────────────────────────────────────────────────────────
 
   Widget _categoryGrid(FileManagerLoadedState state) {
-    // FIX: Scan chal rahi hai aur abhi koi data nahi — spinner dikhao
     if (state.isRefreshing && state.categories.isEmpty) {
       return const Center(
         child: Padding(
@@ -362,7 +366,6 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       );
     }
 
-    // Search se koi result nahi mila
     if (state.filteredCategories.isEmpty) {
       return const Center(
         child: Padding(
@@ -407,9 +410,9 @@ class _CategoryCard extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: [
             Color(0xFF232C6D),
-             Color(0xFF1B2153),
-              Color(0xFF13173A),
-              ],
+            Color(0xFF1B2153),
+            Color(0xFF13173A),
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFF4103AC), width: 1),
@@ -485,16 +488,16 @@ class _StorageCard extends StatelessWidget {
       child: Row(
         children: [
           SvgPicture.asset(
-  storage.isSdCard
-      ? AppIcons.card
-      : AppIcons.internalstorage,
-  colorFilter: const ColorFilter.mode(
-    Colors.white70,
-    BlendMode.srcIn,
-  ),
-  width: getWidth(32),
-  height: getHeight(32),
-),
+            storage.isSdCard
+                ? AppIcons.card
+                : AppIcons.internalstorage,
+            colorFilter: const ColorFilter.mode(
+              Colors.white70,
+              BlendMode.srcIn,
+            ),
+            width: getWidth(32),
+            height: getHeight(32),
+          ),
           SizedBox(width: getWidth(12)),
           Expanded(
             child: Column(

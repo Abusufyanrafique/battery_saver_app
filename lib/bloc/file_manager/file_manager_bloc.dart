@@ -81,13 +81,12 @@ class FileManagerLoadedState extends FileManagerState {
     this.searchQuery = '',
   });
 
-  // FIX: sdCardStorage null override bug — use explicit sentinel
   FileManagerLoadedState copyWith({
     List<FileCategoryModel>? categories,
     List<FileCategoryModel>? filteredCategories,
     StorageDeviceModel? internalStorage,
     StorageDeviceModel? sdCardStorage,
-    bool clearSdCard = false,          // set true only to explicitly null it
+    bool clearSdCard = false,
     bool? isRefreshing,
     String? searchQuery,
   }) {
@@ -95,7 +94,6 @@ class FileManagerLoadedState extends FileManagerState {
       categories:         categories         ?? this.categories,
       filteredCategories: filteredCategories ?? this.filteredCategories,
       internalStorage:    internalStorage    ?? this.internalStorage,
-      // clearSdCard=true hoga tabhi null set hoga, warna purana value rakhega
       sdCardStorage:      clearSdCard ? null : (sdCardStorage ?? this.sdCardStorage),
       isRefreshing:       isRefreshing       ?? this.isRefreshing,
       searchQuery:        searchQuery        ?? this.searchQuery,
@@ -133,7 +131,11 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     FileManagerLoadEvent event,
     Emitter<FileManagerState> emit,
   ) async {
-    print("🔥 LOAD EVENT STARTED");
+    print("⏳ LOAD EVENT — showing loading for 2.5s");
+
+    // FIX: 2.5 second loading screen dikhao — user ko pata chale app kaam kar rahi hai
+    await Future.delayed(const Duration(milliseconds: 2500));
+
     await _loadData(emit, forceRefresh: false);
   }
 
@@ -142,6 +144,8 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     Emitter<FileManagerState> emit,
   ) async {
     emit(const FileManagerLoadingState());
+    // Retry pe bhi thoda delay — consistent feel
+    await Future.delayed(const Duration(milliseconds: 2500));
     await _loadData(emit, forceRefresh: true);
   }
 
@@ -150,9 +154,9 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     Emitter<FileManagerState> emit,
   ) async {
     if (state is FileManagerLoadedState) {
-      // FIX: copyWith se sdCardStorage preserve hoga — null override nahi hoga
       emit((state as FileManagerLoadedState).copyWith(isRefreshing: true));
     }
+    // Pull-to-refresh pe delay nahi — woh already spinner dikhata hai
     await _loadData(emit, forceRefresh: true);
   }
 
@@ -197,7 +201,6 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         return;
       }
 
-      // Dono parallel fetch karo — time bachao
       final results = await Future.wait([
         _repo.fetchInternalStorage(),
         _repo.fetchSdCardStorage(),
@@ -208,23 +211,21 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
 
       print("📦 STORAGE: internal=${storage.totalLabel}  sdCard=${sdCard?.totalLabel ?? 'null'}");
 
-      // Immediate UI — spinner + storage bars
       emit(FileManagerLoadedState(
         categories:         const [],
         filteredCategories: const [],
         internalStorage:    storage,
-        sdCardStorage:      sdCard,   // FIX: null hoga toh nahi dikha — correct hai
+        sdCardStorage:      sdCard,
         isRefreshing:       true,
       ));
 
-      // FIX: Timeout pe double-scan nahi — sirf empty return
       final categories = await _repo
           .fetchFileCategories(forceRefresh: forceRefresh)
           .timeout(
             const Duration(seconds: 30),
             onTimeout: () {
               print("⛔ Scan timeout — returning empty");
-              return [];  // FIX: double fetchFileCategories nahi
+              return [];
             },
           );
 
@@ -234,7 +235,7 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         categories:         categories,
         filteredCategories: categories,
         internalStorage:    storage,
-        sdCardStorage:      sdCard,   // FIX: same sdCard pass — lost nahi hoga
+        sdCardStorage:      sdCard,
         isRefreshing:       false,
       ));
     } catch (e) {

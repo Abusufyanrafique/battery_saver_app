@@ -65,8 +65,8 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
 
                   SizedBox(height: getHeight(16)),
 
-                  // ── Real Battery Level Badge ───────────────────────────
-                  _BatteryLevelBadge(state: state),
+// =========── Real Battery Level Badge ─────────────────────────── keep in mind ===+++++++++++++
+                  // _BatteryLevelBadge(state: state),
 
                   SizedBox(height: getHeight(20)),
 
