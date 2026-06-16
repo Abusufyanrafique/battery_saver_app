@@ -57,63 +57,53 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        
-MethodChannel(
-    flutterEngine.dartExecutor.binaryMessenger,
-    POWER_BOOST_CHANNEL
-).setMethodCallHandler { call, result ->
 
-    when (call.method) {
-
-        "getPowerBoostData" -> {
-
-            try {
-                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                val memInfo = ActivityManager.MemoryInfo()
-                am.getMemoryInfo(memInfo)
-
-                val totalBytes = memInfo.totalMem
-                val availBytes = memInfo.availMem
-                val usedBytes  = totalBytes - availBytes
-
-                result.success(mapOf(
-                    "ramUsedBytes" to usedBytes,
-                    "totalRamBytes" to totalBytes,
-                    "availableRamBytes" to availBytes,
-                    "runningAppsCount" to getRunningApps().size
-                ))
-
-            } catch (e: Exception) {
-                result.error("BOOST_ERROR", e.message, null)
-            }
-        }
-
-        "clearRam" -> {
-            try {
-                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                am.runningAppProcesses?.forEach {
-                    if (it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED) {
-                        it.pkgList?.forEach { pkg ->
-                            if (pkg != packageName) {
-                                am.killBackgroundProcesses(pkg)
-                            }
-                        }
+        // ======== POWER BOOST CHANNEL ===========
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            POWER_BOOST_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getPowerBoostData" -> {
+                    try {
+                        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                        val memInfo = ActivityManager.MemoryInfo()
+                        am.getMemoryInfo(memInfo)
+                        val totalBytes = memInfo.totalMem
+                        val availBytes = memInfo.availMem
+                        val usedBytes  = totalBytes - availBytes
+                        result.success(mapOf(
+                            "ramUsedBytes"      to usedBytes,
+                            "totalRamBytes"     to totalBytes,
+                            "availableRamBytes" to availBytes,
+                            "runningAppsCount"  to getRunningApps().size
+                        ))
+                    } catch (e: Exception) {
+                        result.error("BOOST_ERROR", e.message, null)
                     }
                 }
-                result.success(true)
-            } catch (e: Exception) {
-                result.error("CLEAR_RAM_ERROR", e.message, null)
+                "clearRam" -> {
+                    try {
+                        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                        am.runningAppProcesses?.forEach {
+                            if (it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED) {
+                                it.pkgList?.forEach { pkg ->
+                                    if (pkg != packageName) am.killBackgroundProcesses(pkg)
+                                }
+                            }
+                        }
+                        result.success(true)
+                    } catch (e: Exception) {
+                        result.error("CLEAR_RAM_ERROR", e.message, null)
+                    }
+                }
+                "closeBackgroundApps" -> {
+                    killBackgroundApps()
+                    result.success(true)
+                }
+                else -> result.notImplemented()
             }
         }
-
-        "closeBackgroundApps" -> {
-            killBackgroundApps()
-            result.success(true)
-        }
-
-        else -> result.notImplemented()
-    }
-}
 
         // ======== STORAGE CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
@@ -145,25 +135,19 @@ MethodChannel(
             CACHE_CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-
                 "getCacheSize" -> {
                     var total = getFolderSize(cacheDir)
                     externalCacheDir?.let { total += getFolderSize(it) }
                     result.success(total)
                 }
-
                 "clearCache" -> {
                     var before = getFolderSize(cacheDir)
                     externalCacheDir?.let { before += getFolderSize(it) }
                     cacheDir.deleteRecursively()
                     cacheDir.mkdirs()
-                    externalCacheDir?.let {
-                        it.deleteRecursively()
-                        it.mkdirs()
-                    }
+                    externalCacheDir?.let { it.deleteRecursively(); it.mkdirs() }
                     result.success(before)
                 }
-
                 "getRunningAppsCount" -> {
                     Thread {
                         try {
@@ -174,7 +158,6 @@ MethodChannel(
                         }
                     }.start()
                 }
-
                 "getRunningAppsList" -> {
                     Thread {
                         try {
@@ -185,7 +168,6 @@ MethodChannel(
                         }
                     }.start()
                 }
-
                 "getCacheFiles" -> {
                     Thread {
                         try {
@@ -212,16 +194,12 @@ MethodChannel(
                         }
                     }.start()
                 }
-
                 "getResidualFiles" -> {
                     Thread {
                         try {
                             val files    = mutableListOf<Map<String, Any>>()
-                            val skipDirs = setOf(
-                                "cache", "files", "shared_prefs",
-                                "databases", "code_cache", "app_webview"
-                            )
-                            val dataDir = filesDir.parentFile
+                            val skipDirs = setOf("cache", "files", "shared_prefs", "databases", "code_cache", "app_webview")
+                            val dataDir  = filesDir.parentFile
                             dataDir?.listFiles()?.forEach { dir ->
                                 if (dir.isDirectory && dir.name !in skipDirs) {
                                     dir.walkTopDown().filter { it.isFile }.forEach { file ->
@@ -240,7 +218,6 @@ MethodChannel(
                         }
                     }.start()
                 }
-
                 else -> result.notImplemented()
             }
         }
@@ -272,7 +249,7 @@ MethodChannel(
                     Thread {
                         try {
                             val packageNames = call.argument<List<String>>("packageNames") ?: emptyList()
-                            val sizeMap = mutableMapOf<String, Double>()
+                            val sizeMap      = mutableMapOf<String, Double>()
                             for (pkg in packageNames) {
                                 try {
                                     val ai      = packageManager.getApplicationInfo(pkg, 0)
@@ -479,9 +456,7 @@ MethodChannel(
     private fun getFolderSize(dir: File): Long {
         var size = 0L
         if (!dir.exists()) return size
-        dir.walkTopDown().forEach { file ->
-            if (file.isFile) size += file.length()
-        }
+        dir.walkTopDown().forEach { file -> if (file.isFile) size += file.length() }
         return size
     }
 
@@ -503,18 +478,20 @@ MethodChannel(
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // BATTERY HEALTH DATA
+    // BATTERY HEALTH DATA  ✅ FIXED
     // ─────────────────────────────────────────────────────────────────
     private fun getBatteryHealthData(): Map<String, Any> {
         val bm            = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
         val batteryIntent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val voltage       = batteryIntent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)?.toDouble() ?: 0.0
-        val temperature   = (batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0
-        val level         = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) ?: 0
-        val scale         = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
-        val batteryLevel  = if (scale > 0) (level * 100 / scale) else 0
-        val healthInt     = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
-        val healthStatus  = when (healthInt) {
+
+        val voltage      = batteryIntent?.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)?.toDouble() ?: 0.0
+        val temperature  = (batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0) / 10.0
+        val level        = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 0) ?: 0
+        val scale        = batteryIntent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
+        val batteryLevel = if (scale > 0) (level * 100 / scale) else 0
+
+        val healthInt    = batteryIntent?.getIntExtra(BatteryManager.EXTRA_HEALTH, -1) ?: -1
+        val healthStatus = when (healthInt) {
             BatteryManager.BATTERY_HEALTH_GOOD         -> "Good"
             BatteryManager.BATTERY_HEALTH_OVERHEAT     -> "Overheat"
             BatteryManager.BATTERY_HEALTH_DEAD         -> "Dead"
@@ -522,12 +499,26 @@ MethodChannel(
             BatteryManager.BATTERY_HEALTH_COLD         -> "Cold"
             else                                        -> "Unknown"
         }
-        val chargeCounterUah   = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
-        val currentCapacityMah = if (chargeCounterUah > 0) chargeCounterUah / 1000.0 else 0.0
-        val designCapacityMah  = getDesignCapacity(currentCapacityMah, batteryLevel)
-        val chargingCycles     = getChargingCycles()
-        val sdf                = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
-        val manufactureDate    = sdf.format(java.util.Date(Build.TIME))
+
+        // ✅ Step 1: CHARGE_COUNTER se current capacity try karo
+        var currentCapacityMah = 0.0
+        val chargeCounter = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
+        if (chargeCounter > 0) {
+            currentCapacityMah = chargeCounter / 1000.0
+        }
+
+        // ✅ Step 2: Design capacity nikalo (6 methods try karega)
+        val designCapacityMah = getDesignCapacity(currentCapacityMah, batteryLevel)
+
+        // ✅ Step 3: Agar currentCapacity abhi bhi 0 hai aur designCapacity mili toh estimate karo
+        if (currentCapacityMah <= 0.0 && designCapacityMah > 0.0 && batteryLevel > 0) {
+            currentCapacityMah = (designCapacityMah * batteryLevel) / 100.0
+        }
+
+        val chargingCycles  = getChargingCycles()
+        val sdf             = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault())
+        val manufactureDate = sdf.format(java.util.Date(Build.TIME))
+
         return mapOf(
             "voltage"         to voltage,
             "temperature"     to temperature,
@@ -541,38 +532,736 @@ MethodChannel(
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // DESIGN CAPACITY
+    // DESIGN CAPACITY — 6 fallback methods  ✅ FIXED
     // ─────────────────────────────────────────────────────────────────
     private fun getDesignCapacity(currentCapacityMah: Double, batteryLevel: Int): Double {
+
+        // ── Method 1: sysfs charge_full_design ──
+        val designPaths = listOf(
+            "/sys/class/power_supply/battery/charge_full_design",
+            "/sys/class/power_supply/Battery/charge_full_design",
+            "/sys/class/power_supply/bms/charge_full_design",
+            "/sys/class/power_supply/main-battery/charge_full_design"
+        )
+        for (path in designPaths) {
+            try {
+                val raw = File(path).readText().trim().toLongOrNull()
+                if (raw != null && raw > 0) {
+                    val mah = if (raw > 100_000) raw / 1000.0 else raw.toDouble()
+                    if (mah in 500.0..10_000.0) return mah
+                }
+            } catch (_: Exception) {}
+        }
+
+        // ── Method 2: sysfs charge_full (actual max capacity) ──
+        val fullPaths = listOf(
+            "/sys/class/power_supply/battery/charge_full",
+            "/sys/class/power_supply/Battery/charge_full",
+            "/sys/class/power_supply/bms/charge_full",
+            "/sys/class/power_supply/main-battery/charge_full"
+        )
+        for (path in fullPaths) {
+            try {
+                val raw = File(path).readText().trim().toLongOrNull()
+                if (raw != null && raw > 0) {
+                    val mah = if (raw > 100_000) raw / 1000.0 else raw.toDouble()
+                    if (mah in 500.0..10_000.0) return mah
+                }
+            } catch (_: Exception) {}
+        }
+
+        // ── Method 3: energy_full (Wh to mAh ~ divide by 3.7) ──
+        val energyPaths = listOf(
+            "/sys/class/power_supply/battery/energy_full_design",
+            "/sys/class/power_supply/battery/energy_full"
+        )
+        for (path in energyPaths) {
+            try {
+                val raw = File(path).readText().trim().toLongOrNull()
+                if (raw != null && raw > 0) {
+                    // uWh to mAh: uWh / 3700
+                    val mah = if (raw > 1_000_000) raw / 3700.0 else raw / 3.7
+                    if (mah in 500.0..10_000.0) return mah
+                }
+            } catch (_: Exception) {}
+        }
+
+        // ── Method 4: getprop system properties ──
         val propKeys = listOf(
             "ro.product.battery.capacity",
             "ro.boot.battery_cap",
-            "sys.battery.full_capacity"
+            "sys.battery.full_capacity",
+            "ro.config.battery_cap",
+            "persist.vendor.battery.capacity",
+            "ro.vendor.battery.capacity"
         )
         for (key in propKeys) {
             try {
                 val process = Runtime.getRuntime().exec(arrayOf("getprop", key))
                 val value   = process.inputStream.bufferedReader().readLine()?.trim()
                 val mah     = value?.toDoubleOrNull()
-                if (mah != null && mah > 100) return mah
+                if (mah != null && mah in 500.0..10_000.0) return mah
             } catch (_: Exception) {}
         }
-        val sysfsPaths = listOf(
-            "/sys/class/power_supply/battery/charge_full_design",
-            "/sys/class/power_supply/Battery/charge_full_design"
-        )
-        for (path in sysfsPaths) {
-            try {
-                val raw = File(path).readText().trim().toLongOrNull()
-                if (raw != null && raw > 0) {
-                    return if (raw > 100000) raw / 1000.0 else raw.toDouble()
-                }
-            } catch (_: Exception) {}
-        }
-        if (currentCapacityMah > 0 && batteryLevel > 0) {
+
+        // ── Method 5: Device model database ──
+        val modelCapacity = getCapacityByModel()
+        if (modelCapacity > 0) return modelCapacity.toDouble()
+
+        // ── Method 6: Estimate from current capacity & level ──
+        if (currentCapacityMah > 0 && batteryLevel in 1..99) {
             return (currentCapacityMah / batteryLevel) * 100.0
         }
+
         return 0.0
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // DEVICE BATTERY CAPACITY DATABASE  ✅ 300+ devices
+    // ─────────────────────────────────────────────────────────────────
+    private fun getCapacityByModel(): Int {
+        val model = Build.MODEL.lowercase().trim()
+        val brand = Build.BRAND.lowercase().trim()
+
+        // ════════════════════════════════════════
+        // SAMSUNG — Galaxy S Series
+        // ════════════════════════════════════════
+        if (brand == "samsung") {
+            return when {
+                // S24 Series
+                model.contains("sm-s928") -> 5000  // S24 Ultra
+                model.contains("sm-s926") -> 4900  // S24+
+                model.contains("sm-s921") -> 4000  // S24
+                // S23 Series
+                model.contains("sm-s918") -> 5000  // S23 Ultra
+                model.contains("sm-s916") -> 4700  // S23+
+                model.contains("sm-s911") -> 3900  // S23
+                model.contains("sm-s906") -> 4700  // S22+  (actually S23 FE)
+                model.contains("sm-s711") -> 4500  // S23 FE
+                // S22 Series
+                model.contains("sm-s908") -> 5000  // S22 Ultra
+                model.contains("sm-s906") -> 4500  // S22+
+                model.contains("sm-s901") -> 3700  // S22
+                // S21 Series
+                model.contains("sm-s998") -> 5000  // S21 Ultra
+                model.contains("sm-s996") -> 4800  // S21+
+                model.contains("sm-s991") -> 4000  // S21 FE
+                model.contains("sm-g998") -> 5000  // S21 Ultra (alt)
+                model.contains("sm-g996") -> 4800  // S21+ (alt)
+                model.contains("sm-g991") -> 4000  // S21 (alt)
+                // S20 Series
+                model.contains("sm-g988") -> 5000  // S20 Ultra
+                model.contains("sm-g986") -> 4500  // S20+
+                model.contains("sm-g981") -> 4000  // S20
+                model.contains("sm-g780") -> 4500  // S20 FE
+                // S10 Series
+                model.contains("sm-g988") -> 5000
+                model.contains("sm-g975") -> 4100  // S10+
+                model.contains("sm-g973") -> 3400  // S10
+                model.contains("sm-g970") -> 3100  // S10e
+                model.contains("sm-g977") -> 4500  // S10 5G
+                // S9 / S8
+                model.contains("sm-g965") -> 3500  // S9+
+                model.contains("sm-g960") -> 3000  // S9
+                model.contains("sm-g955") -> 3500  // S8+
+                model.contains("sm-g950") -> 3000  // S8
+
+                // ── Galaxy A Series ──
+                model.contains("sm-a556") -> 5000  // A55
+                model.contains("sm-a546") -> 5000  // A54
+                model.contains("sm-a536") -> 5000  // A53
+                model.contains("sm-a525") -> 5000  // A52
+                model.contains("sm-a515") -> 4500  // A51
+                model.contains("sm-a505") -> 4000  // A50
+                model.contains("sm-a356") -> 5000  // A35
+                model.contains("sm-a346") -> 5000  // A34
+                model.contains("sm-a336") -> 5000  // A33
+                model.contains("sm-a325") -> 5000  // A32
+                model.contains("sm-a315") -> 5000  // A31
+                model.contains("sm-a305") -> 4000  // A30
+                model.contains("sm-a256") -> 5000  // A25
+                model.contains("sm-a246") -> 5000  // A24
+                model.contains("sm-a235") -> 5000  // A23
+                model.contains("sm-a225") -> 5000  // A22
+                model.contains("sm-a215") -> 4000  // A21s
+                model.contains("sm-a205") -> 4000  // A20
+                model.contains("sm-a156") -> 5000  // A15
+                model.contains("sm-a146") -> 5000  // A14
+                model.contains("sm-a136") -> 5000  // A13
+                model.contains("sm-a125") -> 5000  // A12
+                model.contains("sm-a115") -> 4000  // A11
+                model.contains("sm-a105") -> 3600  // A10
+                model.contains("sm-a057") -> 5000  // A05s
+                model.contains("sm-a047") -> 5000  // A04s
+                model.contains("sm-a037") -> 5000  // A03s
+
+                // ── Galaxy M Series ──
+                model.contains("sm-m546") -> 6000  // M54
+                model.contains("sm-m536") -> 6000  // M53
+                model.contains("sm-m526") -> 5000  // M52
+                model.contains("sm-m515") -> 6000  // M51
+                model.contains("sm-m346") -> 6000  // M34
+                model.contains("sm-m336") -> 6000  // M33
+                model.contains("sm-m325") -> 6000  // M32
+                model.contains("sm-m315") -> 6000  // M31
+                model.contains("sm-m236") -> 5000  // M23
+                model.contains("sm-m225") -> 5000  // M22
+                model.contains("sm-m215") -> 6000  // M21
+                model.contains("sm-m146") -> 5000  // M14
+                model.contains("sm-m135") -> 5000  // M13
+                model.contains("sm-m127") -> 6000  // M12
+
+                // ── Galaxy F Series ──
+                model.contains("sm-f946") -> 4400  // Z Fold 5
+                model.contains("sm-f936") -> 4400  // Z Fold 4
+                model.contains("sm-f926") -> 4400  // Z Fold 3
+                model.contains("sm-f916") -> 4500  // Z Fold 2
+                model.contains("sm-f756") -> 3700  // Z Flip 5
+                model.contains("sm-f721") -> 3700  // Z Flip 4
+                model.contains("sm-f711") -> 3300  // Z Flip 3
+                model.contains("sm-f700") -> 3300  // Z Flip
+
+                // ── Galaxy Note Series ──
+                model.contains("sm-n986") -> 4500  // Note 20 Ultra
+                model.contains("sm-n981") -> 4300  // Note 20
+                model.contains("sm-n975") -> 4300  // Note 10+
+                model.contains("sm-n970") -> 3500  // Note 10
+                model.contains("sm-n960") -> 4000  // Note 9
+                model.contains("sm-n950") -> 3300  // Note 8
+
+                // ── Galaxy Tab ──
+                model.contains("sm-x916") -> 11200 // Tab S9 Ultra
+                model.contains("sm-x816") -> 10090 // Tab S9+
+                model.contains("sm-x716") -> 8400  // Tab S9
+                model.contains("sm-x906") -> 11200 // Tab S8 Ultra
+                model.contains("sm-x806") -> 10090 // Tab S8+
+                model.contains("sm-x706") -> 8000  // Tab S8
+                model.contains("sm-t870") -> 7040  // Tab S7
+                model.contains("sm-t875") -> 10090 // Tab S7+
+                model.contains("sm-t220") -> 5100  // Tab A7 Lite
+                model.contains("sm-t500") -> 7040  // Tab A7
+
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // GOOGLE PIXEL
+        // ════════════════════════════════════════
+        if (brand == "google") {
+            return when {
+                model.contains("pixel 8 pro")    -> 5050
+                model.contains("pixel 8a")       -> 4492
+                model.contains("pixel 8")        -> 4575
+                model.contains("pixel 7 pro")    -> 5000
+                model.contains("pixel 7a")       -> 4385
+                model.contains("pixel 7")        -> 4355
+                model.contains("pixel 6 pro")    -> 5003
+                model.contains("pixel 6a")       -> 4306
+                model.contains("pixel 6")        -> 4614
+                model.contains("pixel 5a")       -> 4680
+                model.contains("pixel 5")        -> 4080
+                model.contains("pixel 4a 5g")    -> 3885
+                model.contains("pixel 4a")       -> 3140
+                model.contains("pixel 4 xl")     -> 3700
+                model.contains("pixel 4")        -> 2800
+                model.contains("pixel 3a xl")    -> 3700
+                model.contains("pixel 3a")       -> 3000
+                model.contains("pixel 3 xl")     -> 3430
+                model.contains("pixel 3")        -> 2915
+                model.contains("pixel 2 xl")     -> 3520
+                model.contains("pixel 2")        -> 2700
+                model.contains("pixel fold")     -> 4821
+                model.contains("pixel 9 pro fold") -> 4650
+                model.contains("pixel 9 pro xl") -> 5060
+                model.contains("pixel 9 pro")    -> 4700
+                model.contains("pixel 9")        -> 4700
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // XIAOMI / REDMI / POCO
+        // ════════════════════════════════════════
+        if (brand == "xiaomi" || brand == "redmi" || brand == "poco") {
+            return when {
+                // Xiaomi 14 Series
+                model.contains("xiaomi 14 ultra") -> 5000
+                model.contains("xiaomi 14 pro")   -> 4880
+                model.contains("xiaomi 14")       -> 4610
+                model.contains("2401bpd4r")       -> 5000  // Xiaomi 14 Ultra
+                model.contains("2312draabl")      -> 5000  // Xiaomi 14
+                // Xiaomi 13 Series
+                model.contains("xiaomi 13 ultra") -> 5000
+                model.contains("xiaomi 13 pro")   -> 4820
+                model.contains("xiaomi 13")       -> 4500
+                model.contains("2210132c")        -> 4820  // 13 Pro
+                model.contains("2211133c")        -> 4500  // 13
+                // Xiaomi 12 Series
+                model.contains("xiaomi 12 pro")   -> 4600
+                model.contains("xiaomi 12")       -> 4500
+                model.contains("2201122c")        -> 4600
+                model.contains("2201123c")        -> 4500
+                // Xiaomi 11 Series
+                model.contains("xiaomi 11 ultra") -> 5000
+                model.contains("xiaomi 11 pro")   -> 5000
+                model.contains("xiaomi 11")       -> 4600
+                model.contains("m2102k1c")        -> 5000
+                model.contains("m2102k1g")        -> 4600
+                // Xiaomi 10 Series
+                model.contains("xiaomi 10 pro")   -> 4500
+                model.contains("xiaomi 10")       -> 4780
+                model.contains("m2001j1g")        -> 4780
+                // Redmi Note 13 Series
+                model.contains("redmi note 13 pro+") -> 5000
+                model.contains("redmi note 13 pro")  -> 5100
+                model.contains("redmi note 13")      -> 5000
+                model.contains("23090ra98l")          -> 5000  // Note 13 Pro+
+                model.contains("2312draabl")          -> 5000  // Note 13
+                // Redmi Note 12 Series
+                model.contains("redmi note 12 pro+") -> 5000
+                model.contains("redmi note 12 pro")  -> 5000
+                model.contains("redmi note 12")      -> 5000
+                model.contains("22101316g")           -> 5000
+                model.contains("22101316c")           -> 5000
+                // Redmi Note 11 Series
+                model.contains("redmi note 11 pro+") -> 5000
+                model.contains("redmi note 11 pro")  -> 5000
+                model.contains("redmi note 11s")     -> 5000
+                model.contains("redmi note 11")      -> 5000
+                model.contains("2201116sg")           -> 5000
+                model.contains("2201116pg")           -> 5000
+                // Redmi Note 10 Series
+                model.contains("redmi note 10 pro+") -> 5020
+                model.contains("redmi note 10 pro")  -> 5020
+                model.contains("redmi note 10s")     -> 5000
+                model.contains("redmi note 10")      -> 5000
+                model.contains("m2101k7ag")           -> 5020
+                // Redmi Note 9 Series
+                model.contains("redmi note 9 pro")   -> 5020
+                model.contains("redmi note 9s")      -> 5020
+                model.contains("redmi note 9")       -> 5020
+                // Redmi Note 8 Series
+                model.contains("redmi note 8 pro")   -> 4500
+                model.contains("redmi note 8")       -> 4000
+                // Redmi 13 / 12 / 10 Series
+                model.contains("redmi 13c")  -> 5000
+                model.contains("redmi 13")   -> 5030
+                model.contains("redmi 12c")  -> 5000
+                model.contains("redmi 12")   -> 5000
+                model.contains("redmi 10c")  -> 5000
+                model.contains("redmi 10")   -> 5000
+                model.contains("redmi 9c")   -> 5000
+                model.contains("redmi 9a")   -> 5000
+                model.contains("redmi 9")    -> 5020
+                // POCO Series
+                model.contains("poco x6 pro")  -> 5100
+                model.contains("poco x6")      -> 5100
+                model.contains("poco x5 pro")  -> 5000
+                model.contains("poco x5")      -> 5000
+                model.contains("poco x4 pro")  -> 5000
+                model.contains("poco x4 gt")   -> 8000  // Tab actually
+                model.contains("poco x4")      -> 5000
+                model.contains("poco x3 pro")  -> 5160
+                model.contains("poco x3 nfc")  -> 6000
+                model.contains("poco x3")      -> 6000
+                model.contains("poco f5 pro")  -> 5160
+                model.contains("poco f5")      -> 5000
+                model.contains("poco f4 gt")   -> 4700
+                model.contains("poco f4")      -> 4500
+                model.contains("poco f3")      -> 4520
+                model.contains("poco m6 pro")  -> 5000
+                model.contains("poco m5s")     -> 5000
+                model.contains("poco m5")      -> 5000
+                model.contains("poco m4 pro")  -> 5000
+                model.contains("poco m3 pro")  -> 5000
+                model.contains("poco m3")      -> 6000
+                model.contains("poco c65")     -> 5000
+                model.contains("poco c55")     -> 5000
+                model.contains("poco c40")     -> 6000
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // ONEPLUS
+        // ════════════════════════════════════════
+        if (brand == "oneplus") {
+            return when {
+                model.contains("cph2657") -> 5400  // OnePlus 12R
+                model.contains("cph2583") -> 5400  // OnePlus 12
+                model.contains("cph2529") -> 4800  // OnePlus 11R
+                model.contains("cph2449") -> 5000  // OnePlus 11
+                model.contains("cph2411") -> 4500  // OnePlus 10T
+                model.contains("cph2399") -> 4500  // OnePlus 10 Pro
+                model.contains("cph2387") -> 4500  // OnePlus 10R
+                model.contains("cph2369") -> 4500  // OnePlus Nord CE 2
+                model.contains("cph2333") -> 4500  // OnePlus 9RT
+                model.contains("cph2251") -> 4500  // OnePlus 9R
+                model.contains("cph2247") -> 4500  // OnePlus 9 Pro
+                model.contains("cph2209") -> 4500  // OnePlus 9
+                model.contains("in2020")  -> 4510  // OnePlus 8 Pro
+                model.contains("in2010")  -> 4300  // OnePlus 8
+                model.contains("gm1913")  -> 3700  // OnePlus 7 Pro
+                model.contains("gm1910")  -> 3700  // OnePlus 7T Pro
+                model.contains("hd1913")  -> 3800  // OnePlus 7T
+                model.contains("cph2423") -> 4500  // Nord 2T
+                model.contains("cph2399") -> 4500  // Nord CE 2 Lite
+                model.contains("cph2381") -> 4500  // Nord CE 2
+                model.contains("cph2207") -> 4115  // Nord 2
+                model.contains("ac2003")  -> 4115  // Nord
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // OPPO
+        // ════════════════════════════════════════
+        if (brand == "oppo") {
+            return when {
+                model.contains("cph2609") -> 5000  // Reno 11 Pro
+                model.contains("cph2599") -> 5000  // Reno 11
+                model.contains("cph2525") -> 5000  // Reno 10 Pro+
+                model.contains("cph2521") -> 5000  // Reno 10 Pro
+                model.contains("cph2505") -> 5000  // Reno 10
+                model.contains("cph2487") -> 4700  // Reno 9 Pro+
+                model.contains("cph2483") -> 4700  // Reno 9 Pro
+                model.contains("cph2469") -> 4500  // Reno 9
+                model.contains("cph2385") -> 5000  // Reno 8 Pro
+                model.contains("cph2359") -> 4500  // Reno 8
+                model.contains("cph2305") -> 4500  // Reno 7 Pro
+                model.contains("cph2293") -> 4500  // Reno 7
+                model.contains("cph2207") -> 4300  // Reno 6 Pro
+                model.contains("cph2269") -> 4300  // Reno 6
+                model.contains("cph2557") -> 5000  // A98
+                model.contains("cph2539") -> 5000  // A78
+                model.contains("cph2481") -> 5000  // A58
+                model.contains("cph2477") -> 5000  // A38
+                model.contains("cph2461") -> 5000  // A18
+                model.contains("cph2365") -> 5000  // A96
+                model.contains("cph2339") -> 5000  // A76
+                model.contains("cph2325") -> 5000  // A56
+                model.contains("cph2185") -> 5000  // A74
+                model.contains("cph2083") -> 5000  // A53
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // REALME
+        // ════════════════════════════════════════
+        if (brand == "realme") {
+            return when {
+                model.contains("rmx3888") -> 5000  // GT 6
+                model.contains("rmx3842") -> 5000  // GT 6T
+                model.contains("rmx3741") -> 5000  // GT 5 Pro
+                model.contains("rmx3706") -> 5000  // GT 5
+                model.contains("rmx3686") -> 5000  // GT Neo 5 SE
+                model.contains("rmx3706") -> 5000  // GT Neo 5
+                model.contains("rmx3564") -> 5000  // GT Neo 3T
+                model.contains("rmx3561") -> 5000  // GT Neo 3
+                model.contains("rmx3471") -> 5000  // GT 2 Pro
+                model.contains("rmx3395") -> 5000  // GT2
+                model.contains("rmx3370") -> 5000  // GT Neo 2
+                model.contains("rmx3085") -> 4500  // GT
+                model.contains("rmx3710") -> 5000  // 12 Pro+
+                model.contains("rmx3686") -> 5000  // 12 Pro
+                model.contains("rmx3663") -> 5000  // 12
+                model.contains("rmx3630") -> 5000  // 11 Pro+
+                model.contains("rmx3612") -> 5000  // 11 Pro
+                model.contains("rmx3511") -> 5000  // 10 Pro+
+                model.contains("rmx3393") -> 5000  // 10 Pro
+                model.contains("rmx3381") -> 5000  // 9 Pro+
+                model.contains("rmx3363") -> 5000  // 9 Pro
+                model.contains("rmx3286") -> 5000  // 9
+                model.contains("rmx3201") -> 5000  // 8
+                model.contains("rmx3085") -> 5000  // 8i
+                model.contains("rmx2170") -> 6000  // Narzo 50
+                model.contains("rmx3286") -> 5000  // Narzo 50 Pro
+                model.contains("rmx3616") -> 5000  // C67
+                model.contains("rmx3834") -> 5000  // C65
+                model.contains("rmx3710") -> 5000  // C55
+                model.contains("rmx3624") -> 5000  // C53
+                model.contains("rmx3511") -> 5000  // C35
+                model.contains("rmx3261") -> 5000  // C25s
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // VIVO
+        // ════════════════════════════════════════
+        if (brand == "vivo") {
+            return when {
+                model.contains("v2309") -> 5000   // X100 Pro
+                model.contains("v2307") -> 5000   // X100
+                model.contains("v2230") -> 4870   // X90 Pro+
+                model.contains("v2227") -> 4870   // X90 Pro
+                model.contains("v2206") -> 4870   // X90
+                model.contains("v2145") -> 4500   // X80 Pro
+                model.contains("v2144") -> 4500   // X80
+                model.contains("v2054") -> 4400   // X70 Pro+
+                model.contains("v2046") -> 4400   // X70 Pro
+                model.contains("v2118") -> 5000   // Y100
+                model.contains("v2253") -> 5000   // Y200 Pro
+                model.contains("v2249") -> 5000   // Y200
+                model.contains("v2152") -> 5000   // Y75
+                model.contains("v2120") -> 5000   // Y55s
+                model.contains("v2111") -> 5000   // Y53s
+                model.contains("v2026") -> 5000   // Y51
+                model.contains("v2023") -> 5000   // Y20
+                model.contains("v2034") -> 5000   // Y33s
+                model.contains("v2039") -> 6000   // Y21T
+                model.contains("v2043") -> 5000   // Y21s
+                model.contains("v2109") -> 5000   // Y21
+                model.contains("v2130") -> 6000   // Y33T
+                model.contains("v2219") -> 5000   // V29 Pro
+                model.contains("v2217") -> 5000   // V29
+                model.contains("v2183") -> 4600   // V27 Pro
+                model.contains("v2181") -> 4600   // V27
+                model.contains("v2158") -> 4350   // V25 Pro
+                model.contains("v2135") -> 4350   // V25
+                model.contains("v2108") -> 4300   // V23 Pro
+                model.contains("v2048") -> 4300   // V21
+                model.contains("v2036") -> 4000   // V20 Pro
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // MOTOROLA
+        // ════════════════════════════════════════
+        if (brand == "motorola") {
+            return when {
+                model.contains("edge 50 ultra")  -> 4500
+                model.contains("edge 50 pro")    -> 4500
+                model.contains("edge 50 fusion") -> 5000
+                model.contains("edge 50")        -> 5000
+                model.contains("edge 40 pro")    -> 4600
+                model.contains("edge 40 neo")    -> 5000
+                model.contains("edge 40")        -> 4400
+                model.contains("edge 30 ultra")  -> 4610
+                model.contains("edge 30 pro")    -> 4800
+                model.contains("edge 30 neo")    -> 4020
+                model.contains("edge 30")        -> 4020
+                model.contains("edge 20 pro")    -> 4500
+                model.contains("edge 20")        -> 4000
+                model.contains("moto g84")       -> 5000
+                model.contains("moto g73")       -> 5000
+                model.contains("moto g72")       -> 5000
+                model.contains("moto g62")       -> 5000
+                model.contains("moto g60")       -> 6000
+                model.contains("moto g54")       -> 5000
+                model.contains("moto g53")       -> 5000
+                model.contains("moto g52")       -> 5000
+                model.contains("moto g42")       -> 5000
+                model.contains("moto g32")       -> 5000
+                model.contains("moto g22")       -> 5000
+                model.contains("moto g14")       -> 5000
+                model.contains("moto g13")       -> 5000
+                model.contains("moto g13")       -> 5000
+                model.contains("xt2301")         -> 4500  // Edge 40 Pro
+                model.contains("xt2251")         -> 4610  // Edge 30 Ultra
+                model.contains("xt2201")         -> 4800  // Edge 30 Pro
+                model.contains("xt2175")         -> 5000  // G82
+                model.contains("xt2163")         -> 6000  // G60
+                model.contains("xt2137")         -> 5000  // G40 Fusion
+                model.contains("xt2131")         -> 5000  // G30
+                model.contains("xt2113")         -> 5000  // G20
+                model.contains("xt2091")         -> 5000  // G10
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // NOKIA
+        // ════════════════════════════════════════
+        if (brand == "nokia") {
+            return when {
+                model.contains("nokia g42")  -> 5000
+                model.contains("nokia g21")  -> 5050
+                model.contains("nokia g20")  -> 5050
+                model.contains("nokia g11")  -> 5050
+                model.contains("nokia g10")  -> 5050
+                model.contains("nokia c32")  -> 4200
+                model.contains("nokia c22")  -> 4200
+                model.contains("nokia c12")  -> 3000
+                model.contains("nokia xr21") -> 4800
+                model.contains("nokia x30")  -> 4200
+                model.contains("nokia x20")  -> 4470
+                model.contains("nokia x10")  -> 4470
+                model.contains("nokia 8.3")  -> 4500
+                model.contains("nokia 7.2")  -> 3500
+                model.contains("nokia 6.2")  -> 3500
+                model.contains("nokia 5.4")  -> 4000
+                model.contains("nokia 5.3")  -> 4000
+                model.contains("nokia 4.2")  -> 3000
+                model.contains("nokia 3.4")  -> 4000
+                model.contains("nokia 2.4")  -> 4500
+                model.contains("nokia 1.4")  -> 4000
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // ASUS (ROG / Zenfone)
+        // ════════════════════════════════════════
+        if (brand == "asus") {
+            return when {
+                model.contains("rog phone 8 pro") -> 5500
+                model.contains("rog phone 8")     -> 5500
+                model.contains("rog phone 7 ultimate") -> 6000
+                model.contains("rog phone 7 pro") -> 6000
+                model.contains("rog phone 7")     -> 6000
+                model.contains("rog phone 6 pro") -> 6000
+                model.contains("rog phone 6")     -> 6000
+                model.contains("rog phone 5 pro") -> 6000
+                model.contains("rog phone 5")     -> 6000
+                model.contains("zenfone 10")      -> 4300
+                model.contains("zenfone 9")       -> 4300
+                model.contains("zenfone 8")       -> 4000
+                model.contains("zenfone 8 flip")  -> 5000
+                model.contains("zenfone 7 pro")   -> 5000
+                model.contains("zenfone 7")       -> 5000
+                model.contains("ai2302")          -> 4300  // Zenfone 10
+                model.contains("ai2205")          -> 4300  // Zenfone 9
+                model.contains("ph-1")            -> 3300  // Essential Phone
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // SONY XPERIA
+        // ════════════════════════════════════════
+        if (brand == "sony") {
+            return when {
+                model.contains("xperia 1 v")   -> 5000
+                model.contains("xperia 1 iv")  -> 5000
+                model.contains("xperia 1 iii") -> 4500
+                model.contains("xperia 1 ii")  -> 4000
+                model.contains("xperia 5 v")   -> 5000
+                model.contains("xperia 5 iv")  -> 5000
+                model.contains("xperia 5 iii") -> 4500
+                model.contains("xperia 5 ii")  -> 4000
+                model.contains("xperia 10 v")  -> 5000
+                model.contains("xperia 10 iv") -> 5000
+                model.contains("xperia 10 iii") -> 4500
+                model.contains("xperia 10 ii") -> 3600
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // HUAWEI / HONOR
+        // ════════════════════════════════════════
+        if (brand == "huawei" || brand == "honor") {
+            return when {
+                // Huawei
+                model.contains("mate 60 pro+") -> 5000
+                model.contains("mate 60 pro")  -> 5000
+                model.contains("mate 60")      -> 5000
+                model.contains("mate 50 pro")  -> 4460
+                model.contains("mate 50")      -> 4460
+                model.contains("p60 pro")      -> 4815
+                model.contains("p60")          -> 4815
+                model.contains("p50 pro")      -> 4360
+                model.contains("p50")          -> 4100
+                model.contains("nova 12 pro")  -> 4600
+                model.contains("nova 12")      -> 4500
+                model.contains("nova 11 pro")  -> 4500
+                model.contains("nova 11")      -> 4500
+                model.contains("nova 10 pro")  -> 4500
+                model.contains("nova 10")      -> 4000
+                // Honor
+                model.contains("honor magic6 pro") -> 5600
+                model.contains("honor magic6")     -> 5450
+                model.contains("honor magic5 pro") -> 5100
+                model.contains("honor magic5")     -> 5100
+                model.contains("honor 90 pro")     -> 5000
+                model.contains("honor 90")         -> 5000
+                model.contains("honor 80 pro")     -> 5000
+                model.contains("honor 80")         -> 4800
+                model.contains("honor 70 pro")     -> 4800
+                model.contains("honor 70")         -> 4800
+                model.contains("honor x9b")        -> 5800
+                model.contains("honor x9a")        -> 5100
+                model.contains("honor x8b")        -> 5330
+                model.contains("honor x8a")        -> 5000
+                model.contains("honor x7b")        -> 6000
+                model.contains("honor x7a")        -> 6000
+                model.contains("honor x6b")        -> 5000
+                model.contains("honor x6a")        -> 5000
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // TECNO / INFINIX / ITEL
+        // ════════════════════════════════════════
+        if (brand == "tecno" || brand == "infinix" || brand == "itel") {
+            return when {
+                // Tecno
+                model.contains("tecno camon 20 pro") -> 5000
+                model.contains("tecno camon 20")     -> 5000
+                model.contains("tecno camon 19 pro") -> 5000
+                model.contains("tecno camon 19")     -> 5000
+                model.contains("tecno spark 20 pro") -> 5000
+                model.contains("tecno spark 20")     -> 5000
+                model.contains("tecno spark 10 pro") -> 5000
+                model.contains("tecno spark 10")     -> 5000
+                model.contains("tecno pova 5 pro")   -> 6000
+                model.contains("tecno pova 5")       -> 6000
+                model.contains("tecno pova 4 pro")   -> 6000
+                model.contains("tecno pova 4")       -> 6000
+                model.contains("tecno pova neo 3")   -> 7000
+                // Infinix
+                model.contains("infinix note 30 pro") -> 5000
+                model.contains("infinix note 30")     -> 5000
+                model.contains("infinix note 12 pro") -> 5000
+                model.contains("infinix note 12")     -> 5000
+                model.contains("infinix hot 30 play") -> 6000
+                model.contains("infinix hot 30")      -> 5000
+                model.contains("infinix hot 20 play") -> 6000
+                model.contains("infinix hot 20")      -> 5000
+                model.contains("infinix zero 30")     -> 5000
+                model.contains("infinix zero 20")     -> 4500
+                model.contains("infinix smart 7")     -> 5000
+                model.contains("infinix smart 6")     -> 5000
+                // Itel
+                model.contains("itel p55")   -> 5000
+                model.contains("itel p40")   -> 6000
+                model.contains("itel a70")   -> 5000
+                model.contains("itel s24")   -> 5000
+                model.contains("itel vision3") -> 4000
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // NOTHING PHONE
+        // ════════════════════════════════════════
+        if (brand == "nothing") {
+            return when {
+                model.contains("a065") -> 5000  // Nothing Phone (2a)
+                model.contains("a063") -> 4700  // Nothing Phone (2)
+                model.contains("a015") -> 4500  // Nothing Phone (1)
+                else -> 0
+            }
+        }
+
+        // ════════════════════════════════════════
+        // LENOVO / ZTE / TCL
+        // ════════════════════════════════════════
+        return when {
+            brand == "lenovo" && model.contains("legion phone duel 2") -> 5500
+            brand == "lenovo" && model.contains("legion phone duel")    -> 5000
+            brand == "lenovo" && model.contains("k13 note")             -> 6000
+            brand == "zte"    && model.contains("axon 40 ultra")        -> 5000
+            brand == "zte"    && model.contains("axon 30 ultra")        -> 4600
+            brand == "tcl"    && model.contains("40 nxtpaper")          -> 5010
+            brand == "tcl"    && model.contains("30 se")                -> 5000
+            else -> 0
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────
@@ -634,7 +1323,7 @@ MethodChannel(
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // CPU TEMPERATURE  — sysfs first, battery fallback
+    // CPU TEMPERATURE
     // ─────────────────────────────────────────────────────────────────
     private fun getCpuTemperature(): Double {
         val thermalPaths = listOf(
@@ -668,7 +1357,6 @@ MethodChannel(
     private fun getRunningApps(): List<Map<String, Any>> {
         val am              = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val runningPackages = mutableSetOf<String>()
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (hasUsagePermission()) {
                 try {
@@ -681,13 +1369,12 @@ MethodChannel(
                             runningPackages.add(stat.packageName)
                     }
                 } catch (_: Exception) {}
-
                 try {
-                    val usm       = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                    val now       = System.currentTimeMillis()
-                    val start     = now - 8 * 60 * 60 * 1000L
-                    val events    = usm.queryEvents(start, now)
-                    val event     = UsageEvents.Event()
+                    val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                    val now    = System.currentTimeMillis()
+                    val start  = now - 8 * 60 * 60 * 1000L
+                    val events = usm.queryEvents(start, now)
+                    val event  = UsageEvents.Event()
                     val lastEvent = mutableMapOf<String, Int>()
                     while (events.hasNextEvent()) {
                         events.getNextEvent(event)
@@ -701,8 +1388,7 @@ MethodChannel(
                         }
                     }
                     lastEvent.forEach { (pkg, type) ->
-                        if (type == UsageEvents.Event.MOVE_TO_BACKGROUND)
-                            runningPackages.add(pkg)
+                        if (type == UsageEvents.Event.MOVE_TO_BACKGROUND) runningPackages.add(pkg)
                     }
                 } catch (_: Exception) {}
             }
@@ -716,7 +1402,6 @@ MethodChannel(
         } else {
             try { am.runningAppProcesses?.forEach { proc -> proc.pkgList?.forEach { runningPackages.add(it) } } } catch (_: Exception) {}
         }
-
         val pm = packageManager
         return runningPackages
             .filter { pkg ->
@@ -746,14 +1431,13 @@ MethodChannel(
     private fun killBackgroundApps() {
         val am             = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val killedPackages = mutableSetOf<String>()
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && hasUsagePermission()) {
             try {
-                val usm       = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                val now       = System.currentTimeMillis()
-                val start     = now - 8 * 60 * 60 * 1000L
-                val events    = usm.queryEvents(start, now)
-                val event     = UsageEvents.Event()
+                val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                val now    = System.currentTimeMillis()
+                val start  = now - 8 * 60 * 60 * 1000L
+                val events = usm.queryEvents(start, now)
+                val event  = UsageEvents.Event()
                 val lastEvent = mutableMapOf<String, Int>()
                 while (events.hasNextEvent()) {
                     events.getNextEvent(event)
@@ -773,7 +1457,6 @@ MethodChannel(
                 }
             } catch (_: Exception) {}
         }
-
         try {
             am.getRunningServices(200).forEach { si ->
                 val pkg = si.service.packageName
@@ -782,7 +1465,6 @@ MethodChannel(
                 }
             }
         } catch (_: Exception) {}
-
         try {
             am.runningAppProcesses
                 ?.filter { proc -> proc.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE }
@@ -794,7 +1476,6 @@ MethodChannel(
                     }
                 }
         } catch (_: Exception) {}
-
         System.gc()
         Runtime.getRuntime().gc()
     }
@@ -806,10 +1487,10 @@ MethodChannel(
         val am      = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val memInfo = ActivityManager.MemoryInfo()
         am.getMemoryInfo(memInfo)
-        val totalMb           = (memInfo.totalMem / 1024 / 1024).toInt()
-        val availMb           = (memInfo.availMem / 1024 / 1024).toInt()
-        val powerManager      = getSystemService(Context.POWER_SERVICE) as PowerManager
-        val thermalStatus     = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+        val totalMb       = (memInfo.totalMem / 1024 / 1024).toInt()
+        val availMb       = (memInfo.availMem / 1024 / 1024).toInt()
+        val powerManager  = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val thermalStatus = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
             powerManager.currentThermalStatus else 0
         val thermalPenalty      = thermalStatus * 15
         val ramAvailablePercent = (memInfo.availMem.toDouble() / memInfo.totalMem.toDouble()) * 100
@@ -840,7 +1521,6 @@ MethodChannel(
         val appsList         = mutableListOf<Map<String, Any>>()
         val fallbackResponse = mapOf("totalScreenOnTimeSec" to 0L, "apps" to appsList)
         if (!hasUsagePermission()) return fallbackResponse
-
         val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val pm     = packageManager
         val events = usm.queryEvents(startTime, endTime)
@@ -849,7 +1529,6 @@ MethodChannel(
         val appTotalTime            = mutableMapOf<String, Long>()
         var lastInteractiveTime: Long = -1L
         var totalScreenOnTimeMs: Long = 0L
-
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             val pkg = event.packageName ?: continue
@@ -876,10 +1555,8 @@ MethodChannel(
         }
         if (lastInteractiveTime != -1L && endTime > lastInteractiveTime)
             totalScreenOnTimeMs += (endTime - lastInteractiveTime)
-
         val totalForegroundMs   = appTotalTime.values.sum()
         val finalScreenOnTimeMs = if (totalScreenOnTimeMs > 0L) totalScreenOnTimeMs else totalForegroundMs
-
         if (totalForegroundMs > 0L) {
             val batteryIntent     = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
             val batteryLevel      = batteryIntent?.getIntExtra(BatteryManager.EXTRA_LEVEL, 100) ?: 100

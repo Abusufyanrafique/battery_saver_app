@@ -12,6 +12,19 @@ class BatteryRepository {
       final Map<String, dynamic> data =
           Map<String, dynamic>.from(result);
 
+      //  DEBUG — Flutter console mein dekho
+      print('======= BATTERY DEBUG =======');
+      print('RAW DATA: $data');
+      print('batteryLevel   : ${data['batteryLevel']}');
+      print('voltage        : ${data['voltage']}');
+      print('temperature    : ${data['temperature']}');
+      print('healthStatus   : ${data['healthStatus']}');
+      print('currentCapacity: ${data['currentCapacity']}');
+      print('designCapacity : ${data['designCapacity']}');
+      print('chargingCycles : ${data['chargingCycles']}');
+      print('manufactureDate: ${data['manufactureDate']}');
+      print('=============================');
+
       return BatteryHealthModel(
         batteryLevel: data['batteryLevel'] ?? 0,
         batteryState: "Unknown",
@@ -30,6 +43,9 @@ class BatteryRepository {
         osVersion: "Unknown",
       );
     } catch (e) {
+      print('======= BATTERY ERROR =======');
+      print('Error: $e');
+      print('=============================');
       throw Exception("Battery native fetch failed: $e");
     }
   }
