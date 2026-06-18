@@ -111,3 +111,4 @@ class PhoneBoostBloc extends Bloc<PhoneBoostEvent, PhoneBoostState> {
     return super.close();
   }
 }
+

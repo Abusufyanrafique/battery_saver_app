@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
+/// ─────────────────────────────────────────────
 ///  Battery Health Levels
+/// ─────────────────────────────────────────────
 enum BatteryHealthStatus { critical, low, moderate, good, full }
 
-///  Convert battery level → status
 BatteryHealthStatus healthFromLevel(int level) {
   if (level >= 90) return BatteryHealthStatus.full;
   if (level >= 60) return BatteryHealthStatus.good;
@@ -12,7 +13,9 @@ BatteryHealthStatus healthFromLevel(int level) {
   return BatteryHealthStatus.critical;
 }
 
-///  Convert status → readable text (NEW)
+/// ─────────────────────────────────────────────
+///  UI Labels
+/// ─────────────────────────────────────────────
 String batteryHealthLabel(BatteryHealthStatus status) {
   switch (status) {
     case BatteryHealthStatus.full:
@@ -28,7 +31,9 @@ String batteryHealthLabel(BatteryHealthStatus status) {
   }
 }
 
-///  Convert status → UI color (NEW)
+/// ─────────────────────────────────────────────
+///  UI Colors
+/// ─────────────────────────────────────────────
 Color batteryHealthColor(BatteryHealthStatus status) {
   switch (status) {
     case BatteryHealthStatus.full:
@@ -44,23 +49,45 @@ Color batteryHealthColor(BatteryHealthStatus status) {
   }
 }
 
-///  Remaining time estimator
-String remainingTimeFromLevel(int level, {int modeIndex = 0}) {
+/// ─────────────────────────────────────────────
+///  Battery Modes (IMPORTANT FIX)
+/// ─────────────────────────────────────────────
+/// 0 = Normal
+/// 1 = Power Saving
+/// 2 = Super Saving
+/// 3 = Custom
+enum BatteryMode { normal, powerSaving, superSaving, custom }
+
+/// ─────────────────────────────────────────────
+///  Remaining Time Estimator (FIXED LOGIC)
+/// ─────────────────────────────────────────────
+String remainingTimeFromLevel(
+  int level, {
+  BatteryMode mode = BatteryMode.normal,
+}) {
   if (level <= 0) return '--';
 
   const double normalHours = 10.0;
   const double powerSavingHours = 18.0;
   const double superSavingHours = 30.0;
+  const double customHours = 14.0; // safe balanced estimate
 
   double totalHours;
 
-  switch (modeIndex) {
-    case 1:
+  switch (mode) {
+    case BatteryMode.powerSaving:
       totalHours = powerSavingHours;
       break;
-    case 2:
+
+    case BatteryMode.superSaving:
       totalHours = superSavingHours;
       break;
+
+    case BatteryMode.custom:
+      totalHours = customHours;
+      break;
+
+    case BatteryMode.normal:
     default:
       totalHours = normalHours;
   }
@@ -73,21 +100,20 @@ String remainingTimeFromLevel(int level, {int modeIndex = 0}) {
   return '${minutes}m left';
 }
 
-
+/// ─────────────────────────────────────────────
+///  Extra Health Color (optional alternative)
+/// ─────────────────────────────────────────────
 Color healthColor(BatteryHealthStatus status) {
   switch (status) {
     case BatteryHealthStatus.full:
       return Colors.green;
-
     case BatteryHealthStatus.good:
       return Colors.lightGreen;
-
     case BatteryHealthStatus.moderate:
       return Colors.orange;
-
     case BatteryHealthStatus.low:
       return Colors.deepOrange;
-
+    case BatteryHealthStatus.critical:
     default:
       return Colors.red;
   }

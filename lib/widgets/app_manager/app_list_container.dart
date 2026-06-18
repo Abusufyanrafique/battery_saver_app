@@ -1,4 +1,3 @@
-import 'package:battery_saver_app/bloc/app_manager/app_manager_bloc.dart';
 import 'package:flutter/material.dart';
 import 'app_list_tile.dart';
 

@@ -24,34 +24,48 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
     on<_BatteryStateChanged>(_onStateChanged);
   }
 
+  // ─────────────────────────────────────────────
+  // Helper: INDEX → MODE (FIXED — now matches the
+  // order used in getModes() in battery_saver_screen.dart:
+  // 0 = Power Saving, 1 = Super Saving, 2 = Custom
+  // ─────────────────────────────────────────────
+  BatteryMode _mapIndexToMode(int index) {
+    switch (index) {
+      case 0:
+        return BatteryMode.powerSaving;
+      case 1:
+        return BatteryMode.superSaving;
+      case 2:
+        return BatteryMode.custom;
+      default:
+        return BatteryMode.normal;
+    }
+  }
+
+  // ─────────────────────────────────────────────
   Future<void> _onInit(
     BatterySaverInitialized event,
     Emitter<BatterySaverState> emit,
   ) async {
     final level = await _battery.batteryLevel;
     final batState = await _battery.batteryState;
+
     final isCharging =
         batState == BatteryState.charging || batState == BatteryState.full;
 
-    // ── Step 1: Hive se purani history load karo
     final savedHistory = await BatteryHistoryStorage.load();
-
-    // ── Step 2: Startup par purani readings purge karo (30 din se zyada)
     await BatteryHistoryStorage.purgeOld();
 
-    // ── Step 3: Naya reading banao
     final now = DateTime.now();
     final initialReading = BatteryReading(level: level, time: now);
 
-    // Duplicate avoid: last reading 1 minute se kam purani ho toh mat add karo
     final bool isDuplicate = savedHistory.isNotEmpty &&
         now.difference(savedHistory.last.time).inMinutes < 1;
 
-    final List<BatteryReading> history = isDuplicate
+    final history = isDuplicate
         ? savedHistory
         : [...savedHistory, initialReading];
 
-    // ── Step 4: Hive mein append karo (sirf naya reading)
     if (!isDuplicate) {
       await BatteryHistoryStorage.append(initialReading);
     }
@@ -62,22 +76,24 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
       isCharging: isCharging,
       remainingTime: isCharging
           ? 'Charging'
-          : remainingTimeFromLevel(level, modeIndex: state.appliedIndex),
+          : remainingTimeFromLevel(
+              level,
+              mode: _mapIndexToMode(state.appliedIndex),
+            ),
       batteryHistory: history,
     ));
 
-    // ── Har 5 second mein level check karo
     _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
       final newLevel = await _battery.batteryLevel;
       add(_BatteryLevelChanged(newLevel));
     });
 
-    // ── Charging state changes sunna
     _stateSub = _battery.onBatteryStateChanged.listen((s) {
       add(_BatteryStateChanged(s));
     });
   }
 
+  // ─────────────────────────────────────────────
   void _onModeSelected(
     BatterySaverModeSelected event,
     Emitter<BatterySaverState> emit,
@@ -88,6 +104,7 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
     ));
   }
 
+  // ─────────────────────────────────────────────
   Future<void> _onApply(
     BatterySaverApplyPressed event,
     Emitter<BatterySaverState> emit,
@@ -108,11 +125,12 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
           ? 'Charging'
           : remainingTimeFromLevel(
               state.batteryLevel,
-              modeIndex: state.selectedIndex,
+              mode: _mapIndexToMode(state.selectedIndex),
             ),
     ));
   }
 
+  // ─────────────────────────────────────────────
   Future<void> _onLevelChanged(
     _BatteryLevelChanged event,
     Emitter<BatterySaverState> emit,
@@ -122,11 +140,10 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
       time: DateTime.now(),
     );
 
-    // ── Hive mein sirf naya reading append karo
     await BatteryHistoryStorage.append(newReading);
 
-    // ── State ke liye 30 din ka filter lagao
     final cutoff = DateTime.now().subtract(const Duration(days: 30));
+
     final updatedHistory = [
       ...state.batteryHistory.where((r) => r.time.isAfter(cutoff)),
       newReading,
@@ -139,12 +156,13 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
           ? 'Charging'
           : remainingTimeFromLevel(
               event.level,
-              modeIndex: state.appliedIndex,
+              mode: _mapIndexToMode(state.selectedIndex),
             ),
       batteryHistory: updatedHistory,
     ));
   }
 
+  // ─────────────────────────────────────────────
   void _onStateChanged(
     _BatteryStateChanged event,
     Emitter<BatterySaverState> emit,
@@ -159,11 +177,12 @@ class BatterySaverBloc extends Bloc<BatterySaverEvent, BatterySaverState> {
           ? 'Charging'
           : remainingTimeFromLevel(
               state.batteryLevel,
-              modeIndex: state.appliedIndex,
+              mode: _mapIndexToMode(state.selectedIndex),
             ),
     ));
   }
 
+  // ─────────────────────────────────────────────
   @override
   Future<void> close() {
     _timer?.cancel();

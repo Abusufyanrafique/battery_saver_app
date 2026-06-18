@@ -65,7 +65,7 @@ const _expectedPermissions = <String>{
   'android.permission.CAMERA',
 };
 
-const _privacyChannel = MethodChannel('com.yourapp/security');
+const _privacyChannel = MethodChannel('com.example.battery_saver_app/security');
 
 Future<int> _runPrivacyScan() async {
   try {

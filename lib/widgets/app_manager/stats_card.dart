@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -27,7 +28,7 @@ class StatsCard extends StatelessWidget {
         : Colors.white;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
@@ -61,23 +62,23 @@ class StatsCard extends StatelessWidget {
           ],
 
           _StatItem(
-            label: 'Total APKs',  // APK mode mein label change
+            label: AppText.total,  // APK mode mein label change
             value: '$totalApps',
             labelColor: labelColor,
             valueColor: valueColor,
           ),
-          SizedBox(width: getWidth(60)),
+          SizedBox(width: getWidth(70)),
           Center(
             child: Container(
-              height: 50,
-              width: 1,
+              height: getHeight(50),
+              width: getWidth(1),
               color: const Color(0xFF373C62),
             ),
           ),
-          SizedBox(width: getWidth(15)),
+          SizedBox(width: getWidth(50)),
          // stats_card.dart mein
 _StatItem(
-  label: 'Total Size',
+  label: AppText.totalSize,
   value: totalSizeGB == 0 ? 'N/A' : '${totalSizeGB.toStringAsFixed(2)} GB',
   labelColor: labelColor,
   valueColor: valueColor,
@@ -114,7 +115,7 @@ class _StatItem extends StatelessWidget {
             fontWeight: FontWeight.w500,
           ),
         ),
-        const SizedBox(height: 4),
+         SizedBox(height: getHeight(4)),
         Text(
           value,
           style: AppTextStyles.bodySmall.copyWith(

@@ -1,28 +1,28 @@
-// lib/bloc/clean_background_bloc/clean_background_bloc.dart
-
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:battery_plus/battery_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:system_info2/system_info2.dart';
 
-// ═══════════════════════════════════════════
-//  ENUMS
-// ═══════════════════════════════════════════
 enum CleanPhase { idle, scanning, cleanReady, cleaning, completed }
 
-// ═══════════════════════════════════════════
-//  MODELS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// MODELS
+// ═══════════════════════════════════
+
 class RunningAppInfo {
   final String packageName;
   final String appName;
   final String sizeFormatted;
+  final Uint8List? iconBytes;
 
   const RunningAppInfo({
     required this.packageName,
     required this.appName,
     required this.sizeFormatted,
+    this.iconBytes,
   });
 }
 
@@ -58,9 +58,10 @@ class PerformanceData {
   });
 }
 
-// ═══════════════════════════════════════════
-//  EVENTS
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// EVENTS
+// ═══════════════════════════════════
+
 abstract class CleanBackgroundEvent {
   const CleanBackgroundEvent();
 }
@@ -90,9 +91,10 @@ class CleanAgainEvent extends CleanBackgroundEvent {
   const CleanAgainEvent();
 }
 
-// ═══════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+
 class CleanBackgroundState extends Equatable {
   final CleanPhase phase;
   final double scanProgress;
@@ -115,35 +117,36 @@ class CleanBackgroundState extends Equatable {
   });
 
   factory CleanBackgroundState.initial() => const CleanBackgroundState(
-        phase:                   CleanPhase.idle,
-        scanProgress:            0.0,
-        runningApps:             [],
-        appsSelected:            [],
-        allSelected:             false,
-        cleanResult:             null,
-        performanceData:         null,
+        phase: CleanPhase.idle,
+        scanProgress: 0.0,
+        runningApps: [],
+        appsSelected: [],
+        allSelected: false,
+        cleanResult: null,
+        performanceData: null,
         freeRamKbBeforeCleaning: 0,
       );
 
   CleanBackgroundState copyWith({
-    CleanPhase?           phase,
-    double?               scanProgress,
+    CleanPhase? phase,
+    double? scanProgress,
     List<RunningAppInfo>? runningApps,
-    List<bool>?           appsSelected,
-    bool?                 allSelected,
-    CleanResultData?      cleanResult,
-    PerformanceData?      performanceData,
-    int?                  freeRamKbBeforeCleaning,
+    List<bool>? appsSelected,
+    bool? allSelected,
+    CleanResultData? cleanResult,
+    PerformanceData? performanceData,
+    int? freeRamKbBeforeCleaning,
   }) {
     return CleanBackgroundState(
-      phase:                   phase                   ?? this.phase,
-      scanProgress:            scanProgress            ?? this.scanProgress,
-      runningApps:             runningApps             ?? this.runningApps,
-      appsSelected:            appsSelected            ?? this.appsSelected,
-      allSelected:             allSelected             ?? this.allSelected,
-      cleanResult:             cleanResult             ?? this.cleanResult,
-      performanceData:         performanceData         ?? this.performanceData,
-      freeRamKbBeforeCleaning: freeRamKbBeforeCleaning ?? this.freeRamKbBeforeCleaning,
+      phase: phase ?? this.phase,
+      scanProgress: scanProgress ?? this.scanProgress,
+      runningApps: runningApps ?? this.runningApps,
+      appsSelected: appsSelected ?? this.appsSelected,
+      allSelected: allSelected ?? this.allSelected,
+      cleanResult: cleanResult ?? this.cleanResult,
+      performanceData: performanceData ?? this.performanceData,
+      freeRamKbBeforeCleaning:
+          freeRamKbBeforeCleaning ?? this.freeRamKbBeforeCleaning,
     );
   }
 
@@ -160,22 +163,20 @@ class CleanBackgroundState extends Equatable {
       ];
 }
 
-// ═══════════════════════════════════════════
-//  BLOC
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
+// BLOC
+// ═══════════════════════════════════
+
 class CleanBackgroundBloc
     extends Bloc<CleanBackgroundEvent, CleanBackgroundState> {
   Timer? _scanTimer;
   final Battery _battery = Battery();
+  static const _channel =
+      MethodChannel('com.example.battery_saver_app/device');
 
-  static const List<RunningAppInfo> _fakeApps = [
-    RunningAppInfo(packageName: 'com.whatsapp',               appName: 'WhatsApp',    sizeFormatted: '128 MB'),
-    RunningAppInfo(packageName: 'com.instagram.android',      appName: 'Instagram',   sizeFormatted: '256 MB'),
-    RunningAppInfo(packageName: 'com.facebook.katana',        appName: 'Facebook',    sizeFormatted: '312 MB'),
-    RunningAppInfo(packageName: 'com.google.android.youtube', appName: 'YouTube',     sizeFormatted: '89 MB'),
-    RunningAppInfo(packageName: 'com.spotify.music',          appName: 'Spotify',     sizeFormatted: '74 MB'),
-    RunningAppInfo(packageName: 'com.twitter.android',        appName: 'Twitter / X', sizeFormatted: '61 MB'),
-  ];
+  List<RunningAppInfo> _realApps = [];
+  int _totalRamKb = 0;
+  int _usedRamKbSnap = 0;
 
   CleanBackgroundBloc() : super(CleanBackgroundState.initial()) {
     on<StartScanningEvent>(_onStartScanning);
@@ -186,164 +187,193 @@ class CleanBackgroundBloc
     on<CleanAgainEvent>(_onCleanAgain);
   }
 
-  void _onStartScanning(
-      StartScanningEvent event, Emitter<CleanBackgroundState> emit) {
+  // ═══════════════════════════
+  // START SCANNING
+  // ═══════════════════════════
+
+  Future<void> _onStartScanning(
+    StartScanningEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) async {
     _cancelTimer();
-    emit(CleanBackgroundState.initial().copyWith(phase: CleanPhase.scanning));
-    _scanTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {
+
+    _realApps = [];
+    _totalRamKb = 0;
+    _usedRamKbSnap = 0;
+
+    emit(CleanBackgroundState.initial().copyWith(
+      phase: CleanPhase.scanning,
+    ));
+
+    try {
+      _totalRamKb = SysInfo.getTotalPhysicalMemory();
+      final free = SysInfo.getFreePhysicalMemory();
+      _usedRamKbSnap = _totalRamKb - free;
+    } catch (_) {}
+
+    try {
+      final List result = await _channel.invokeMethod('getRunningApps');
+
+      _realApps = result.map((e) {
+        final map = Map<String, dynamic>.from(e);
+
+        final sizeMb = (map['sizeMb'] as num).toDouble();
+        final sizeStr = sizeMb >= 1024
+            ? '${(sizeMb / 1024).toStringAsFixed(1)} GB'
+            : '${sizeMb.toStringAsFixed(0)} MB';
+
+        Uint8List? icon;
+        final raw = map['iconBytes'];
+        if (raw is List && raw.isNotEmpty) {
+          icon = Uint8List.fromList(raw.cast<int>());
+        }
+
+        return RunningAppInfo(
+          packageName: map['packageName'] ?? '',
+          appName: map['appName'] ?? '',
+          sizeFormatted: sizeStr,
+          iconBytes: icon,
+        );
+      }).toList();
+    } catch (_) {
+      _realApps = [];
+    }
+
+    // ✅ FIX: initialize selection immediately
+    final selected =
+        List<bool>.filled(_realApps.length, true);
+
+    emit(state.copyWith(
+      runningApps: _realApps,
+      appsSelected: selected,
+      allSelected: selected.isNotEmpty && selected.every((e) => e),
+    ));
+
+    _scanTimer =
+        Timer.periodic(const Duration(milliseconds: 80), (_) {
       add(const _ScanTickEvent());
     });
   }
 
- // ═══════════════════════════════════════════
-//  SCAN: snapshot BEFORE cleaning (real RAM)
-// ═══════════════════════════════════════════
-void _onScanTick(
-    _ScanTickEvent event, Emitter<CleanBackgroundState> emit) {
-  final newProgress = (state.scanProgress + 0.01).clamp(0.0, 1.0);
+  // ═══════════════════════════
+  // SCAN TICK
+  // ═══════════════════════════
 
-  final appsToShow =
-      (_fakeApps.length * newProgress).ceil().clamp(0, _fakeApps.length);
-  final visibleApps = _fakeApps.sublist(0, appsToShow);
+  void _onScanTick(
+    _ScanTickEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) {
+    final progress = (state.scanProgress + 0.02).clamp(0.0, 1.0);
 
-  final selected = List<bool>.from(state.appsSelected);
-  while (selected.length < visibleApps.length) {
-    selected.add(true);
+    final count =
+        (_realApps.length * progress).ceil().clamp(0, _realApps.length);
+
+    final visible = _realApps.take(count).toList();
+
+    final selected =
+        List<bool>.filled(visible.length, true);
+
+    final totalRamGB = _totalRamKb / (1024 * 1024);
+    final usedRamGB = _usedRamKbSnap / (1024 * 1024);
+
+    final junk = (usedRamGB * progress * 0.2);
+    final cache = (usedRamGB * progress * 0.15);
+    final residual = (usedRamGB * progress * 0.1);
+
+    String fmt(double gb) =>
+        gb >= 1 ? '${gb.toStringAsFixed(1)} GB' : '${(gb * 1024).toInt()} MB';
+
+    final result = CleanResultData(
+      junkRemoved: fmt(junk),
+      appsClosed: '${visible.length} Apps',
+      cacheCleared: fmt(cache),
+      residualFiles: fmt(residual),
+      beforeGB: usedRamGB,
+      afterGB: (usedRamGB - junk - cache).clamp(0, usedRamGB),
+      totalGB: totalRamGB,
+    );
+
+    if (progress >= 1.0) {
+      _cancelTimer();
+
+      emit(state.copyWith(
+        phase: CleanPhase.cleanReady,
+        scanProgress: 1.0,
+        runningApps: visible,
+        appsSelected: selected,
+        allSelected: true,
+        cleanResult: result,
+      ));
+    } else {
+      emit(state.copyWith(
+        phase: CleanPhase.scanning,
+        scanProgress: progress,
+        runningApps: visible,
+        appsSelected: selected,
+        allSelected: true,
+        cleanResult: result,
+      ));
+    }
   }
 
-  final cleanResult = CleanResultData(
-    junkRemoved:   '${(newProgress * 245).toInt()} MB',
-    appsClosed:    '${(newProgress * _fakeApps.length).ceil()} Apps',
-    cacheCleared:  '${(newProgress * 180).toInt()} MB',
-    residualFiles: '${(newProgress * 320).toInt()} MB',
-    beforeGB: 28.0,
-    afterGB:  (28.0 - newProgress * 0.8).clamp(0.0, 28.0),
-    totalGB:  64.0,
-  );
-
-  if (newProgress >= 1.0) {
-    _cancelTimer();
-
-    // ✅ REAL: snapshot lو SCAN khatam hone per (before cleaning)
-    int freeRamSnapshot = 0;
-    int totalRamSnapshot = 0;
-    try {
-      freeRamSnapshot  = SysInfo.getFreePhysicalMemory();
-      totalRamSnapshot = SysInfo.getTotalPhysicalMemory();
-    } catch (_) {}
-
-    emit(state.copyWith(
-      scanProgress:            1.0,
-      phase:                   CleanPhase.cleanReady,
-      runningApps:             visibleApps,
-      appsSelected:            selected,
-      allSelected:             selected.every((s) => s),
-      cleanResult:             cleanResult,
-      freeRamKbBeforeCleaning: freeRamSnapshot,
-    ));
-  } else {
-    emit(state.copyWith(
-      scanProgress: newProgress,
-      phase:        CleanPhase.scanning,
-      runningApps:  visibleApps,
-      appsSelected: selected,
-      allSelected:  selected.every((s) => s),
-      cleanResult:  cleanResult,
-    ));
-  }
-}
-
+  // ═══════════════════════════
+  // TOGGLE
+  // ═══════════════════════════
 
   void _onToggleApp(
-      ToggleAppSelectionEvent event, Emitter<CleanBackgroundState> emit) {
-    final updated = List<bool>.from(state.appsSelected);
-    if (event.index < updated.length) {
-      updated[event.index] = !updated[event.index];
+    ToggleAppSelectionEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) {
+    final list = List<bool>.from(state.appsSelected);
+
+    if (event.index < list.length) {
+      list[event.index] = !list[event.index];
     }
+
     emit(state.copyWith(
-      appsSelected: updated,
-      allSelected:  updated.every((s) => s),
+      appsSelected: list,
+      allSelected: list.every((e) => e),
     ));
   }
 
   void _onToggleAll(
-      ToggleSelectAllAppsEvent event, Emitter<CleanBackgroundState> emit) {
+    ToggleSelectAllAppsEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) {
     final newVal = !state.allSelected;
+
     emit(state.copyWith(
-      allSelected:  newVal,
-      appsSelected: List<bool>.filled(state.runningApps.length, newVal),
+      allSelected: newVal,
+      appsSelected:
+          List<bool>.filled(state.runningApps.length, newVal),
     ));
   }
 
- // ═══════════════════════════════════════════
-//  CLEANING: REAL values calculate karo
-// ═══════════════════════════════════════════
-Future<void> _onStartCleaning(
-    StartCleaningEvent event, Emitter<CleanBackgroundState> emit) async {
-  
-  // ✅ REAL RAM: after cleaning snapshot
-  int totalRamKb     = 0;
-  int freeRamAfterKb = 0;
-  try {
-    totalRamKb     = SysInfo.getTotalPhysicalMemory();
-    freeRamAfterKb = SysInfo.getFreePhysicalMemory();
-  } catch (_) {}
+  // ═══════════════════════════
+  // CLEANING
+  // ═══════════════════════════
 
-  // ✅ REAL: actual KB freed = after - before
-  final beforeFreeKb = state.freeRamKbBeforeCleaning;
-  final rawFreedKb   = freeRamAfterKb - beforeFreeKb;
+  Future<void> _onStartCleaning(
+    StartCleaningEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) async {
+    final freed = state.appsSelected.where((e) => e).length * 50;
 
-  // Agar real diff positive ho to use karo, warna selected apps se estimate
-  final selectedCount    = state.appsSelected.where((s) => s).length;
-  final estimatedFreedKb = selectedCount * 60 * 1024; // ~60 MB per app
-  final freedKb          = rawFreedKb > (10 * 1024)   // 10 MB se zyada ho to real
-      ? rawFreedKb
-      : estimatedFreedKb;
-
-  final freedGB = freedKb / (1024 * 1024);
-
-  // ✅ REAL Speed %: freed RAM / total RAM
-  double speedPct = 15.0;
-  if (totalRamKb > 0) {
-    speedPct = ((freedKb / totalRamKb) * 100).clamp(5.0, 65.0);
+    emit(state.copyWith(
+      phase: CleanPhase.completed,
+      cleanResult: state.cleanResult,
+      performanceData: PerformanceData(
+        speedImproved: '+25%',
+        ramFreed: '+${freed / 1024} GB',
+        batterySaved: '+40m',
+      ),
+    ));
   }
 
-  // ✅ REAL Battery: battery_plus se current level lo
-  int batteryLevel = 80; // default fallback
-  try {
-    batteryLevel = await _battery.batteryLevel;
-  } catch (_) {}
-
-  // Battery saved = freed RAM ka % × battery factor (realistic estimate)
-  final batteryMinSaved = ((speedPct / 100) * batteryLevel * 1.5).round().clamp(5, 120);
-  final batterySavedStr = batteryMinSaved >= 60
-      ? '+${batteryMinSaved ~/ 60}h ${batteryMinSaved % 60}m'
-      : '+${batteryMinSaved}m';
-
-  final performanceData = PerformanceData(
-    speedImproved: '+${speedPct.toStringAsFixed(0)}%',
-    ramFreed:      '+${freedGB.toStringAsFixed(1)} GB',
-    batterySaved:  batterySavedStr,
-  );
-
-  final finalResult = CleanResultData(
-    junkRemoved:   '245 MB',
-    appsClosed:    '$selectedCount Apps',
-    cacheCleared:  '180 MB',
-    residualFiles: '320 MB',
-    beforeGB: 28.0,
-    afterGB:  (28.0 - freedGB).clamp(0.0, 28.0),
-    totalGB:  64.0,
-  );
-
-  emit(state.copyWith(
-    phase:           CleanPhase.completed,
-    cleanResult:     finalResult,
-    performanceData: performanceData,
-  ));
-}
   void _onCleanAgain(
-      CleanAgainEvent event, Emitter<CleanBackgroundState> emit) {
+    CleanAgainEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) {
     _cancelTimer();
     emit(CleanBackgroundState.initial());
     add(const StartScanningEvent());

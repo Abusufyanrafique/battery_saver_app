@@ -40,7 +40,7 @@ class _BatterySaverBody extends StatelessWidget {
         title: 'Power Saving Mode',
         subtitle: remainingTimeFromLevel(
           state.batteryLevel,
-          modeIndex: 1,
+          mode: BatteryMode.powerSaving,
         ),
         svgicon: AppIcons.powersavemode,
         iconBgColor: const Color(0xFF2FE55D),
@@ -50,7 +50,7 @@ class _BatterySaverBody extends StatelessWidget {
         title: 'Super Saving Mode',
         subtitle: remainingTimeFromLevel(
           state.batteryLevel,
-          modeIndex: 2,
+           mode: BatteryMode.superSaving,
         ),
         svgicon: AppIcons.supersavingmode,
         iconBgColor: const Color(0xFF55D0FF),
@@ -62,7 +62,7 @@ class _BatterySaverBody extends StatelessWidget {
             ? 'Charging'
             : remainingTimeFromLevel(
                 state.batteryLevel,
-                modeIndex: 3,
+                mode: BatteryMode.custom,
               ),
         svgicon: AppIcons.custommode,
         iconBgColor: const Color(0xFF989CDF),

@@ -1,5 +1,6 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class BatteryHealthWidget extends StatefulWidget {
@@ -103,7 +104,7 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
         children: [
           // TITLE
           Text(
-            'Battery Health',
+            AppText.batteryHealth1,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(16),
               fontWeight: FontWeight.w600,
@@ -123,7 +124,7 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
             ),
           ),
 
-          SizedBox(height: getHeight(12)),
+          SizedBox(height: getHeight(8)),
 
           // PERCENT
           AnimatedBuilder(
@@ -143,7 +144,7 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
             },
           ),
 
-          SizedBox(height: getHeight(10)),
+          SizedBox(height: getHeight(8)),
 
           // PROGRESS BAR
           AnimatedBuilder(
@@ -190,19 +191,19 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _InfoRow(
-                  label: 'Design Capacity',
+                  label: AppText.designCapacity,
                   value: widget.designCapacity,
                 ),
                 _InfoRow(
-                  label: 'Current Capacity',
+                  label: AppText.currentCapacity,
                   value: widget.currentCapacity,
                 ),
                 _InfoRow(
-                  label: 'Battery Voltage',
+                  label: AppText.batteryVoltage,
                   value: widget.batteryVoltage,
                 ),
                 _InfoRow(
-                  label: 'Battery Temperature',
+                  label: AppText.batteryTemperature,
                   value: widget.batteryTemperature,
                 ),
               ],

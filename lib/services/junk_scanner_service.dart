@@ -1,253 +1,246 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 
 class JunkScannerService {
+  static const _channel = MethodChannel(
+    'com.example.battery_saver_app/junk_scanner',
+  );
 
   // ─────────────────────────────────────────────
-  // SIZE HELPER
+  // SCAN METHODS
   // ─────────────────────────────────────────────
-  static Future<double> _dirSizeInMB(Directory dir) async {
-    if (!dir.existsSync()) return 0.0;
 
-    int totalBytes = 0;
-
-    try {
-      await for (final entity in dir.list(recursive: true, followLinks: false)) {
-        if (entity is File) {
-          try {
-            totalBytes += await entity.length();
-          } catch (_) {}
-        }
-      }
-    } catch (e) {
-      debugPrint("[JUNK] Error scanning dir: $e");
-    }
-
-    return totalBytes / (1024 * 1024);
-  }
-
-  // ─────────────────────────────────────────────
-  // CACHE JUNK (REAL)
-  // ─────────────────────────────────────────────
   static Future<double> getCacheJunkMB() async {
-    final dir = await getTemporaryDirectory();
-    final size = await _dirSizeInMB(dir);
-
-    debugPrint('[JUNK] Cache: ${size.toStringAsFixed(2)} MB');
-    return size;
-  }
-
-  // ─────────────────────────────────────────────
-  // RESIDUAL JUNK (HEURISTIC)
-  // ─────────────────────────────────────────────
-  static Future<double> getResidualJunkMB() async {
-    final dir = await getApplicationSupportDirectory();
-
-    const exts = ['.log', '.tmp', '.bak', '.old', '.temp'];
-
-    int totalBytes = 0;
-
-    if (dir.existsSync()) {
-      await for (final entity in dir.list(recursive: true, followLinks: false)) {
-        if (entity is File) {
-          if (exts.any((e) => entity.path.toLowerCase().endsWith(e))) {
-            try {
-              totalBytes += await entity.length();
-            } catch (_) {}
-          }
-        }
-      }
-    }
-
-    final mb = totalBytes / (1024 * 1024);
-    debugPrint('[JUNK] Residual: ${mb.toStringAsFixed(2)} MB');
-    return mb;
-  }
-
-  // ─────────────────────────────────────────────
-  // APK JUNK (FIXED → Downloads scan added)
-  // ─────────────────────────────────────────────
-  static Future<double> getAPKJunkMB() async {
-    double totalBytes = 0;
-
     try {
-      final downloadDir = Directory('/storage/emulated/0/Download');
-
-      if (await downloadDir.exists()) {
-        await for (final file in downloadDir.list(recursive: true, followLinks: false)) {
-          if (file is File && file.path.toLowerCase().endsWith('.apk')) {
-            try {
-              totalBytes += await file.length();
-            } catch (_) {}
-          }
-        }
-      }
-    } catch (_) {}
-
-    final mb = totalBytes / (1024 * 1024);
-    debugPrint('[JUNK] APK: ${mb.toStringAsFixed(2)} MB');
-    return mb;
-  }
-
-  // ─────────────────────────────────────────────
-  // AD JUNK (HEURISTIC)
-  // ─────────────────────────────────────────────
-  static Future<double> getAdJunkMB() async {
-    final dir = await getApplicationDocumentsDirectory();
-
-    const keywords = ['ads', 'ad_cache', 'analytics', 'tracking', 'mraid'];
-
-    double total = 0;
-
-    if (dir.existsSync()) {
-      await for (final entity in dir.list(recursive: true, followLinks: false)) {
-        if (entity is Directory) {
-          final name = entity.path.toLowerCase();
-
-          if (keywords.any((k) => name.contains(k))) {
-            total += await _dirSizeInMB(entity);
-          }
-        }
-      }
+      final bytes = await _channel.invokeMethod<int>('getCacheSize') ?? 0;
+      final mb = bytes / (1024 * 1024);
+      debugPrint('[JUNK] Cache: ${mb.toStringAsFixed(2)} MB');
+      return mb;
+    } catch (e) {
+      debugPrint('[JUNK] getCacheSize error: $e');
+      return 0.0;
     }
-
-    final mb = total;
-    debugPrint('[JUNK] Ad Junk: ${mb.toStringAsFixed(2)} MB');
-    return mb;
   }
 
-  // ─────────────────────────────────────────────
-  // MEMORY JUNK (FAKE BUT REALISTIC UI METRIC)
-  // ─────────────────────────────────────────────
-  static Future<double> getMemoryJunkMB() async {
-    final tempDir = await getTemporaryDirectory();
-
-    int totalBytes = 0;
-
-    if (tempDir.existsSync()) {
-      await for (final entity in tempDir.list(recursive: true)) {
-        if (entity is File) {
-          try {
-            final stat = await entity.stat();
-            final age = DateTime.now().difference(stat.modified);
-
-            if (age.inDays >= 7) {
-              totalBytes += await entity.length();
-            }
-          } catch (_) {}
-        }
-      }
+  static Future<double> getResidualJunkMB() async {
+    try {
+      final bytes = await _channel.invokeMethod<int>('getResidualSize') ?? 0;
+      final mb = bytes / (1024 * 1024);
+      debugPrint('[JUNK] Residual: ${mb.toStringAsFixed(2)} MB');
+      return mb;
+    } catch (e) {
+      debugPrint('[JUNK] getResidualSize error: $e');
+      return 0.0;
     }
+  }
 
-    final mb = totalBytes / (1024 * 1024);
-    debugPrint('[JUNK] Memory (estimated): ${mb.toStringAsFixed(2)} MB');
-    return mb;
+  static Future<double> getAPKJunkMB() async {
+    try {
+      final bytes = await _channel.invokeMethod<int>('getApkSize') ?? 0;
+      final mb = bytes / (1024 * 1024);
+      debugPrint('[JUNK] APK: ${mb.toStringAsFixed(2)} MB');
+      return mb;
+    } catch (e) {
+      debugPrint('[JUNK] getApkSize error: $e');
+      return 0.0;
+    }
+  }
+
+  static Future<double> getTrackedFilesMB() async {
+    try {
+      final bytes = await _channel.invokeMethod<int>('getTrackedSize') ?? 0;
+      final mb = bytes / (1024 * 1024);
+      debugPrint('[JUNK] Tracked: ${mb.toStringAsFixed(2)} MB');
+      return mb;
+    } catch (e) {
+      debugPrint('[JUNK] getTrackedSize error: $e');
+      return 0.0;
+    }
+  }
+
+  static Future<MemoryInfo> getMemoryInfo() async {
+    try {
+      final data = await _channel.invokeMapMethod<String, dynamic>('getMemoryInfo');
+      return MemoryInfo.fromMap(data ?? {});
+    } catch (e) {
+      debugPrint('[JUNK] getMemoryInfo error: $e');
+      return MemoryInfo.zero();
+    }
   }
 
   // ─────────────────────────────────────────────
-  // CLEAN METHODS (SAFE)
+  // SCAN ALL — single Kotlin call, faster
+  // ─────────────────────────────────────────────
+  static Future<JunkScanResult> scanAll() async {
+    debugPrint('===== SCAN START =====');
+    try {
+      final data = await _channel.invokeMapMethod<String, dynamic>('scanAll');
+      final result = JunkScanResult.fromMap(data ?? {});
+      debugPrint('===== SCAN DONE =====');
+      debugPrint(result.toString());
+      return result;
+    } catch (e) {
+      debugPrint('[JUNK] scanAll error: $e');
+      return JunkScanResult.zero();
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // CLEAN METHODS
   // ─────────────────────────────────────────────
   static Future<void> cleanCacheJunk() async {
-    final dir = await getTemporaryDirectory();
-
-    if (dir.existsSync()) {
-      await for (final entity in dir.list()) {
-        try {
-          await entity.delete(recursive: true);
-        } catch (_) {}
-      }
+    try {
+      await _channel.invokeMethod('cleanCache');
+    } catch (e) {
+      debugPrint('[CLEAN] cleanCache error: $e');
     }
   }
 
   static Future<void> cleanResidualJunk() async {
-    final dir = await getApplicationSupportDirectory();
-
-    const exts = ['.log', '.tmp', '.bak', '.old', '.temp'];
-
-    if (dir.existsSync()) {
-      await for (final entity in dir.list(recursive: true)) {
-        if (entity is File) {
-          if (exts.any((e) => entity.path.toLowerCase().endsWith(e))) {
-            try {
-              await entity.delete();
-            } catch (_) {}
-          }
-        }
-      }
+    try {
+      await _channel.invokeMethod('cleanResidual');
+    } catch (e) {
+      debugPrint('[CLEAN] cleanResidual error: $e');
     }
   }
 
   static Future<void> cleanAPKJunk() async {
     try {
-      final downloadDir = Directory('/storage/emulated/0/Download');
-
-      if (await downloadDir.exists()) {
-        await for (final file in downloadDir.list()) {
-          if (file is File && file.path.endsWith('.apk')) {
-            try {
-              await file.delete();
-            } catch (_) {}
-          }
-        }
-      }
-    } catch (_) {}
-  }
-
-  static Future<void> cleanAdJunk() async {
-    final dir = await getApplicationDocumentsDirectory();
-
-    const keywords = ['ads', 'ad_cache', 'analytics', 'tracking', 'mraid'];
-
-    if (dir.existsSync()) {
-      await for (final entity in dir.list(recursive: true)) {
-        if (entity is Directory) {
-          final name = entity.path.toLowerCase();
-
-          if (keywords.any((k) => name.contains(k))) {
-            try {
-              await entity.delete(recursive: true);
-            } catch (_) {}
-          }
-        }
-      }
+      await _channel.invokeMethod('cleanApk');
+    } catch (e) {
+      debugPrint('[CLEAN] cleanApk error: $e');
     }
   }
 
+  static Future<void> cleanTrackedFiles() async {
+    try {
+      await _channel.invokeMethod('cleanTracked');
+    } catch (e) {
+      debugPrint('[CLEAN] cleanTracked error: $e');
+    }
+  }
+
+  // Memory OS-controlled hai, clean nahi hoti Flutter se
   static Future<void> cleanMemoryJunk() async {
-    debugPrint('[CLEAN] Memory is OS controlled');
+    debugPrint('[CLEAN] Memory is OS-controlled');
   }
 
   // ─────────────────────────────────────────────
-  // FULL SCAN
-  // ─────────────────────────────────────────────
-  static Future<List<Map<String, dynamic>>> scanAll() async {
-    debugPrint('===== SCAN START =====');
-
-    final results = await Future.wait([
-      getCacheJunkMB(),
-      getResidualJunkMB(),
-      getAdJunkMB(),
-      getAPKJunkMB(),
-      getMemoryJunkMB(),
-    ]);
-
-    debugPrint('===== SCAN DONE =====');
-
-    return [
-      {'label': 'Cache Junk', 'mb': results[0]},
-      {'label': 'Residual Junk', 'mb': results[1]},
-      {'label': 'Ad Junk', 'mb': results[2]},
-      {'label': 'APK Junk', 'mb': results[3]},
-      {'label': 'Memory Junk', 'mb': results[4]},
-    ];
-  }
-
-  // ─────────────────────────────────────────────
-  // FORMAT
+  // FORMAT HELPER
   // ─────────────────────────────────────────────
   static String formatSize(double mb) {
     if (mb >= 1024) return '${(mb / 1024).toStringAsFixed(2)} GB';
+    if (mb < 0.1) return '0.0 MB';
     return '${mb.toStringAsFixed(1)} MB';
   }
+
+  static String formatBytes(int bytes) {
+    final mb = bytes / (1024 * 1024);
+    return formatSize(mb);
+  }
+}
+
+// ─────────────────────────────────────────────
+// DATA MODELS
+// ─────────────────────────────────────────────
+
+class MemoryInfo {
+  final int totalRam;
+  final int availableRam;
+  final int usedRam;
+  final int threshold;
+  final bool isLowMemory;
+
+  const MemoryInfo({
+    required this.totalRam,
+    required this.availableRam,
+    required this.usedRam,
+    required this.threshold,
+    required this.isLowMemory,
+  });
+
+  factory MemoryInfo.fromMap(Map<String, dynamic> map) {
+    return MemoryInfo(
+      totalRam:     (map['totalRam']     as int?) ?? 0,
+      availableRam: (map['availableRam'] as int?) ?? 0,
+      usedRam:      (map['usedRam']      as int?) ?? 0,
+      threshold:    (map['threshold']    as int?) ?? 0,
+      isLowMemory:  ((map['isLowMemory'] as int?) ?? 0) == 1,
+    );
+  }
+
+  factory MemoryInfo.zero() => const MemoryInfo(
+    totalRam: 0, availableRam: 0, usedRam: 0,
+    threshold: 0, isLowMemory: false,
+  );
+
+  double get totalRamMB     => totalRam     / (1024 * 1024);
+  double get availableRamMB => availableRam / (1024 * 1024);
+  double get usedRamMB      => usedRam      / (1024 * 1024);
+
+  double get usedPercent =>
+      totalRam > 0 ? (usedRam / totalRam * 100) : 0.0;
+}
+
+class JunkScanResult {
+  final int cacheBytes;
+  final int residualBytes;
+  final int apkBytes;
+  final int trackedBytes;
+  final int usedRam;
+  final int totalRam;
+  final int availableRam;
+
+  const JunkScanResult({
+    required this.cacheBytes,
+    required this.residualBytes,
+    required this.apkBytes,
+    required this.trackedBytes,
+    required this.usedRam,
+    required this.totalRam,
+    required this.availableRam,
+  });
+
+  factory JunkScanResult.fromMap(Map<String, dynamic> map) {
+    return JunkScanResult(
+      cacheBytes:    (map['cacheBytes']    as int?) ?? 0,
+      residualBytes: (map['residualBytes'] as int?) ?? 0,
+      apkBytes:      (map['apkBytes']      as int?) ?? 0,
+      trackedBytes:  (map['trackedBytes']  as int?) ?? 0,
+      usedRam:       (map['usedRam']       as int?) ?? 0,
+      totalRam:      (map['totalRam']      as int?) ?? 0,
+      availableRam:  (map['availableRam']  as int?) ?? 0,
+    );
+  }
+
+  factory JunkScanResult.zero() => const JunkScanResult(
+    cacheBytes: 0, residualBytes: 0, apkBytes: 0,
+    trackedBytes: 0, usedRam: 0, totalRam: 0, availableRam: 0,
+  );
+
+  double get cacheMB    => cacheBytes    / (1024 * 1024);
+  double get residualMB => residualBytes / (1024 * 1024);
+  double get apkMB      => apkBytes      / (1024 * 1024);
+  double get trackedMB  => trackedBytes  / (1024 * 1024);
+  double get usedRamMB  => usedRam       / (1024 * 1024);
+  double get totalRamMB => totalRam      / (1024 * 1024);
+
+  double get totalJunkMB => cacheMB + residualMB + apkMB + trackedMB;
+
+  /// UI ke liye list — Memory alag dikhao (RAM info hai, junk nahi)
+  List<Map<String, dynamic>> toUIList() => [
+    {'label': 'Cache Junk',      'mb': cacheMB},
+    {'label': 'Residual Junk',   'mb': residualMB},
+    {'label': 'Tracked Files',   'mb': trackedMB},
+    {'label': 'APK Files',       'mb': apkMB},
+    {'label': 'Memory Used',     'mb': usedRamMB},  // info only
+  ];
+
+  @override
+  String toString() =>
+      '[JunkScan] Cache:${cacheMB.toStringAsFixed(1)} '
+      'Residual:${residualMB.toStringAsFixed(1)} '
+      'APK:${apkMB.toStringAsFixed(1)} '
+      'Tracked:${trackedMB.toStringAsFixed(1)} '
+      'RAM:${usedRamMB.toStringAsFixed(0)}/${totalRamMB.toStringAsFixed(0)} MB';
 }

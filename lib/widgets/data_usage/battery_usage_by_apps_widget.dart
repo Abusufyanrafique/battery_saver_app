@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -42,7 +43,7 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Battery Usage by Apps',
+                    AppText.batteryUsagebyApps,
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontSize: getFont(12),
                       color: Colors.white,
@@ -126,7 +127,11 @@ class _AppUsageRow extends StatelessWidget {
     return Row(
       children: [
         // App Icon
-        SvgPicture.asset(item.svgIcon, width: 16, height: 16),
+        SvgPicture.asset(
+          item.svgIcon, 
+          width: getWidth(16), 
+          height: getHeight(16)
+          ),
         SizedBox(width: getWidth(8)),
 
         // App Name + Progress Bar
@@ -140,21 +145,22 @@ class _AppUsageRow extends StatelessWidget {
                 children: [
                   Text(
                     item.appName,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                    ),
+                    style: AppTextStyles.bodySmall.copyWith(
+                      fontSize: getFont(8),
+                      color: Color(0xFFD9D9D9)
+                    )
                   ),
                   Text(
                     item.usageTime,   // "2h 30m" — real screen time
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: Color(0xFFD9D9D9),
-                      fontSize: 10,
+                      fontSize: getFont(10),
                     ),
                   ),
+                  
                 ],
               ),
-              const SizedBox(height: 2),
+               SizedBox(height: getHeight(2)),
               LinearProgressIndicator(
                 color: const Color(0xFF891BFF),
                 backgroundColor: const Color(0xFF343964),
@@ -184,12 +190,16 @@ class _AppUsageRow extends StatelessWidget {
               "${item.batteryPercent.toStringAsFixed(1)}%",
               style:  TextStyle(
                 color: item.percentageColor,
-                fontSize: 9,
+                fontSize: getFont(9),
               ),
             ),
           ],
         ),
+        Icon(Icons.chevron_right,
+        color: Color(0xFF909294),
+        )
       ],
+      
     );
   }
 }

@@ -204,4 +204,19 @@ static const String batteryUsage ="Battery Usage";
   static const String  improveprocessorperformance =  'Improve processor\nperformance';
   static const String closeBackgroundApps = 'Close Background Apps';
   static const String stoprunningappstospeedupdevice = 'Stop running apps to\nspeed up device';
+
+  static const String  designCapacity = 'Design Capacity';
+  static const String currentCapacity = 'Current Capacity';
+  static const String batteryVoltage = 'Battery Voltage';
+  static const String batteryTemperature = 'Battery Temperature';
+  static const String batteryHealth1 = 'Battery Health';
+  static const String batteryUsagebyApps = 'Battery Usage by Apps';
+  static const String scanningnotifications = 'Scanning notifications...';
+  static const String notificationAccessRequired = 'Notification Access Required';
+  static const String allownotificationaccesstoseerealnotificationcounts = 'Allow notification access to see real notification counts.';
+  static const String grantPermission = 'Grant Permission';
+  static const String installedApps = 'Installed Apps';
+  static const String files = 'APK Files';
+  static const String total = 'Total APKs';
+  static const String totalSize = 'Total Size';
 }

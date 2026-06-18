@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/cpu_cooler/cpu_cooler_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -40,7 +41,7 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0E112F),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.cooler),
       body: Container(
         width: double.infinity,
@@ -78,15 +79,15 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                           ? Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const SizedBox(
-                                  width: 14,
-                                  height: 14,
+                                 SizedBox(
+                                  width: getWidth(14),
+                                  height: getHeight(14),
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Color(0xFF55D0FF),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                 SizedBox(width: getWidth(8)),
                                 Text(
                                   state.statusMessage,
                                   style: AppTextStyles.bodySmall.copyWith(
@@ -109,17 +110,17 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                             ),
                     ),
 
-                    SizedBox(height: getHeight(150)),
+                    SizedBox(height: getHeight(140)),
 
                     // ───── CPU INFO WIDGET ─────
                     CpuCoolerWidget(
                       items: [
                         CpuInfoItem(
-  imagePath: AppImages.cpuusage,
-  title: "CPU Usage",
-  value: state.cpuUsage == 0.0
-      ? '--'
-      : '${state.cpuUsage.toStringAsFixed(1)}%',
+                        imagePath: AppImages.cpuusage,
+                        title: "CPU Usage",
+                        value: state.cpuUsage == 0.0
+                        ? '--'
+                       : '${state.cpuUsage.toStringAsFixed(1)}%',
 ),
                         CpuInfoItem(
                           imagePath: AppImages.cpumangerimage,
@@ -139,7 +140,7 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
                       ],
                     ),
 
-                    SizedBox(height: getHeight(120)),
+                    SizedBox(height: getHeight(80)),
 
                     // ───── BUTTON ─────
                     CleanButtonWidget(
@@ -181,34 +182,33 @@ class _CpuGauge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: getHeight(200),
       width: double.infinity,
       child: Stack(
         alignment: Alignment.center,
         children: [
           CustomPaint(
-            size: Size(getHeight(180), getHeight(180)),
-            painter: _GaugePainter(
-              value: temperature == 0
-                  ? 0.38
-                  : (temperature / 100).clamp(0.0, 1.0),
-              color: _tempColor,
-            ),
+            // size: Size(getHeight(180), getHeight(180)),
+            // painter: _GaugePainter(
+            //   value: temperature == 0
+            //       ? 0.38
+            //       : (temperature / 100).clamp(0.0, 1.0),
+            //   color: _tempColor,
+            // ),
           ),
           Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                AppImages.cpucoolerimage,
-                width: getHeight(48),
-                height: getHeight(48),
+                "assets/images/phone_boost/whiteimage.png",
+                width: getHeight(200),
+                height: getHeight(200),
                 errorBuilder: (_, __, ___) => Icon(
                   Icons.memory,
                   size: getHeight(48),
                   color: const Color(0xFF55D0FF),
                 ),
               ),
-              const SizedBox(height: 6),
+              //  SizedBox(height:getHeight(6) ),
               Text(
                 temperature == 0
                     ? '--°C'
@@ -234,53 +234,53 @@ class _CpuGauge extends StatelessWidget {
   }
 }
 
-class _GaugePainter extends CustomPainter {
-  final double value;
-  final Color color;
+// class _GaugePainter extends CustomPainter {
+//   final double value;
+//   final Color color;
 
-  _GaugePainter({required this.value, required this.color});
+//   _GaugePainter({required this.value, required this.color});
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 8;
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final center = Offset(size.width / 2, size.height / 2);
+//     final radius = size.width / 2 - 8;
 
-    // Track
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..color = Colors.white12
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8,
-    );
+//     // Track
+//     canvas.drawCircle(
+//       center,
+//       radius,
+//       Paint()
+//         ..color = Colors.white12
+//         ..style = PaintingStyle.stroke
+//         ..strokeWidth = 8,
+//     );
 
-    // Arc
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    canvas.drawArc(
-      rect,
-      -3.14 / 2,
-      2 * 3.14159 * value,
-      false,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8
-        ..strokeCap = StrokeCap.round,
-    );
+//     // Arc
+//     final rect = Rect.fromCircle(center: center, radius: radius);
+//     canvas.drawArc(
+//       rect,
+//       -3.14 / 2,
+//       2 * 3.14159 * value,
+//       false,
+//       Paint()
+//         ..color = color
+//         ..style = PaintingStyle.stroke
+//         ..strokeWidth = 8
+//         ..strokeCap = StrokeCap.round,
+//     );
 
-    // Outer glow ring
-    canvas.drawCircle(
-      center,
-      radius + 12,
-      Paint()
-        ..color = color.withOpacity(0.15)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 20,
-    );
-  }
+//     // Outer glow ring
+//     canvas.drawCircle(
+//       center,
+//       radius + 12,
+//       Paint()
+//         ..color = color.withOpacity(0.15)
+//         ..style = PaintingStyle.stroke
+//         ..strokeWidth = 20,
+//     );
+//   }
 
-  @override
-  bool shouldRepaint(_GaugePainter old) =>
-      old.value != value || old.color != color;
-}
+//   @override
+//   bool shouldRepaint(_GaugePainter old) =>
+//       old.value != value || old.color != color;
+// }

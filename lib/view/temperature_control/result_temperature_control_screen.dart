@@ -1,13 +1,13 @@
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/temperature_control/result_temperature_screen_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 
 class ResultTemperatureControlScreen extends StatefulWidget {
   const ResultTemperatureControlScreen({super.key});
@@ -22,7 +22,7 @@ class _ResultTemperatureControlScreenState
   @override
   void initState() {
     super.initState();
-    // Screen open hote hi scanning shuru karo
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TemperatureBloc>().add(TemperatureCoolDownStarted());
     });
@@ -48,25 +48,92 @@ class _ResultTemperatureControlScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // ── Image ──────────────────────────────────
-                Container(
-                  height: getHeight(200),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: const DecorationImage(
-                      image: AssetImage(AppImages.resulttempimage),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                // ── CIRCULAR COOLING UI ─────────────────────────────
+                BlocBuilder<TemperatureBloc, TemperatureState>(
+                  builder: (context, state) {
+                    final isDone =
+                        state.coolingStatus == CoolingStatus.done;
+
+                    return Center(
+                      child: Column(
+                        children: [
+                          Container(
+                            height: getHeight(200),
+                            width: getHeight(200),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              image: DecorationImage(
+                                image: AssetImage(
+                                  'assets/images/battery_saver/tempc.png',
+                                ),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+
+                                // dark overlay
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black.withOpacity(0.35),
+                                  ),
+                                ),
+
+                                // ICON
+                               Positioned(
+  top: getHeight(55),
+  child: SvgPicture.asset(
+    'assets/icons/battery_saver/tempc.svg',
+    height: getHeight(40),
+  ),
+),
+
+                                // COOLING TEXT
+                                Positioned(
+                                  top: getHeight(120),
+                                  child: Text(
+                                    isDone ? 'Cooling...' : 'COOLING',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      fontSize: getFont(14),
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF55D0FF),
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ),
+
+                                // TEMPERATURE
+                                Positioned(
+                                  bottom: getHeight(30),
+                                  child: Text(
+                                    '${state.tempCelsius.toStringAsFixed(1)}°C',
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      fontSize: getFont(22),
+                                      fontWeight: FontWeight.bold,
+                                      color: isDone
+                                          ? const Color(0xFF55D0FF)
+                                          : const Color(0xFF55D0FF),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
 
                 SizedBox(height: getHeight(30)),
 
-                // ── Title + Subtitle (state ke hisaab se badle) ──
+                // ── TITLE + SUBTITLE ─────────────────────────────
                 BlocBuilder<TemperatureBloc, TemperatureState>(
                   builder: (context, state) {
-                    final isDone = state.coolingStatus == CoolingStatus.done;
+                    final isDone =
+                        state.coolingStatus == CoolingStatus.done;
 
                     return Column(
                       children: [
@@ -106,23 +173,24 @@ class _ResultTemperatureControlScreenState
 
                 SizedBox(height: getHeight(30)),
 
-                // ── Scan Result Widget ──────────────────────
+                // ── RESULT WIDGET ─────────────────────────────
                 const ScanResultWidget(),
 
                 SizedBox(height: getHeight(38)),
 
-                // ── Cancel / Done Button ────────────────────
+                // ── BUTTON ─────────────────────────────
                 BlocBuilder<TemperatureBloc, TemperatureState>(
                   builder: (context, state) {
-                    final isDone = state.coolingStatus == CoolingStatus.done;
+                    final isDone =
+                        state.coolingStatus == CoolingStatus.done;
 
                     return CleanButtonWidget(
                       text: isDone ? 'Done' : AppText.cancletemp,
                       onPressed: () {
                         if (!isDone) {
                           context.read<TemperatureBloc>().add(
-                            TemperatureCoolDownCancelled(),
-                          );
+                                TemperatureCoolDownCancelled(),
+                              );
                         }
                         Navigator.pop(context);
                       },

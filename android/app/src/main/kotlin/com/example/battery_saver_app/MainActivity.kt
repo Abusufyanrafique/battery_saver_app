@@ -1353,77 +1353,100 @@ class MainActivity : FlutterActivity() {
     // ─────────────────────────────────────────────────────────────────
     // RUNNING APPS
     // ─────────────────────────────────────────────────────────────────
-    @Suppress("DEPRECATION")
-    private fun getRunningApps(): List<Map<String, Any>> {
-        val am              = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val runningPackages = mutableSetOf<String>()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (hasUsagePermission()) {
-                try {
-                    val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                    val now   = System.currentTimeMillis()
-                    val start = now - 24 * 60 * 60 * 1000L
-                    val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, now)
-                    for (stat in stats) {
-                        if (stat.lastTimeUsed > start && !stat.packageName.isNullOrEmpty())
-                            runningPackages.add(stat.packageName)
-                    }
-                } catch (_: Exception) {}
-                try {
-                    val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-                    val now    = System.currentTimeMillis()
-                    val start  = now - 8 * 60 * 60 * 1000L
-                    val events = usm.queryEvents(start, now)
-                    val event  = UsageEvents.Event()
-                    val lastEvent = mutableMapOf<String, Int>()
-                    while (events.hasNextEvent()) {
-                        events.getNextEvent(event)
-                        when (event.eventType) {
-                            UsageEvents.Event.MOVE_TO_FOREGROUND,
-                            UsageEvents.Event.ACTIVITY_RESUMED ->
-                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_FOREGROUND
-                            UsageEvents.Event.MOVE_TO_BACKGROUND,
-                            UsageEvents.Event.ACTIVITY_PAUSED ->
-                                lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
-                        }
-                    }
-                    lastEvent.forEach { (pkg, type) ->
-                        if (type == UsageEvents.Event.MOVE_TO_BACKGROUND) runningPackages.add(pkg)
-                    }
-                } catch (_: Exception) {}
-            }
-            try { am.getRunningServices(200).forEach { runningPackages.add(it.service.packageName) } } catch (_: Exception) {}
+   @Suppress("DEPRECATION")
+private fun getRunningApps(): List<Map<String, Any>> {
+    val am              = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    val runningPackages = mutableSetOf<String>()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (hasUsagePermission()) {
             try {
-                am.getRunningTasks(50).forEach {
-                    it.topActivity?.packageName?.let  { p -> runningPackages.add(p) }
-                    it.baseActivity?.packageName?.let { p -> runningPackages.add(p) }
+                val usm   = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                val now   = System.currentTimeMillis()
+                val start = now - 24 * 60 * 60 * 1000L
+                val stats = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, start, now)
+                for (stat in stats) {
+                    if (stat.lastTimeUsed > start && !stat.packageName.isNullOrEmpty())
+                        runningPackages.add(stat.packageName)
                 }
             } catch (_: Exception) {}
-        } else {
-            try { am.runningAppProcesses?.forEach { proc -> proc.pkgList?.forEach { runningPackages.add(it) } } } catch (_: Exception) {}
+            try {
+                val usm    = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+                val now    = System.currentTimeMillis()
+                val start  = now - 8 * 60 * 60 * 1000L
+                val events = usm.queryEvents(start, now)
+                val event  = UsageEvents.Event()
+                val lastEvent = mutableMapOf<String, Int>()
+                while (events.hasNextEvent()) {
+                    events.getNextEvent(event)
+                    when (event.eventType) {
+                        UsageEvents.Event.MOVE_TO_FOREGROUND,
+                        UsageEvents.Event.ACTIVITY_RESUMED ->
+                            lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_FOREGROUND
+                        UsageEvents.Event.MOVE_TO_BACKGROUND,
+                        UsageEvents.Event.ACTIVITY_PAUSED ->
+                            lastEvent[event.packageName] = UsageEvents.Event.MOVE_TO_BACKGROUND
+                    }
+                }
+                lastEvent.forEach { (pkg, type) ->
+                    if (type == UsageEvents.Event.MOVE_TO_BACKGROUND) runningPackages.add(pkg)
+                }
+            } catch (_: Exception) {}
         }
-        val pm = packageManager
-        return runningPackages
-            .filter { pkg ->
-                pkg != packageName &&
-                try {
-                    val ai = pm.getApplicationInfo(pkg, 0)
-                    (ai.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
-                } catch (_: Exception) { false }
+        try { am.getRunningServices(200).forEach { runningPackages.add(it.service.packageName) } } catch (_: Exception) {}
+        try {
+            am.getRunningTasks(50).forEach {
+                it.topActivity?.packageName?.let  { p -> runningPackages.add(p) }
+                it.baseActivity?.packageName?.let { p -> runningPackages.add(p) }
             }
-            .mapNotNull { pkg ->
-                try {
-                    val ai     = pm.getApplicationInfo(pkg, 0)
-                    val sizeMb = java.io.File(ai.sourceDir).length() / (1024.0 * 1024.0)
-                    mapOf(
-                        "packageName" to pkg,
-                        "appName"     to pm.getApplicationLabel(ai).toString(),
-                        "sizeMb"      to sizeMb
-                    )
-                } catch (_: Exception) { null }
-            }
+        } catch (_: Exception) {}
+    } else {
+        try { am.runningAppProcesses?.forEach { proc -> proc.pkgList?.forEach { runningPackages.add(it) } } } catch (_: Exception) {}
     }
+    val pm = packageManager
+    return runningPackages
+        .filter { pkg ->
+            pkg != packageName &&
+            try {
+                val ai = pm.getApplicationInfo(pkg, 0)
+                (ai.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) == 0
+            } catch (_: Exception) { false }
+        }
+        .mapNotNull { pkg ->
+            try {
+                val ai     = pm.getApplicationInfo(pkg, 0)
+                val sizeMb = java.io.File(ai.sourceDir).length() / (1024.0 * 1024.0)
 
+                // ✅ ICON BYTES — yahan se add kiya
+                val iconBytes: ByteArray = try {
+                    val drawable = pm.getApplicationIcon(ai)
+                    val bitmap = if (drawable is android.graphics.drawable.BitmapDrawable) {
+                        drawable.bitmap
+                    } else {
+                        val bmp = android.graphics.Bitmap.createBitmap(
+                            drawable.intrinsicWidth.coerceAtLeast(1),
+                            drawable.intrinsicHeight.coerceAtLeast(1),
+                            android.graphics.Bitmap.Config.ARGB_8888
+                        )
+                        val canvas = android.graphics.Canvas(bmp)
+                        drawable.setBounds(0, 0, canvas.width, canvas.height)
+                        drawable.draw(canvas)
+                        bmp
+                    }
+                    val stream = java.io.ByteArrayOutputStream()
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 85, stream)
+                    stream.toByteArray()
+                } catch (_: Exception) { ByteArray(0) }
+                // ✅ ICON BYTES — yahan tak
+
+                mapOf(
+                    "packageName" to pkg,
+                    "appName"     to pm.getApplicationLabel(ai).toString(),
+                    "sizeMb"      to sizeMb,
+                    "iconBytes"   to iconBytes   // ← yeh add kiya
+                )
+            } catch (_: Exception) { null }
+        }
+}
     // ─────────────────────────────────────────────────────────────────
     // KILL BACKGROUND APPS
     // ─────────────────────────────────────────────────────────────────

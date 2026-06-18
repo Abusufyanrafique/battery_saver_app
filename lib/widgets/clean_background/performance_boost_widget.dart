@@ -1,20 +1,63 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:math' as math;
 
 class PerformanceBoostWidget extends StatelessWidget {
-  const PerformanceBoostWidget({super.key});
+  /// Fallback values passed from [CleaningCompleteScreen].
+  /// These are either real BLoC data or live estimates — never null/empty.
+  final String speedValue;
+  final String ramValue;
+  final String batteryValue;
+
+  const PerformanceBoostWidget({
+    super.key,
+    required this.speedValue,
+    required this.ramValue,
+    required this.batteryValue,
+  });
+
+  // ─── Ratio parsers ────────────────────────────────────────────────────────
+
+  /// "+35%" → 0.35
+  static double _parseSpeedRatio(String val) {
+    final clean = val.replaceAll('+', '').replaceAll('%', '').trim();
+    final pct = double.tryParse(clean) ?? 0.0;
+    return (pct / 100).clamp(0.0, 1.0);
+  }
+
+  /// "+1.2 GB" or "+512 MB" → ratio out of max 8 GB
+  static double _parseRamRatio(String val) {
+    final clean = val
+        .replaceAll('+', '')
+        .replaceAll('GB', '')
+        .replaceAll('MB', '')
+        .trim();
+    final num = double.tryParse(clean) ?? 0.0;
+    final isGB = val.toUpperCase().contains('GB');
+    final kb = isGB ? num * 1024 : num;
+    return (kb / (8 * 1024)).clamp(0.0, 1.0);
+  }
+
+  /// "+1h 20m" or "+45m" → ratio out of max 120 min
+  static double _parseBatteryRatio(String val) {
+    int totalMin = 0;
+    final hourMatch = RegExp(r'(\d+)h').firstMatch(val);
+    final minMatch = RegExp(r'(\d+)m').firstMatch(val);
+    if (hourMatch != null) totalMin += int.parse(hourMatch.group(1)!) * 60;
+    if (minMatch != null) totalMin += int.parse(minMatch.group(1)!);
+    return (totalMin / 120).clamp(0.0, 1.0);
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final performanceData = context
-        .watch<CleanBackgroundBloc>()
-        .state
-        .performanceData;
+    // Compute arc ratios from the resolved values (real or estimated)
+    final speedRatio = _parseSpeedRatio(speedValue);
+    final ramRatio = _parseRamRatio(ramValue);
+    final batteryRatio = _parseBatteryRatio(batteryValue);
 
     return Container(
       padding: EdgeInsets.all(getWidth(16)),
@@ -57,29 +100,30 @@ class PerformanceBoostWidget extends StatelessWidget {
                 iconColor: const Color(0xFF00E676),
                 arcColor: const Color(0xFF00E676),
                 title: 'Speed Improved',
-                value: performanceData?.speedImproved ?? '+0%',
+                value: speedValue,
                 valueColor: const Color(0xFF00E676),
                 subtitle: 'Performance Boost',
+                arcRatio: speedRatio,
               ),
-
               _BoostItem(
                 icon: Icons.memory_rounded,
                 iconColor: const Color(0xFF55D0FF),
                 arcColor: const Color(0xFF55D0FF),
                 title: 'RAM Freed',
-                value: performanceData?.ramFreed ?? '+0.0 GB',
+                value: ramValue,
                 valueColor: const Color(0xFF55D0FF),
                 subtitle: 'Memory Boost',
+                arcRatio: ramRatio,
               ),
-
               _BoostItem(
                 icon: Icons.battery_charging_full_rounded,
                 iconColor: const Color(0xFF9A3CFF),
                 arcColor: const Color(0xFF9A3CFF),
                 title: 'Battery Saved',
-                value: performanceData?.batterySaved ?? '+0m',
+                value: batteryValue,
                 valueColor: const Color(0xFF9A3CFF),
                 subtitle: 'Extra Battery Life',
+                arcRatio: batteryRatio,
               ),
             ],
           ),
@@ -89,6 +133,8 @@ class PerformanceBoostWidget extends StatelessWidget {
   }
 }
 
+// ─── Internal widgets ─────────────────────────────────────────────────────────
+
 class _BoostItem extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -97,6 +143,7 @@ class _BoostItem extends StatelessWidget {
   final String value;
   final Color valueColor;
   final String subtitle;
+  final double arcRatio; // 0.0 – 1.0
 
   const _BoostItem({
     required this.icon,
@@ -106,6 +153,7 @@ class _BoostItem extends StatelessWidget {
     required this.value,
     required this.valueColor,
     required this.subtitle,
+    required this.arcRatio,
   });
 
   @override
@@ -117,7 +165,7 @@ class _BoostItem extends StatelessWidget {
           width: getWidth(40),
           height: getWidth(40),
           child: CustomPaint(
-            painter: _ArcPainter(color: arcColor),
+            painter: _ArcPainter(color: arcColor, ratio: arcRatio),
             child: Center(
               child: Container(
                 width: getWidth(40),
@@ -126,11 +174,7 @@ class _BoostItem extends StatelessWidget {
                   shape: BoxShape.circle,
                   color: Colors.white.withOpacity(0.06),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: getWidth(24),
-                ),
+                child: Icon(icon, color: iconColor, size: getWidth(24)),
               ),
             ),
           ),
@@ -172,42 +216,47 @@ class _BoostItem extends StatelessWidget {
 
 class _ArcPainter extends CustomPainter {
   final Color color;
-  _ArcPainter({required this.color});
+  final double ratio; // 0.0 – 1.0
+
+  _ArcPainter({required this.color, required this.ratio});
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 3;
+    const startAngle = -math.pi * 0.85;
+    const totalSweep = math.pi * 1.7;
 
-    final bgPaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round;
-
+    // Background track
     canvas.drawArc(
       Rect.fromCircle(center: center, radius: radius),
-      -math.pi * 0.85,
-      math.pi * 1.7,
+      startAngle,
+      totalSweep,
       false,
-      bgPaint,
+      Paint()
+        ..color = Colors.white.withOpacity(0.08)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.5
+        ..strokeCap = StrokeCap.round,
     );
 
-    final fgPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      -math.pi * 0.85,
-      math.pi * 1.1,
-      false,
-      fgPaint,
-    );
+    // Foreground arc — driven by real or estimated ratio
+    final sweepAngle = totalSweep * ratio.clamp(0.0, 1.0);
+    if (sweepAngle > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        startAngle,
+        sweepAngle,
+        false,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5
+          ..strokeCap = StrokeCap.round,
+      );
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(_ArcPainter old) => old.ratio != ratio;
 }

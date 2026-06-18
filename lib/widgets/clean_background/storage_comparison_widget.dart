@@ -1,22 +1,73 @@
+import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class StorageComparisonWidget extends StatelessWidget {
-  final double beforeGB;
-  final double afterGB;
-  final double totalGB;
+  const StorageComparisonWidget({super.key});
 
-  const StorageComparisonWidget({
-    super.key,
-    this.beforeGB = 28.0,
-    this.afterGB = 27.5,
-    this.totalGB = 64.0,
-  });
+  // ─── Estimate helpers ─────────────────────────────────────────────────────
+
+  /// Parse a formatted string like "512 MB" or "1.2 GB" → double in GB.
+  static double _parseGB(String? formatted) {
+    if (formatted == null || formatted.isEmpty) return 0.0;
+    final lower = formatted.toLowerCase().trim();
+    final number =
+        double.tryParse(RegExp(r'[\d.]+').stringMatch(lower) ?? '') ?? 0.0;
+    return lower.contains('gb') ? number : number / 1024;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<CleanBackgroundBloc>().state;
+
+    final result = state.cleanResult;
+    final progress = state.scanProgress;
+    final selectedApps = state.appsSelected.where((e) => e).length;
+
+    // ── Estimate RAM context ──────────────────────────────────────────────────
+    //
+    // result.beforeGB comes from real system_info2 RAM readings during scan.
+    // If not yet available, fall back to app-count estimate (min 0.5 GB).
+    final estimatedUsedGB =
+        (selectedApps * 0.12).clamp(0.5, double.infinity);
+
+    final usedRamGB = (result?.beforeGB != null && result!.beforeGB > 0)
+        ? result.beforeGB
+        : estimatedUsedGB;
+
+    // ── totalGB ───────────────────────────────────────────────────────────────
+    //
+    // BLoC sets totalGB from SysInfo.getTotalPhysicalMemory().
+    // Guard: if it comes back as 0 or very small, use a safe default (4 GB).
+    final rawTotal = result?.totalGB ?? 0.0;
+    final totalGB = (rawTotal > 0.5) ? rawTotal : (usedRamGB * 2).clamp(2.0, 8.0);
+
+    // ── Junk + cache freed (for afterGB estimate) ─────────────────────────────
+    final junkGB = _parseGB(result?.junkRemoved);
+    final cacheGB = _parseGB(result?.cacheCleared);
+
+    final estimatedJunkGB = usedRamGB * progress * 0.20;
+    final estimatedCacheGB = usedRamGB * progress * 0.15;
+
+    final freedGB = (junkGB > 0 || cacheGB > 0)
+        ? junkGB + cacheGB
+        : estimatedJunkGB + estimatedCacheGB;
+
+    // ── beforeGB / afterGB ────────────────────────────────────────────────────
+    final beforeGB = (result?.beforeGB != null && result!.beforeGB > 0)
+        ? result.beforeGB
+        : usedRamGB;
+
+    final rawAfter = result?.afterGB ?? 0.0;
+    final afterGB = (rawAfter > 0)
+        ? rawAfter
+        : (usedRamGB - freedGB).clamp(0.1, usedRamGB);
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     return Container(
       padding: EdgeInsets.all(getWidth(12)),
       decoration: BoxDecoration(
@@ -39,7 +90,7 @@ class StorageComparisonWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // TITLE
+          // ── Title ───────────────────────────────────────────────────────────
           Text(
             'Storage Comparison',
             style: AppTextStyles.bodyMedium.copyWith(
@@ -51,7 +102,7 @@ class StorageComparisonWidget extends StatelessWidget {
 
           SizedBox(height: getHeight(10)),
 
-          // ROW
+          // ── Before / Arrow / After row ───────────────────────────────────────
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -74,19 +125,19 @@ class StorageComparisonWidget extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // LEFT PIPE
-                   Container(
-  width: 2,
-  height: 58,
-  decoration: BoxDecoration(
-    color: const Color(0xFF838283),
-    borderRadius: BorderRadius.circular(2),
-  ),
-),
+                    // Left pipe
+                    Container(
+                      width: 2,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF838283),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
 
                     SizedBox(width: getWidth(16)),
 
-                    // ARROW
+                    // Arrow
                     Container(
                       width: getWidth(30),
                       height: getWidth(30),
@@ -106,15 +157,15 @@ class StorageComparisonWidget extends StatelessWidget {
 
                     SizedBox(width: getWidth(6)),
 
-                    // RIGHT PIPE
+                    // Right pipe
                     Container(
-  width: 2,
-  height: 58,
-  decoration: BoxDecoration(
-    color: const Color(0xFF838283),
-    borderRadius: BorderRadius.circular(2),
-  ),
-),
+                      width: 2,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF838283),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -138,6 +189,8 @@ class StorageComparisonWidget extends StatelessWidget {
   }
 }
 
+// ─── Internal column ──────────────────────────────────────────────────────────
+
 class _StorageColumn extends StatelessWidget {
   final String label;
   final double valueGB;
@@ -157,7 +210,9 @@ class _StorageColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = (valueGB / totalGB).clamp(0.0, 1.0);
+    final progress = totalGB > 0
+        ? (valueGB / totalGB).clamp(0.0, 1.0)
+        : 0.0;
 
     return Center(
       child: Column(
@@ -217,7 +272,7 @@ class _StorageColumn extends StatelessWidget {
           SizedBox(height: getHeight(8)),
 
           Text(
-            'Total ${totalGB.toInt()} GB',
+            'Total ${totalGB.toStringAsFixed(1)} GB',
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(8),
               color: AppColors.allsmalltextcolor,

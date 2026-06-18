@@ -4,7 +4,6 @@ import 'package:battery_saver_app/models/data_usage/data_usage_model.dart'
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:usage_stats/usage_stats.dart';
 
 class DataUsageRepository {
   static const _channel = MethodChannel('com.battery_saver/network_stats');
@@ -54,7 +53,7 @@ class DataUsageRepository {
   /// -------------------------
   void requestPermission() {
     debugPrint('📡 [DATA_USAGE] Opening usage permission settings');
-    UsageStats.grantUsagePermission();
+    _channel.invokeMethod('openUsageSettings');
   }
 
   /// -------------------------

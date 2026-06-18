@@ -2,7 +2,6 @@ import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bl
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
@@ -17,15 +16,47 @@ import 'package:go_router/go_router.dart';
 class CleaningCompleteScreen extends StatelessWidget {
   const CleaningCompleteScreen({super.key});
 
+  // ─── Estimate helpers ─────────────────────────────────────────────────────
+
+  double _estimatedRamGBFromApps(int selectedApps) =>
+      (selectedApps * 0.12).clamp(0.5, double.infinity);
+
+  String _estimatedSpeed(double progress) =>
+      '+${(progress.clamp(0.1, 1.0) * 35).toStringAsFixed(0)}%';
+
+  String _estimatedBattery(double ramGB, double progress) =>
+      '+${(ramGB * 35 * progress.clamp(0.1, 1.0)).clamp(5, 120).toStringAsFixed(0)}m';
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
-    // Read result data from the existing BLoC provided higher in the tree.
-    // If this screen is pushed on a fresh route where the BLoC is not
-    // inherited, wrap it with BlocProvider.value and pass the bloc instance.
     final state = context.watch<CleanBackgroundBloc>().state;
-    final result = state.cleanResult;
+
+    final performance  = state.performanceData;
+    final progress     = state.scanProgress;
+    final selectedApps = state.appsSelected.where((e) => e).length;
+
+    // ── Performance values ────────────────────────────────────────────────────
+    // Only PerformanceBoostWidget still needs these passed as params.
+    // CleanResultGridWidget & StorageComparisonWidget read BLoC themselves.
+    final estimatedRamGB = _estimatedRamGBFromApps(selectedApps);
+
+    final speedValue = (performance?.speedImproved?.isNotEmpty == true)
+        ? performance!.speedImproved
+        : _estimatedSpeed(progress);
+
+    final ramValue = (performance?.ramFreed?.isNotEmpty == true)
+        ? performance!.ramFreed
+        : '+${estimatedRamGB.toStringAsFixed(1)} GB';
+
+    final batteryValue = (performance?.batterySaved?.isNotEmpty == true)
+        ? performance!.batterySaved
+        : _estimatedBattery(estimatedRamGB, progress);
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     return SafeArea(
       child: Scaffold(
@@ -36,7 +67,8 @@ class CleaningCompleteScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image
+
+              // ── Hero image ─────────────────────────────────────────────────
               Container(
                 height: getHeight(140),
                 width: double.infinity,
@@ -51,7 +83,7 @@ class CleaningCompleteScreen extends StatelessWidget {
 
               SizedBox(height: getHeight(18)),
 
-              // Title
+              // ── Title ──────────────────────────────────────────────────────
               Center(
                 child: Text(
                   AppText.greatYouDeviceisNowClean,
@@ -80,6 +112,7 @@ class CleaningCompleteScreen extends StatelessWidget {
 
               SizedBox(height: getHeight(20)),
 
+              // ── Clean Summary heading ──────────────────────────────────────
               Text(
                 'Clean Summary',
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -91,68 +124,32 @@ class CleaningCompleteScreen extends StatelessWidget {
 
               SizedBox(height: getHeight(4)),
 
-              // Grid driven by BLoC result data
-              CleanResultGridWidget(
-                items: [
-                  CleanResultItem(
-                    iconPath: AppIcons.files,
-                    title: 'Junk Removed',
-                    value: result?.junkRemoved ?? '0 MB',
-                    subtitle: 'Space Freed',
-                    valueColor: const Color(0xFFFE39C6),
-                  ),
-                  CleanResultItem(
-                    iconPath: AppIcons.appsClosed,
-                    title: 'Apps Closed',
-                    value: result?.appsClosed ?? '0',
-                    subtitle: 'Background',
-                    valueColor: const Color(0xFFEDB309),
-                  ),
-                  CleanResultItem(
-                    iconPath: AppIcons.cacheCleared,
-                    title: 'Cache Cleared',
-                    value: result?.cacheCleared ?? '0 MB',
-                    subtitle: 'Cache',
-                    valueColor: const Color(0xFF55D0FF),
-                  ),
-                  CleanResultItem(
-                    iconPath: AppIcons.files2,
-                    title: 'Residual Files Removed',
-                     value: result?.residualFiles ?? '0',
-                    subtitle: 'Files',
-                    valueColor: const Color(0xFF9A3CFF),
-                  ),
-                ],
+              // ── Grid — reads BLoC itself, no params needed ─────────────────
+              const CleanResultGridWidget(),
+
+              SizedBox(height: getHeight(20)),
+
+              // ── Performance Boost — only widget that still needs params ─────
+              PerformanceBoostWidget(
+                speedValue:   speedValue,
+                ramValue:     ramValue,
+                batteryValue: batteryValue,
               ),
 
               SizedBox(height: getHeight(20)),
 
-              const PerformanceBoostWidget(),
+              // ── Storage Comparison — reads BLoC itself, no params needed ───
+              const StorageComparisonWidget(),
 
               SizedBox(height: getHeight(20)),
 
-              // Storage driven by BLoC result data
-              StorageComparisonWidget(
-                beforeGB: result?.beforeGB ?? 0.0,
-                afterGB: result?.afterGB ?? 0.0,
-                totalGB: result?.totalGB ?? 0.0,
-              ),
-
-              SizedBox(height: getHeight(20)),
-
+              // ── Action buttons ─────────────────────────────────────────────
               ResultActionButtonsWidget(
-                onViewDetails: () {
-                  // View Details action
-                },
-                onDone: () {
-                  context.go('/home');
-                },
+                onViewDetails: () {},
+                onDone: () => context.go('/home'),
                 onCleanAgain: () {
-                  // Reset BLoC and go back to scanning screen
-                  context
-                      .read<CleanBackgroundBloc>()
-                      .add(CleanAgainEvent());
-                  context.pop(); // back to CleanBackGroundScreen
+                  context.read<CleanBackgroundBloc>().add(CleanAgainEvent());
+                  context.pop();
                 },
               ),
             ],

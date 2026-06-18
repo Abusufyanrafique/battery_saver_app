@@ -1,7 +1,6 @@
 import 'package:battery_saver_app/bloc/phone_boost/phone_boost_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
-import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
@@ -58,7 +57,7 @@ class _PhoneBoostView extends StatelessWidget {
                     // ───── GAUGE IMAGE ─────
                     _BoostGauge(percent: state.memoryUsedPercent),
 
-                    const SizedBox(height: 16),
+                     SizedBox(height: getHeight(16)),
 
                     // ───── MEMORY USED LABEL ─────
                     Center(
@@ -118,7 +117,7 @@ class _PhoneBoostView extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                     SizedBox(height: getHeight(12)),
 
                     // ───── LIST ─────
                     state.isLoading
@@ -132,7 +131,7 @@ class _PhoneBoostView extends StatelessWidget {
                           )
                         : PhoneBoostListWidget(apps: state.topApps),
 
-                    const SizedBox(height: 20),
+                     SizedBox(height: getHeight(20)),
 
                     // ───── BOOST BUTTON ─────
                     CleanButtonWidget(
@@ -165,56 +164,58 @@ class _BoostGauge extends StatelessWidget {
   final int percent;
   const _BoostGauge({required this.percent});
 
-  Color get _gaugeColor {
-    if (percent < 50) return const Color(0xFF55D0FF);
-    if (percent < 75) return const Color(0xFFFFAA00);
-    return const Color(0xFFFF4444);
-  }
+  // Color get _gaugeColor {
+  //   // if (percent < 50) return const Color(0xFF55D0FF);
+  //   // if (percent < 75) return const Color(0xFFFFAA00);
+  //   // return const Color(0xFFFF4444);
+  // }
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: getHeight(200),
       width: double.infinity,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Arc ring
-          CustomPaint(
-            size: Size(getHeight(180), getHeight(180)),
-            painter: _ArcPainter(
-              value: (percent / 100).clamp(0.0, 1.0),
-              color: _gaugeColor,
-            ),
-          ),
-          // Rocket image
-          Image.asset(
-            AppImages.phoneboostOptimizeimage,
-            height: getHeight(140),
-            fit: BoxFit.contain,
-          ),
-          // Percent text at bottom of ring
-          Positioned(
-            bottom: getHeight(22),
-            child: TweenAnimationBuilder<int>(
-              tween: IntTween(begin: 0, end: percent),
-              duration: const Duration(milliseconds: 800),
-              builder: (_, val, __) => Text(
-                '$val%',
-                style: TextStyle(
-                  fontSize: getFont(16),
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      child: TweenAnimationBuilder<int>(
+        tween: IntTween(begin: 0, end: percent),
+        duration: const Duration(milliseconds: 800),
+        builder: (_, animatedVal, __) {
+          final arcValue = (animatedVal / 100).clamp(0.0, 1.0);
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              // Arc ring
+              CustomPaint(
+                size: Size(getHeight(180), getHeight(180)),
+                // painter: _ArcPainter(
+                //   value: arcValue,
+                //   // color: _gaugeColor,
+                // ),
+              ),
+              // Rocket image
+              Image.asset(
+                "assets/images/phone_boost/rooket.png",
+                height: getHeight(200),
+                fit: BoxFit.contain,
+              ),
+              // Percent text — same animated value
+              Positioned(
+                bottom: getHeight(10),
+                child: Text(
+                  '$animatedVal%',
+                  style: TextStyle(
+                    fontSize: getFont(16),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 }
-
 class _ArcPainter extends CustomPainter {
   final double value;
   final Color color;

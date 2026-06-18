@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/bloc/notification_cleaner/notification_bloc.dart';
 import 'package:battery_saver_app/bloc/notification_cleaner/notification_event.dart';
 import 'package:battery_saver_app/bloc/notification_cleaner/notification_state.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -63,7 +64,7 @@ class _NotificationCleanerView extends StatelessWidget {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1633),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.notificationCleaner),
       body: Container(
         width: double.infinity,
@@ -157,7 +158,7 @@ class _NotificationCleanerView extends StatelessWidget {
 
                     /// ── LOADING (UPDATED)
                     if (state.status == NotificationStatus.loading)
-                      const Padding(
+                       Padding(
                         padding: EdgeInsets.symmetric(vertical: 32),
                         child: Center(
                           child: Column(
@@ -165,9 +166,9 @@ class _NotificationCleanerView extends StatelessWidget {
                               CircularProgressIndicator(
                                 color: Color(0xFF55D0FF),
                               ),
-                              SizedBox(height: 16),
+                              SizedBox(height: getHeight(16)),
                               Text(
-                                'Scanning notifications...',
+                                AppText.scanningnotifications,
                                 style: TextStyle(
                                   color: Colors.white54,
                                   fontSize: 13,
@@ -227,37 +228,47 @@ class _PermissionCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B2153),
+        // color: const Color(0xFF1B2153),
+        gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF3440A0),
+                Color(0xFF232C6D),
+                Color(0xFF1B2153),
+                Color(0xFF13173A),
+              ],
+            ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF55D0FF)),
+        border: Border.all(color: const Color(0xFF4103AC)),
       ),
       child: Column(
         children: [
           const Icon(Icons.notifications_off,
               color: Color(0xFF55D0FF), size: 40),
-          const SizedBox(height: 12),
-          const Text(
-            'Notification Access Required',
+           SizedBox(height: getHeight(12)),
+           Text(
+            AppText.notificationAccessRequired,
             style: TextStyle(
               color: Colors.white,
-              fontSize: 16,
+              fontSize: getFont(16),
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 8),
-          const Text(
-            'Allow notification access to see real notification counts.',
+           SizedBox(height: getHeight(8)),
+           Text(
+            AppText.allownotificationaccesstoseerealnotificationcounts,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60, fontSize: 13),
+            style: TextStyle(color: Colors.white60, fontSize: getFont(13)),
           ),
-          const SizedBox(height: 16),
+           SizedBox(height: getHeight(16)),
           ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF55D0FF),
               foregroundColor: Colors.black,
             ),
-            child: const Text('Grant Permission'),
+            child: const Text(AppText.grantPermission),
           ),
         ],
       ),

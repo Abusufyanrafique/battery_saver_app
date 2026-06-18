@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:battery_saver_app/models/junk/junk_item.dart';
 import 'package:battery_saver_app/services/junk_scanner_service.dart';
@@ -46,20 +47,23 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
       currentPackage: _packages[0],
       totalJunkDisplay: '0 MB',
     ));
-     
-    // Ticker — UI mein package names cycle karo scan ke dauran
+
+    // UI mein package names cycle karo scan ke dauran
     _scanTimer?.cancel();
     _scanTimer = Timer.periodic(const Duration(milliseconds: 600), (_) {
       _packageIndex = (_packageIndex + 1) % _packages.length;
       add(ScanTickEvent(_packages[_packageIndex]));
     });
 
-    // Real device scan
-    final rawItems = await JunkScannerService.scanAll();
+    // Real device scan — returns JunkScanResult
+    final JunkScanResult rawResult = await JunkScannerService.scanAll();
 
     _scanTimer?.cancel();
 
-    final items = rawItems.map((e) {
+    // toUIList() se List<Map> milti hai — service wali method use karo
+    final uiList = rawResult.toUIList();
+
+    final items = uiList.map((e) {
       final mb = e['mb'] as double;
       return JunkItem(
         label: e['label'] as String,
@@ -69,15 +73,14 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
       );
     }).toList();
 
+    debugPrint('ITEMS COUNT: ${items.length}');
+
     emit(state.copyWith(
       items: items,
       phase: ScanPhase.done,
       currentPackage: _packages.last,
       totalJunkDisplay: _calcTotal(items),
     ));
-    //  DEBUG PRINTS YAHAN LAGAO
-  
-  print("ITEMS: ${items.length}");
   }
 
   void _onScanTick(ScanTickEvent event, Emitter<JunkState> emit) {
@@ -100,21 +103,20 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
   Future<void> _onClean(CleanJunkEvent event, Emitter<JunkState> emit) async {
     emit(state.copyWith(phase: ScanPhase.cleaning));
 
-    // Sirf checked items ko clean karo — label ke basis par
     final checkedLabels = state.items
         .where((e) => e.isChecked)
         .map((e) => e.label)
         .toSet();
 
+    // Labels exactly match karte hain toUIList() ke saath
     await Future.wait([
       if (checkedLabels.contains('Cache Junk'))    JunkScannerService.cleanCacheJunk(),
       if (checkedLabels.contains('Residual Junk')) JunkScannerService.cleanResidualJunk(),
-      if (checkedLabels.contains('Ad Junk'))       JunkScannerService.cleanAdJunk(),
-      if (checkedLabels.contains('APK Junk'))      JunkScannerService.cleanAPKJunk(),
-      if (checkedLabels.contains('Memory Junk'))   JunkScannerService.cleanMemoryJunk(),
+      if (checkedLabels.contains('APK Files'))     JunkScannerService.cleanAPKJunk(),
+      if (checkedLabels.contains('Tracked Files')) JunkScannerService.cleanTrackedFiles(),
+      // 'Memory Used' skip — OS-controlled hai, clean nahi hoti
     ]);
 
-    // Cleaned items ki size 0 kar do
     final cleanedItems = state.items.map((e) {
       if (e.isChecked) {
         return e.copyWith(isChecked: false, size: '0 MB', sizeInMB: 0);
@@ -130,9 +132,12 @@ class JunkBloc extends Bloc<JunkEvent, JunkState> {
   }
 
   String _calcTotal(List<JunkItem> items) {
+    // Memory Used ko total mein mat jodo — sirf actual junk
+    const memoryLabel = 'Memory Used';
     final totalMB = items
-        .where((e) => e.isChecked)
+        .where((e) => e.isChecked && e.label != memoryLabel)
         .fold<double>(0, (sum, e) => sum + e.sizeInMB);
+
     if (totalMB >= 1024) {
       return '${(totalMB / 1024).toStringAsFixed(2)} GB';
     }
