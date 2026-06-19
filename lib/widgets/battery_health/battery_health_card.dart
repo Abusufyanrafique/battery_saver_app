@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 import 'base_card.dart';
@@ -29,7 +30,7 @@ class BatteryHealthCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
                Text(
-                'Battery Health',
+                AppText.batteryHealthtext,
                 style: AppTextStyles.bodySmall.copyWith(
               fontSize:getFont(20),
               fontWeight: FontWeight.w600,
@@ -60,7 +61,7 @@ class BatteryHealthCard extends StatelessWidget {
             )
           ),
 
-           SizedBox(height: getHeight(20)),
+           SizedBox(height: getHeight(16)),
 
           BatteryProgressBar(percentage: percentage),
         ],

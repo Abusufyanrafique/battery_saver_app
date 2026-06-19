@@ -7,9 +7,9 @@ import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-// ─────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────
 // MODEL
-// ─────────────────────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────
 
 class SettingsItem {
   final String svgicon;

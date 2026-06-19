@@ -146,7 +146,7 @@ class CleaningCompleteScreen extends StatelessWidget {
               // ── Action buttons ─────────────────────────────────────────────
               ResultActionButtonsWidget(
                 onViewDetails: () {},
-                onDone: () => context.go('/home'),
+                onDone: () => context.go('/bottombar'),
                 onCleanAgain: () {
                   context.read<CleanBackgroundBloc>().add(CleanAgainEvent());
                   context.pop();

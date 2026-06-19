@@ -36,20 +36,48 @@ class ResultPowerBoostScreen extends StatelessWidget {
             ),
           child: Column(
             children: [
-              SizedBox(height: getHeight(20)),
-
+              SizedBox(height: getHeight(70)),
+             
               // Image
-              Container(
-                height: getHeight(200),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: const DecorationImage(
-                    image: AssetImage(AppImages.resultpowerboost),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
+            Container(
+  height: getHeight(170),
+  width: double.infinity,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(16),
+    image: const DecorationImage(
+      image: AssetImage(AppImages.powerboostimaget),
+      fit: BoxFit.contain,
+    ),
+  ),
+  child: Stack(
+    alignment: Alignment.center,
+    children: [
+
+      // ── CENTER IMAGE ─────────────────────────
+      Positioned(
+        top: getHeight(50), // adjust position
+        child: Image.asset(
+          AppImages.energy, //  second image
+          height: getHeight(50),
+          width: getWidth(50),
+        ),
+      ),
+
+      // ── BOTTOM TEXT ─────────────────────────
+      Positioned(
+        bottom: getHeight(5),
+        child: Text(
+          "75%",
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontSize: getFont(34),
+            color: Color(0xFF55D0FF),
+            fontWeight: FontWeight.w700,
+          )
+        ),
+      ),
+    ],
+  ),
+),
 
               SizedBox(height: getHeight(70)),
 
@@ -81,7 +109,7 @@ class ResultPowerBoostScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: getHeight(24)),
+              SizedBox(height: getHeight(30)),
 
               // Result Widget
               ResultPowerBoostWidget(),

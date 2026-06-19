@@ -423,8 +423,8 @@ class _StatDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 1,
-      height: 40,
+      width: getWidth(1),
+      height: getHeight(40),
       color: const Color(0xFF414669),
     );
   }
@@ -471,9 +471,27 @@ class _OptimizeBanner extends StatelessWidget {
                   colors: [Color(0xFFFE39C6), Color(0xFF5C0EE3)],
                 ),
               ),
-              child: Image(image: AssetImage(AppImages.homerocket))
+              child:Container(
+  width: getWidth(24),   
+  height: getHeight(24), 
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+    gradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [Color(0xFFFE39C6), Color(0xFF5C0EE3)],
+    ),
+  ),
+  child: Padding(
+    padding: const EdgeInsets.all(7), 
+    child: Image.asset(
+      AppImages.homerocket,
+      fit: BoxFit.contain,
+    ),
+  ),
+),
             ),
-            const SizedBox(width: 14),
+             SizedBox(width: getWidth(14)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,7 +504,7 @@ class _OptimizeBanner extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 3),
+                  SizedBox(height: getHeight(3)),
                   Text(
                     AppText.improvebatteryperformance,
                     maxLines: 1,
@@ -531,7 +549,7 @@ class _OptimizeBanner extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(width: 4),
+                  SizedBox(width: getWidth(4)),
                   Icon(Icons.chevron_right, color: Colors.white, size: 16),
                 ],
               ),
@@ -772,7 +790,7 @@ class _CleanBanner extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  SizedBox(height: getHeight(4)),
                   Text(
                     AppText.stopunusedappsrunninginthebackground,
                     style: AppTextStyles.bodyLarge.copyWith(
@@ -784,10 +802,10 @@ class _CleanBanner extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 10),
+             SizedBox(width: getWidth(10)),
             Container(
-              width: 52,
-              height: 52,
+              width: getWidth(52),
+              height: getHeight(52),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -800,12 +818,15 @@ class _CleanBanner extends StatelessWidget {
                 height: getHeight(32),
                 width: getWidth(94),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF9DF474),
-                       Color(0xFF5B8E44),
-                       ],
-                  ),
+                  // color: Color(0xFF9DF474),
+                 gradient: const LinearGradient(
+  begin: Alignment.topCenter,
+  end: Alignment.bottomCenter,
+  colors: [
+    Color(0xFF9DF474),
+    Color(0xFF5B8E44), 
+  ],
+),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Padding(
@@ -817,10 +838,12 @@ class _CleanBanner extends StatelessWidget {
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: getFont(10),
                           fontWeight: FontWeight.w500,
+                          color: Colors.white,
                         ),
                       ),
                       SizedBox(width: getWidth(10),),
-                      Center(child: Image(
+                      Center(
+                        child: Image(
                         image: AssetImage(AppImages.cleaneNow),
                         height: getHeight(40),
                         width: getWidth(10),

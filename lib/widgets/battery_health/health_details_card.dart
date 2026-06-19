@@ -1,8 +1,8 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
-
 import 'base_card.dart';
 import 'info_row.dart';
 
@@ -27,7 +27,7 @@ class HealthDetailsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
            Text(
-            'Health Details',
+            AppText.healthDetails,
             style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       color: AppColors.textwhitecolor,
@@ -35,22 +35,25 @@ class HealthDetailsCard extends StatelessWidget {
                     ),
           ),
 
-           SizedBox(height: getHeight(20)),
+           SizedBox(height: getHeight(10)),
 
-          InfoRow(label: 'Battery Voltage', value: voltage),
-           SizedBox(height: getHeight(20)),
           InfoRow(
-            label: 'Battery Temperature',
+            label: AppText.batteryVoltagetext, 
+            value: voltage
+            ),
+           SizedBox(height: getHeight(10)),
+          InfoRow(
+            label: AppText.batteryTemperaturetext,
             value: temperature,
           ),
-  SizedBox(height: getHeight(20)),
+  SizedBox(height: getHeight(10)),
           InfoRow(
-            label: 'Charging Cycles',
+            label: AppText.chargingCycles,
             value: chargingCycles,
           ),
-  SizedBox(height: getHeight(20)),
+  SizedBox(height: getHeight(10)),
           InfoRow(
-            label: 'Manufacture Date',
+            label: AppText.manufactureDate,
             value: manufactureDate,
           ),
         ],

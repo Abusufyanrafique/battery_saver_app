@@ -1,6 +1,7 @@
-import 'dart:async';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 5), () {
       context.go('/onboarding');
     });
   }
@@ -28,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080C20),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.only(top: getHeight(80)),
@@ -45,18 +46,18 @@ class _SplashScreenState extends State<SplashScreen> {
                   fit: BoxFit.contain,
                 ),
             
-                SizedBox(height: getHeight(20)),
+                SizedBox(height: getHeight(10)),
             
                 // ───── TEXT UI (same as yours) ─────
                 Text(
-                  "BATTERY",
+                AppText.batterysplashtext,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(48),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
             
-                const SizedBox(height: 8),
+                //  SizedBox(height: getHeight(8)),
             
                 ShaderMask(
                   shaderCallback: (bounds) {
@@ -72,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     );
                   },
                   child: Text(
-                    "OPTIMIZER",
+                  AppText.optimizersplashtext,
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontSize: getFont(48),
                       fontWeight: FontWeight.w700,
@@ -81,10 +82,10 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ),
             
-                SizedBox(height: getHeight(20)),
+                SizedBox(height: getHeight(10)),
             
                 Text(
-                  "Optimize-Clean-Boost\nSave Battery Life",
+                  AppText.saveBatteryLife,
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyLarge.copyWith(
                     fontSize: getFont(20),

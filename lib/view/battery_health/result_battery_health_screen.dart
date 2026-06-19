@@ -3,7 +3,7 @@
 import 'package:battery_saver_app/bloc/battery_health/battery_health_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_event.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_state.dart';
- // ✅ Correct import
+ //  Correct import
 import 'package:battery_saver_app/data/repositories/battery_repository.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
@@ -22,7 +22,7 @@ class ResultBatteryHealthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Agar passedData already hai to BlocProvider bilkul zaroorat nahi
+    // Agar passedData already hai to BlocProvider bilkul zaroorat nahi
     // Data already BatteryHealthScreen ne fetch karke pass kar diya hai
     if (passedData != null) {
       return Scaffold(
@@ -32,7 +32,7 @@ class ResultBatteryHealthScreen extends StatelessWidget {
       );
     }
 
-    // ✅ Sirf tab naya BLoC banao jab passedData null ho (direct navigation case)
+    // Sirf tab naya BLoC banao jab passedData null ho (direct navigation case)
     return BlocProvider(
       create: (_) => BatteryHealthBloc(repository: BatteryRepository())
         ..add(const LoadBatteryHealth()),
@@ -83,7 +83,7 @@ class ResultBatteryHealthScreen extends StatelessWidget {
     );
   }
 
-  // ✅ Alag method — ek baar likhao, dono cases mein reuse ho
+  //  Alag method — ek baar likhao, dono cases mein reuse ho
   Widget _buildBody(BatteryHealthModel data) {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

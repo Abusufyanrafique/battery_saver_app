@@ -53,15 +53,16 @@ class _DataUsageView extends StatelessWidget {
 
                 // Total usage display
                 if (state is DataUsageLoading) ...[
-                  const Center(
+                   Center(
                     child: Column(
                       children: [
-                        SizedBox(height: 16),
+                        SizedBox(height: getHeight(16)),
                         CircularProgressIndicator(
                           color: Color(0xFF55D0FF),
                         ),
-                        SizedBox(height: 8),
-                        Text('Loading usage data...',
+                        SizedBox(height: getHeight(8)),
+                        Text(
+                          AppText.loadingusagedata,
                           style: TextStyle(color: Color(0xFF8A9BC5), fontSize: 14)),
                       ],
                     ),
@@ -112,7 +113,7 @@ class _DataUsageView extends StatelessWidget {
         ),
         Center(
           child: Text(
-            'Used',
+            AppText.used,
             style: AppTextStyles.bodySmall.copyWith(
               fontSize: getFont(16),
               color: AppColors.allsmalltextcolor,
@@ -146,7 +147,7 @@ class _DataUsageView extends StatelessWidget {
 
         // Wi-Fi usage card
         UsageInfoCard(
-          label: 'Wi-Fi Usage',
+          label: AppText.wifiUsage,
           value: wifiText,
         ),
       ],
@@ -168,7 +169,10 @@ class _DataUsageView extends StatelessWidget {
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => context.read<DataUsageCubit>().retry(),
-            child: const Text('Retry', style: TextStyle(color: Color(0xFF55D0FF))),
+            child: const Text(
+              AppText.retrytext, 
+              style: TextStyle(color: Color(0xFF55D0FF))
+              ),
           ),
         ],
       ),

@@ -21,7 +21,7 @@ class OptimizationResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => OptimizationBloc()
-        ..add(LoadResultDataEvent()), // screen open hote hi load karo
+        ..add(LoadResultDataEvent()), // screen open 
       child: const _ResultView(),
     );
   }
@@ -156,7 +156,7 @@ class _ResultViewState extends State<_ResultView>
 
                   ResultActionButtonsWidget(
                     onViewDetails: () {},
-                    onDone: () => context.go('/home'),
+                    onDone: () => context.go('/bottombar'),
                     onCleanAgain: () {
                       // Dobara load karo
                       context
@@ -183,8 +183,9 @@ class _ResultViewState extends State<_ResultView>
         valueColor: const Color(0xFF00FF09),
         label: AppText.batterySaved,
         value: state.batterySavedText,   // REAL: e.g. "+42m"
-        sub: 'Extended',
+        sub: AppText.extended,
       ),
+      
       _SummaryItem(
         iconsvg: AppIcons.optimizeram,
         color: const Color(0xFF9A3CFF),
@@ -227,78 +228,87 @@ class _ResultViewState extends State<_ResultView>
   }
 
   // ── Performance Card — REAL scores ───────────────────────────────────────
-  Widget _buildPerformanceCard(OptimizationState state) {
+ Widget _buildPerformanceCard(OptimizationState state) {
     return _CardWrapper(
       title: AppText.performanceImprovement,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Left: Performance Score (animated real values)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 20.0),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            // Left: Performance Score
+            Expanded(
+              flex: 3,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    AppText.performanceScore,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: getFont(10),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 40.0),
+                    child: Text(
+                      AppText.performanceScore,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: getFont(10),
+                      ),
                     ),
                   ),
                   SizedBox(height: getHeight(8)),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(AppText.before,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: getFont(10),
-                              )),
-                          const SizedBox(height: 6),
+                          Text(
+                            AppText.before,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: getFont(10),
+                            ),
+                          ),
+                          SizedBox(height: getHeight(6)),
                           AnimatedBuilder(
                             animation: _scoreBefore,
                             builder: (_, __) => _ScoreRing(
                               score: _scoreBefore.value,
                               max: 100,
                               color: AppColors.criclecolor,
-                              size: getWidth(48),
+                              size: getWidth(44),
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(width: getWidth(6)),
+                      SizedBox(width: getWidth(40)),
                       Padding(
                         padding: EdgeInsets.only(top: getHeight(18)),
-                        child: const Icon(Icons.arrow_forward,
-                            color: Colors.white, size: 14),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 12,
+                        ),
                       ),
-                      SizedBox(width: getWidth(6)),
+                      SizedBox(width: getWidth(20)),
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(AppText.after,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: getFont(10),
-                              )),
-                          const SizedBox(height: 6),
+                          Text(
+                            AppText.after,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                              fontSize: getFont(10),
+                            ),
+                          ),
+                          SizedBox(height: getHeight(6)),
                           AnimatedBuilder(
                             animation: _scoreAfter,
                             builder: (_, __) => _ScoreRing(
                               score: _scoreAfter.value,
                               max: 100,
                               color: const Color(0xFF00FF09),
-                              size: getWidth(48),
+                              size: getWidth(44),
                             ),
                           ),
                         ],
@@ -308,61 +318,57 @@ class _ResultViewState extends State<_ResultView>
                 ],
               ),
             ),
-          ),
 
-          // Divider (design same)
-          Padding(
-            padding: const EdgeInsets.only(left: 40, top: 10),
-            child: Container(
+            // Divider
+            Container(
               width: 1,
               height: getHeight(72),
               color: const Color(0xFF838283),
               margin: EdgeInsets.symmetric(horizontal: getWidth(12)),
             ),
-          ),
 
-          // Right: Battery Health (REAL)
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  AppText.batteryHealth,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                    fontSize: getFont(10),
+            // Right: Battery Health
+            Expanded(
+              flex: 2,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    AppText.batteryHealth,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: getFont(10),
+                    ),
                   ),
-                ),
-                SizedBox(height: getHeight(6)),
-                SvgPicture.asset(
-                  AppIcons.hearticon,
-                  width: getWidth(26),
-                  height: getHeight(26),
-                ),
-                SizedBox(height: getHeight(5)),
-                // REAL: battery health ke hisaab se text
-                Text(
-                  state.isBatteryHealthGood
-                      ? AppText.improved
-                      : 'Check Battery',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: state.isBatteryHealthGood
-                        ? const Color(0xFF00FF09)
-                        : const Color(0xFFED6D09),
-                    fontSize: getFont(10),
-                    fontWeight: FontWeight.w600,
+                  SizedBox(height: getHeight(10)),
+                  SvgPicture.asset(
+                    AppIcons.hearticon,
+                    width: getWidth(26),
+                    height: getHeight(26),
                   ),
-                ),
-              ],
+                  SizedBox(height: getHeight(5)),
+                  Text(
+                    state.isBatteryHealthGood
+                        ? AppText.improved
+                        : 'Check Battery',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: state.isBatteryHealthGood
+                          ? const Color(0xFF00FF09)
+                          : const Color(0xFFED6D09),
+                      fontSize: getFont(10),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
   // ── Recommendations (design same, no change needed) ───────────────────────
   Widget _buildRecommendations() {
     final recs = [

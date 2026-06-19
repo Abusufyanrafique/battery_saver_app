@@ -296,15 +296,27 @@ class PhoneOptimizerDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              child: SizedBox(
-  // width: getWidth(0),
-  // height: getHeight(10),
-  child: SvgPicture.asset(
-    AppIcons.cleanicon,
-    fit: BoxFit.contain,
+              child: Container(
+  width: getWidth(40),
+  height: getHeight(40),
+  decoration: const BoxDecoration(
+    shape: BoxShape.circle,
+    gradient: LinearGradient(
+      colors: [
+        Color(0xFF232C6D),
+        Color(0xFF1B2153),
+        Color(0xFF13173A),
+      ],
+    ),
   ),
   
-)
+  alignment: Alignment.center,
+  child: SvgPicture.asset(
+    AppIcons.cleanicon,
+    width: getWidth(20),
+    height: getHeight(20),
+  ),
+),
             ),
           ),
 
@@ -398,10 +410,11 @@ class _DrawerTile extends StatelessWidget {
                 Expanded(
                   child: Text(
                     item.label,
-                    style: TextStyle(
-                      fontSize: 12,
+                    style:AppTextStyles.bodyMedium.copyWith(
+                      fontSize: getFont(14),
                       color: Colors.white,
-                    ),
+                      fontWeight: FontWeight.w500,
+                    )
                   ),
                 ),
 

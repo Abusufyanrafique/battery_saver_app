@@ -34,20 +34,20 @@ const _kInactiveRadio = Color(0xFF4A4F8A);
 List<SaverOption> _options = [
   SaverOption(
     mode: SaverMode.smart,
-    title: 'Smart Saver',
-    subtitle: 'Automatically adjust settings based on battery level',
+    title: AppText.smartSaver,
+    subtitle: AppText.settingsbasedbatterylevel,
     svgPath: AppIcons.smarticon,
   ),
   SaverOption(
     mode: SaverMode.ultra,
-    title: 'Ultra Saver',
-    subtitle: 'Limit all background activity and notifications',
+    title: AppText.ultraSaver,
+    subtitle: AppText.backgroundactivitynotifications,
     svgPath: AppIcons.ultarsaver,
   ),
   SaverOption(
     mode: SaverMode.custom,
-    title: 'Custom Saver',
-    subtitle: 'Choose which features to optimize',
+    title: AppText.customSaver,
+    subtitle: AppText.whichfeaturesoptimize,
     svgPath: AppIcons.customsaver,
   ),
 ];

@@ -2,6 +2,7 @@ import 'package:battery_saver_app/bloc/battery_saver/battery_saver_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -154,7 +155,11 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                       padding: EdgeInsets.all(getWidth(2)),
                       decoration: BoxDecoration(
                         color: const Color(0xFF111434),
-                        borderRadius: BorderRadius.circular(7),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Color(0xFF4103AC),
+                          width: 1,
+                        )
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -235,7 +240,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                     '${value.toInt()}%',
                                     style: TextStyle(
                                       fontSize: getFont(8),
-                                      color: Colors.white70,
+                                      color: Color(0xFFD9D9D9),
                                     ),
                                   ),
                                 ),
@@ -288,7 +293,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                     colors: [
                                       const Color(0xFF7B2FFF).withOpacity(0.5),
                                       const Color(0xFF3D1A8E).withOpacity(0.1),
-                                      Colors.transparent,
+                                     
                                     ],
                                   ),
                                 ),
@@ -304,9 +309,9 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                                   return touchedSpots.map((spot) {
                                     return LineTooltipItem(
                                       '${spot.y.toInt()}%',
-                                      const TextStyle(
+                                       TextStyle(
                                         color: Colors.white,
-                                        fontSize: 10,
+                                        fontSize: getFont(10),
                                         fontWeight: FontWeight.w700,
                                       ),
                                     );
@@ -326,7 +331,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                     _LegendDot(color: const Color(0xFF9A3CFF)),
                     SizedBox(width: getWidth(5)),
                     Text(
-                      'Battery Level',
+                      AppText.batteryLevelgraphtext,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontWeight: FontWeight.w500,
                         fontSize: getFont(10),
@@ -337,7 +342,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                     _LegendDot(color: const Color(0xFF3069F7)),
                     SizedBox(width: getWidth(5)),
                     Text(
-                      'Charging',
+                      AppText.charginggraphtext,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontSize: getFont(10),
                         fontWeight: FontWeight.w500,

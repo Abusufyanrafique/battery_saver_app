@@ -2,6 +2,7 @@ import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_blo
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -53,7 +54,7 @@ class BatteryLifeWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Expected Battery Life',
+                AppText.expectedBatteryLife,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: getFont(15),
                   fontWeight: FontWeight.w600,
@@ -135,25 +136,25 @@ class BatteryLifeWidget extends StatelessWidget {
           // Rows — real statuses from BLoC
           _BatteryRow(
             svgPath: AppIcons.brightness,
-            label: 'Brightness',
+            label: AppText.brightness,
             value: info.brightnessStatus,
             valueColor: _statusColor(info.brightnessStatus),
           ),
           _BatteryRow(
             svgPath: AppIcons.backgroundApps,
-            label: 'Background Apps',
+            label: AppText.backgroundApps,
             value: info.backgroundAppsStatus,
             valueColor: _statusColor(info.backgroundAppsStatus),
           ),
           _BatteryRow(
             svgPath: AppIcons.autoSync,
-            label: 'Auto Sync',
+            label: AppText.autoSync,
             value: info.autoSyncStatus,
             valueColor: _statusColor(info.autoSyncStatus),
           ),
           _BatteryRow(
             svgPath: AppIcons.notificationsicon,
-            label: 'Notifications',
+            label: AppText.notificationsbattery,
             value: info.notificationsStatus,
             valueColor: _statusColor(info.notificationsStatus),
             isLast: true,

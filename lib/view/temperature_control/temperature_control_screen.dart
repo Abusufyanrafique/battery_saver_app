@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -20,7 +21,7 @@ class TemperatureControlScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => TemperatureBloc()..add(TemperatureStarted()),
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
+        backgroundColor:AppColors.allscreenBackgroundColor,
 
         appBar: CustomAppBar(
           title: AppText.temperatureControl,

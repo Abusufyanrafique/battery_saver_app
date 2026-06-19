@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 import 'base_card.dart';
@@ -22,7 +23,7 @@ class BatteryTipsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
            Text(
-            'Tips to Improve Battery Health',
+            AppText.improvebatteryHealth,
              style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       color: AppColors.textwhitecolor,
@@ -30,7 +31,7 @@ class BatteryTipsCard extends StatelessWidget {
                     ),
           ),
 
-          const SizedBox(height: 14),
+           SizedBox(height: getHeight(14)),
 
           Row(
             children: [
@@ -58,7 +59,7 @@ class BatteryTipsCard extends StatelessWidget {
   ),
 ),
 
-              const SizedBox(width: 12),
+               SizedBox(width: getWidth(12)),
 
               Expanded(
                 child: Column(

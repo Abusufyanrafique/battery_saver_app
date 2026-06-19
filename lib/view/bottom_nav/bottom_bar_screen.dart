@@ -29,8 +29,8 @@ class BottomBarScreen extends StatelessWidget {
     required bool isSelected,
   }) {
     return Container(
-      width: getWidth(28),
-      height: getHeight(28),
+      width: getWidth(25),
+      height: getHeight(25),
       decoration: isSelected
           ? BoxDecoration(
               color: const Color(0xFF6C2BD9), // purple background
@@ -43,8 +43,8 @@ class BottomBarScreen extends StatelessWidget {
       child: Center(
         child: SvgPicture.asset(
          isSelected ? selectedAssetPath : assetPath,
-          width: getWidth(23),
-          height: getHeight(23),
+          width: getWidth(40),
+          height: getHeight(40),
           colorFilter: const ColorFilter.mode(
             Colors.white,
             BlendMode.srcIn,

@@ -120,5 +120,8 @@ static const String homearrow1 = "assets/images/home/homearrow1.png";
 static const String powerboostarrow = "assets/images/home/powerboostarrow.png";
 static const String tempcontrolarrow = "assets/images/home/tempcontrolarrow.png";
 static const String batteryhealtharrow = "assets/images/home/batteryhealtharrow.png";
- 
+static const String tempc = 'assets/images/battery_saver/tempc.png';
+static const String tp = "assets/images/battery_saver/tp.png";
+static const String powerboostimaget = "assets/images/power_boost/powerboostimaget.png";
+static const String energy = "assets/images/power_boost/energy.png";
 } 

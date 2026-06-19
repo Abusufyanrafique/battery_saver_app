@@ -51,25 +51,25 @@ class BatterySummaryWidget extends StatelessWidget {
        svgicon: AppIcons.profilebatteryicon,
         iconColor: const Color(0xFFFF2D9B),
         value: batteryLife,
-        label: 'Avy. Battery Life',
+        label: AppText.abatteryLife,
       ),
       BatterySummaryItem(
         svgicon:AppIcons.profilechargeicon ,
         iconColor: const Color(0xFF00BFFF),
         value: '$chargingCycles',
-        label: 'Charging Cycles',
+        label: AppText.chargingCyclesprofiletext,
       ),
       BatterySummaryItem(
        svgicon:AppIcons.profileffici ,
         iconColor: const Color(0xFF00E676),
         value: '$efficiency%',
-        label: 'Efficiency',
+        label:AppText.efficiency,
       ),
       BatterySummaryItem(
         svgicon: AppIcons.profiledrainicon,
         iconColor: const Color(0xFFD32F7A),
         value: '${batteryDrain > 0 ? '+' : ''}$batteryDrain%',
-        label: 'Battery Drain',
+        label: AppText.batteryDrain,
       ),
     ];
 

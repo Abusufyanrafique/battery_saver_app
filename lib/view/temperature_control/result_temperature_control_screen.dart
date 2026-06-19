@@ -1,13 +1,15 @@
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/temperature_control/result_temperature_screen_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
+
 
 class ResultTemperatureControlScreen extends StatefulWidget {
   const ResultTemperatureControlScreen({super.key});
@@ -35,7 +37,7 @@ class _ResultTemperatureControlScreenState
     return BlocProvider.value(
       value: context.read<TemperatureBloc>(),
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
+        backgroundColor: AppColors.allscreenBackgroundColor,
 
         appBar: CustomAppBar(
           title: AppText.temperatureControl,
@@ -58,68 +60,67 @@ class _ResultTemperatureControlScreenState
                       child: Column(
                         children: [
                           Container(
-                            height: getHeight(200),
-                            width: getHeight(200),
+                            height: getHeight(160),
+                            width: getHeight(160),
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
                               image: DecorationImage(
                                 image: AssetImage(
-                                  'assets/images/battery_saver/tempc.png',
+                                  AppImages.tempc,
                                 ),
                                 fit: BoxFit.cover,
                               ),
                             ),
                             child: Stack(
-                              alignment: Alignment.center,
-                              children: [
+    alignment: Alignment.center,
+    children: [
 
-                                // dark overlay
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black.withOpacity(0.35),
-                                  ),
-                                ),
+      // ── OPTIONAL DARK OVERLAY (for better visibility)
+      Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.black.withOpacity(0.25),
+        ),
+      ),
 
-                                // ICON
-                               Positioned(
-  top: getHeight(55),
-  child: SvgPicture.asset(
-    'assets/icons/battery_saver/tempc.svg',
-    height: getHeight(40),
+      // ── 1️⃣ ICON (TOP / CENTER ABOVE TEXT)
+      Positioned(
+        top: getHeight(40),
+        child: Image.asset(
+          AppImages.tp,
+          height: getHeight(45),
+          width: getWidth(45),
+        ),
+      ),
+
+      // ── 2️⃣ COOLING TEXT
+      Positioned(
+        top: getHeight(105),
+        child: Text(
+          isDone ? 'cooling...' : 'COOLING',
+          style: AppTextStyles.bodySmall.copyWith(
+            fontSize: getFont(14),
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF55D0FF),
+            letterSpacing: 1.2,
+          ),
+        ),
+      ),
+
+      // ──  TEMPERATURE (BOTTOM)
+      Positioned(
+        bottom: getHeight(5),
+        child: Text(
+          '${state.tempCelsius.toStringAsFixed(1)}°C',
+          style: AppTextStyles.bodyLarge.copyWith(
+            fontSize: getFont(22),
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF55D0FF),
+          ),
+        ),
+      ),
+    ],
   ),
-),
-
-                                // COOLING TEXT
-                                Positioned(
-                                  top: getHeight(120),
-                                  child: Text(
-                                    isDone ? 'Cooling...' : 'COOLING',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      fontSize: getFont(14),
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF55D0FF),
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                ),
-
-                                // TEMPERATURE
-                                Positioned(
-                                  bottom: getHeight(30),
-                                  child: Text(
-                                    '${state.tempCelsius.toStringAsFixed(1)}°C',
-                                    style: AppTextStyles.bodyLarge.copyWith(
-                                      fontSize: getFont(22),
-                                      fontWeight: FontWeight.bold,
-                                      color: isDone
-                                          ? const Color(0xFF55D0FF)
-                                          : const Color(0xFF55D0FF),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                         ],
                       ),
