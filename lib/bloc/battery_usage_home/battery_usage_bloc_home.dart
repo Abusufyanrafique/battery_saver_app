@@ -180,10 +180,29 @@ class BatteryUsageHomeBloc
           .map((e) => Map<String, dynamic>.from(e as Map))
           .toList();
 
+      // 🔍 DEBUG: Build APK mein konse package names actually aa rahe hain
+      print('📦 All package names: ${allApps.map((a) => a['packageName']).toList()}');
+
+      // 🔍 DEBUG: Har package name ka exact type + match-check + length
+      //    (hidden whitespace / wrong type pakadne ke liye)
+      for (final app in allApps) {
+        final pkg = app['packageName'];
+        print(
+          '🔎 pkg="$pkg" | type=${pkg?.runtimeType} | '
+          'len=${pkg?.toString().length} | '
+          'directMatch=${_packageIconMap.containsKey(pkg)}',
+        );
+      }
+
       // 5. Sirf hamare tracked apps filter karo
-      final List<Map<String, dynamic>> trackedApps = allApps
-          .where((app) => _packageIconMap.containsKey(app['packageName']))
-          .toList();
+      //    FIX: packageName ko safely String banaya + trim kiya,
+      //    taake hidden whitespace ya wrong type se match fail na ho.
+      final List<Map<String, dynamic>> trackedApps = allApps.where((app) {
+        final String? pkg = app['packageName']?.toString().trim();
+        return pkg != null && _packageIconMap.containsKey(pkg);
+      }).toList();
+
+      print('🎯 Tracked apps raw data: $trackedApps');
 
       if (trackedApps.isEmpty) {
         emit(const BatteryUsageHomeError(
@@ -200,7 +219,9 @@ class BatteryUsageHomeBloc
 
       // 7. AppUsageItem list banao
       final List<AppUsageItem> items = trackedApps.map((app) {
-        final String pkg     = app['packageName'] as String;
+        // FIX: yahan bhi trim() use kiya taake map lookups
+        // (_packageNameMap, _packageIconMap, _appColor) sab match karein.
+        final String pkg     = app['packageName'].toString().trim();
         final int    secTime = (app['screenTimeSec'] as num?)?.toInt() ?? 0;
         final double battery = (app['batteryPercent'] as num?)?.toDouble() ?? 0.0;
 

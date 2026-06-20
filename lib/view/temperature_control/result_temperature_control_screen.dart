@@ -83,7 +83,7 @@ class _ResultTemperatureControlScreenState
         ),
       ),
 
-      // ── 1️⃣ ICON (TOP / CENTER ABOVE TEXT)
+      // ──ICON (TOP / CENTER ABOVE TEXT)
       Positioned(
         top: getHeight(40),
         child: Image.asset(
@@ -93,7 +93,7 @@ class _ResultTemperatureControlScreenState
         ),
       ),
 
-      // ── 2️⃣ COOLING TEXT
+      // ──  COOLING TEXT
       Positioned(
         top: getHeight(105),
         child: Text(
