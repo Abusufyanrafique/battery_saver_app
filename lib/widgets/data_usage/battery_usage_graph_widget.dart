@@ -144,7 +144,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Battery Usage Graph',
+                      AppText.batteryUsageGraph,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontSize: getFont(13),
                         fontWeight: FontWeight.w700,
@@ -195,7 +195,7 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
                   child: filtered.isEmpty
                       ? Center(
                           child: Text(
-                            'No data yet',
+                            AppText.nodatayet,
                             style: TextStyle(
                               color: const Color(0xFF9A3CFF),
                               fontSize: getFont(11),

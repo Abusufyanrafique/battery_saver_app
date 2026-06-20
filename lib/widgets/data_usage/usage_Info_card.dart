@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class UsageInfoCard extends StatelessWidget {
@@ -81,13 +82,13 @@ class UsageCardDemoPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: const [
               UsageInfoCard(
-                label: 'Wi-Fi Usage',
+                label: AppText.wifiUsagetext,
                 value: '1.35 GB',
               ),
               SizedBox(height: 12),
               // Add more cards easily:
               UsageInfoCard(
-                label: 'Mobile Data',
+                label: AppText.mobileData,
                 value: '0.82 GB',
               ),
             ],

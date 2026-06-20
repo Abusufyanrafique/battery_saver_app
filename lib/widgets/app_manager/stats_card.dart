@@ -67,7 +67,7 @@ class StatsCard extends StatelessWidget {
             labelColor: labelColor,
             valueColor: valueColor,
           ),
-          SizedBox(width: getWidth(70)),
+          SizedBox(width: getWidth(60)),
           Center(
             child: Container(
               height: getHeight(50),
@@ -75,7 +75,7 @@ class StatsCard extends StatelessWidget {
               color: const Color(0xFF373C62),
             ),
           ),
-          SizedBox(width: getWidth(50)),
+          SizedBox(width: getWidth(20)),
          // stats_card.dart mein
 _StatItem(
   label: AppText.totalSize,

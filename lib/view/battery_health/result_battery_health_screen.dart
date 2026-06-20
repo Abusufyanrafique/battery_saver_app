@@ -3,6 +3,7 @@
 import 'package:battery_saver_app/bloc/battery_health/battery_health_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_event.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_state.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
  //  Correct import
 import 'package:battery_saver_app/data/repositories/battery_repository.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
@@ -26,7 +27,7 @@ class ResultBatteryHealthScreen extends StatelessWidget {
     // Data already BatteryHealthScreen ne fetch karke pass kar diya hai
     if (passedData != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0D1B3E),
+        backgroundColor:AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: _buildBody(passedData!),
       );
@@ -37,7 +38,7 @@ class ResultBatteryHealthScreen extends StatelessWidget {
       create: (_) => BatteryHealthBloc(repository: BatteryRepository())
         ..add(const LoadBatteryHealth()),
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D1B3E),
+         backgroundColor:AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: BlocBuilder<BatteryHealthBloc, BatteryHealthState>(
           builder: (context, state) {

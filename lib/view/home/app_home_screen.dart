@@ -220,7 +220,7 @@ class _BatteryCard extends StatelessWidget {
 
                      SizedBox(height: getHeight(10)),
 
-                    // ⚡ CHARGING
+                    //  CHARGING
                     Row(
                       children: [
                         Container(
@@ -246,7 +246,7 @@ class _BatteryCard extends StatelessWidget {
 
                      SizedBox(height: getHeight(10)),
 
-                    // 💚 HEALTH
+                    //  HEALTH
                     Row(
                       children: [
                         const Icon(
@@ -270,7 +270,7 @@ class _BatteryCard extends StatelessWidget {
 
               SizedBox(
                 width: getWidth(110),
-                height: getHeight(120),
+                height: getHeight(140),
                 child: Image.asset(
                   AppImages.bigbattery,
                   fit: BoxFit.contain,

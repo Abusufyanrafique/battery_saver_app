@@ -36,7 +36,7 @@ class CpuCoolerBloc extends Bloc<CpuCoolerEvent, CpuCoolerState> {
       final temp = (data['temperature'] as num?)?.toDouble() ?? 0.0;
       final apps = (data['runningApps'] as num?)?.toInt()    ?? 0;
 
-      debugPrint('✅ CPU: $cpu% | Temp: $temp°C | Apps: $apps');
+      debugPrint(' CPU: $cpu% | Temp: $temp°C | Apps: $apps');
 
       emit(state.copyWith(
         status:        CpuCoolerStatus.monitoring,

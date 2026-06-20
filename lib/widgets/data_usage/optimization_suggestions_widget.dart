@@ -1,5 +1,6 @@
 // optimization_suggestions_widget.dart
 
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
@@ -52,7 +53,7 @@ class OptimizationSuggestionsWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Optimization Suggestions',
+                AppText.optimizationSuggestions,
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(12),
                   fontWeight: FontWeight.w600,
@@ -62,7 +63,7 @@ class OptimizationSuggestionsWidget extends StatelessWidget {
               GestureDetector(
                 onTap: onViewAll,
                 child: Text(
-                  'View All',
+                  AppText.viewAlltext,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w500,
@@ -168,7 +169,7 @@ class OptimizationSuggestionsWidget extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      'Optimize',
+                      AppText.optimizetext1,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontSize: getFont(10),
                         fontWeight: FontWeight.w500,

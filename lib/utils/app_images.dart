@@ -124,4 +124,5 @@ static const String tempc = 'assets/images/battery_saver/tempc.png';
 static const String tp = "assets/images/battery_saver/tp.png";
 static const String powerboostimaget = "assets/images/power_boost/powerboostimaget.png";
 static const String energy = "assets/images/power_boost/energy.png";
+static const String rooket = "assets/images/phone_boost/rooket.png";
 } 

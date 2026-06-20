@@ -52,7 +52,7 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                   GestureDetector(
                     onTap: onViewAll,
                     child: Text(
-                      'View All',
+                      AppText.viewAll,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontSize: getFont(11),
                         color: const Color(0xFF9A3CFF),
@@ -91,7 +91,7 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                       if (state.items.isEmpty) {
                         return const Center(
                           child: Text(
-                            'No data for today',
+                            AppText.nodatafortoday,
                             style: TextStyle(color: Colors.white54),
                           ),
                         );

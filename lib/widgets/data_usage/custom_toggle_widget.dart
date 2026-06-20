@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/bloc/data_usage/data_usage_cubit.dart';
 import 'package:battery_saver_app/bloc/data_usage/data_usage_state.dart';
 import 'package:battery_saver_app/models/data_usage/data_usage_model.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
@@ -62,7 +63,13 @@ class CustomToggleWidget extends StatelessWidget {
                             color: selected == UsagePeriod.today
                                 ? Colors.white : const Color(0xFF8A9BC5),
                           ),
-                          child: const Text('Today'),
+                          child:  Text(
+                           AppText.today,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontSize: getFont(20),
+                              color: Color(0xFFD9D9D9)
+                            ),
+                            ),
                         ),
                       ),
                     ),
@@ -80,7 +87,13 @@ class CustomToggleWidget extends StatelessWidget {
                             color: selected == UsagePeriod.thisMonth
                                 ? Colors.white : const Color(0xFFD9D9D9),
                           ),
-                          child: const Text('This Month'),
+                          child:  Text(
+                            AppText.thisMonth,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontSize: getFont(20),
+                              color: Color(0xFFD9D9D9)
+                            ),
+                            ),
                         ),
                       ),
                     ),

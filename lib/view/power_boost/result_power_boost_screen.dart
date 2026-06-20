@@ -8,6 +8,7 @@ import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
 import 'package:battery_saver_app/widgets/power_boost/result_power_boost_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class ResultPowerBoostScreen extends StatelessWidget {
@@ -64,17 +65,21 @@ class ResultPowerBoostScreen extends StatelessWidget {
       ),
 
       // ── BOTTOM TEXT ─────────────────────────
-      Positioned(
-        bottom: getHeight(5),
-        child: Text(
-          "75%",
-          style: AppTextStyles.bodyMedium.copyWith(
-            fontSize: getFont(34),
-            color: Color(0xFF55D0FF),
-            fontWeight: FontWeight.w700,
-          )
+     Positioned(
+  bottom: getHeight(5),
+  child: BlocBuilder<PowerBoostBloc, PowerBoostState>(
+    builder: (context, state) {
+      return Text(
+        "${state.boostPercent}%",
+        style: AppTextStyles.bodyMedium.copyWith(
+          fontSize: getFont(34),
+          color: const Color(0xFF55D0FF),
+          fontWeight: FontWeight.w700,
         ),
-      ),
+      );
+    },
+  ),
+),
     ],
   ),
 ),

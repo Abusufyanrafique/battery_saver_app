@@ -3,6 +3,7 @@
 import 'package:battery_saver_app/bloc/battery_health/battery_health_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_event.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_state.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/data/repositories/battery_repository.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -26,7 +27,7 @@ class BatteryHealthScreen extends StatelessWidget {
       create: (_) => BatteryHealthBloc(repository: BatteryRepository())
         ..add(const LoadBatteryHealth()),
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
+        backgroundColor:AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: SafeArea(
           child: BlocBuilder<BatteryHealthBloc, BatteryHealthState>(

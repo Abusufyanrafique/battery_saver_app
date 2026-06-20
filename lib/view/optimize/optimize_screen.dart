@@ -11,17 +11,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class OptimizeScreen extends StatelessWidget {           // StatefulWidget → StatelessWidget
+class OptimizeScreen extends StatelessWidget {    
   const OptimizeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
-    // BlocProvider yahan wrap karo taake screen ke andar Bloc available ho
+    // BlocProvider 
     return BlocProvider(
       create: (_) => OptimizationBloc()
-        ..add(StartOptimizationEvent()), // screen khulte hi start
+        ..add(StartOptimizationEvent()), // screen  start
       child: const _OptimizeView(),
     );
   }
@@ -74,17 +74,39 @@ class _OptimizeView extends StatelessWidget {
                 SizedBox(height: getHeight(40)),
 
                 // ── Image (design same) ──
-                Container(
-                  height: getHeight(200),
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    image: const DecorationImage(
-                      image: AssetImage(AppImages.optimizeimage),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
+               // ── Image (design same) ──
+Container(
+  height: getHeight(200),
+  width: double.infinity,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(16),
+    image: const DecorationImage(
+      image: AssetImage(AppImages.rooket),
+      fit: BoxFit.contain,
+    ),
+  ),
+  child: BlocBuilder<OptimizationBloc, OptimizationState>(
+    builder: (context, state) {
+      final percent = (state.progress * 100).round();
+      return Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          Positioned(
+            bottom: getHeight(55),
+            child: Text(
+              "$percent%",
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontSize: getFont(24),
+                color:Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  ),
+),
 
                 SizedBox(height: getHeight(20)),
 

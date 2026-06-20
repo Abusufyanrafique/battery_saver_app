@@ -59,52 +59,63 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
 
         // ======== POWER BOOST CHANNEL ===========
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            POWER_BOOST_CHANNEL
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "getPowerBoostData" -> {
-                    try {
-                        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                        val memInfo = ActivityManager.MemoryInfo()
-                        am.getMemoryInfo(memInfo)
-                        val totalBytes = memInfo.totalMem
-                        val availBytes = memInfo.availMem
-                        val usedBytes  = totalBytes - availBytes
-                        result.success(mapOf(
-                            "ramUsedBytes"      to usedBytes,
-                            "totalRamBytes"     to totalBytes,
-                            "availableRamBytes" to availBytes,
-                            "runningAppsCount"  to getRunningApps().size
-                        ))
-                    } catch (e: Exception) {
-                        result.error("BOOST_ERROR", e.message, null)
-                    }
-                }
-                "clearRam" -> {
-                    try {
-                        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                        am.runningAppProcesses?.forEach {
-                            if (it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED) {
-                                it.pkgList?.forEach { pkg ->
-                                    if (pkg != packageName) am.killBackgroundProcesses(pkg)
-                                }
-                            }
-                        }
-                        result.success(true)
-                    } catch (e: Exception) {
-                        result.error("CLEAR_RAM_ERROR", e.message, null)
-                    }
-                }
-                "closeBackgroundApps" -> {
-                    killBackgroundApps()
-                    result.success(true)
-                }
-                else -> result.notImplemented()
+       MethodChannel(
+    flutterEngine.dartExecutor.binaryMessenger,
+    POWER_BOOST_CHANNEL
+).setMethodCallHandler { call, result ->
+    when (call.method) {
+        "getPowerBoostData" -> {
+            try {
+                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val memInfo = ActivityManager.MemoryInfo()
+                am.getMemoryInfo(memInfo)
+                val totalBytes = memInfo.totalMem
+                val availBytes = memInfo.availMem
+                val usedBytes  = totalBytes - availBytes
+                result.success(mapOf(
+                    "ramUsedBytes"      to usedBytes,
+                    "totalRamBytes"     to totalBytes,
+                    "availableRamBytes" to availBytes,
+                    "runningAppsCount"  to getRunningApps().size
+                ))
+            } catch (e: Exception) {
+                result.error("BOOST_ERROR", e.message, null)
             }
         }
+        "clearRam" -> {
+            try {
+                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                am.runningAppProcesses?.forEach {
+                    if (it.importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED) {
+                        it.pkgList?.forEach { pkg ->
+                            if (pkg != packageName) am.killBackgroundProcesses(pkg)
+                        }
+                    }
+                }
+                result.success(true)
+            } catch (e: Exception) {
+                result.error("CLEAR_RAM_ERROR", e.message, null)
+            }
+        }
+        "closeBackgroundApps" -> {
+            killBackgroundApps()
 
+            // After-boost memory info wapas bhejo
+            try {
+                val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val memInfo = ActivityManager.MemoryInfo()
+                am.getMemoryInfo(memInfo)
+                result.success(mapOf(
+                    "totalRamBytes"     to memInfo.totalMem,
+                    "availableRamBytes" to memInfo.availMem
+                ))
+            } catch (e: Exception) {
+                result.success(true) // fallback, purana behavior na toote
+            }
+        }
+        else -> result.notImplemented()
+    }
+}
         // ======== STORAGE CHANNEL ===========
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, STORAGE_CHANNEL)
             .setMethodCallHandler { call, result ->

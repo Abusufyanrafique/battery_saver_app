@@ -75,14 +75,6 @@ class _ResultTemperatureControlScreenState
     alignment: Alignment.center,
     children: [
 
-      // ── OPTIONAL DARK OVERLAY (for better visibility)
-      Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: Colors.black.withOpacity(0.25),
-        ),
-      ),
-
       // ──ICON (TOP / CENTER ABOVE TEXT)
       Positioned(
         top: getHeight(40),
