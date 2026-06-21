@@ -32,6 +32,12 @@ class PhoneBoostState extends Equatable {
   /// Top apps with memory usage
   final List<RunningAppInfo> topApps;
 
+  /// Selection state — one bool per app in topApps (same index order)
+  final List<bool> selectedApps;
+
+  /// true if every app in topApps is currently selected
+  final bool allSelected;
+
   final String? errorMessage;
 
   const PhoneBoostState({
@@ -41,6 +47,8 @@ class PhoneBoostState extends Equatable {
     this.memoryUsedPercent = 0,
     this.runningProcessCount = 0,
     this.topApps = const [],
+    this.selectedApps = const [],
+    this.allSelected = false,
     this.errorMessage,
   });
 
@@ -55,6 +63,8 @@ class PhoneBoostState extends Equatable {
     int? memoryUsedPercent,
     int? runningProcessCount,
     List<RunningAppInfo>? topApps,
+    List<bool>? selectedApps,
+    bool? allSelected,
     String? errorMessage,
   }) {
     return PhoneBoostState(
@@ -64,6 +74,8 @@ class PhoneBoostState extends Equatable {
       memoryUsedPercent: memoryUsedPercent ?? this.memoryUsedPercent,
       runningProcessCount: runningProcessCount ?? this.runningProcessCount,
       topApps: topApps ?? this.topApps,
+      selectedApps: selectedApps ?? this.selectedApps,
+      allSelected: allSelected ?? this.allSelected,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -76,6 +88,8 @@ class PhoneBoostState extends Equatable {
         memoryUsedPercent,
         runningProcessCount,
         topApps,
+        selectedApps,
+        allSelected,
         errorMessage,
       ];
 }

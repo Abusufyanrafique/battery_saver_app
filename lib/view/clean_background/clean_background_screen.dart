@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bloc.dart';
+import 'package:battery_saver_app/bloc/phone_boost/phone_boost_bloc.dart' hide RunningAppInfo;
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -17,8 +18,15 @@ class CleanBackGroundScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => CleanBackgroundBloc()..add(StartScanningEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<CleanBackgroundBloc>(
+          create: (_) => CleanBackgroundBloc()..add(StartScanningEvent()),
+        ),
+        BlocProvider<PhoneBoostBloc>(
+          create: (_) => PhoneBoostBloc()..add(const PhoneBoostStarted()),
+        ),
+      ],
       child: const _CleanBackGroundView(),
     );
   }
@@ -36,7 +44,6 @@ class _CleanBackGroundView extends StatelessWidget {
       listener: (context, state) {
         final bloc = context.read<CleanBackgroundBloc>();
         context.push('/CleaningCompleteScreen', extra: bloc);
-        
       },
       child: SafeArea(
         child: Scaffold(
@@ -61,7 +68,6 @@ class _CleanBackGroundView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 // ── Banner Image ──────────────────────────────────
                 Container(
                   height: getHeight(150),
@@ -118,113 +124,124 @@ class _CleanBackGroundView extends StatelessWidget {
                 SizedBox(height: getHeight(24)),
 
                 // ── Result Grid ───────────────────────────────────
-                // Widget reads BLoC itself — no params needed
                 const CleanResultGridWidget(),
 
                 SizedBox(height: getHeight(24)),
 
                 // ── Running Apps Widget ───────────────────────────
-               BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
-  buildWhen: (prev, curr) =>
-      prev.runningApps != curr.runningApps ||
-      prev.appsSelected != curr.appsSelected ||
-      prev.allSelected != curr.allSelected,
-  builder: (context, state) {
-    if (state.runningApps.isEmpty) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 30,
-        ),
-        decoration: BoxDecoration(
-           gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
-        ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Color(0xFF4103AC),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.check_circle_outline,
-              color: Colors.green,
-              size: getHeight(60),
-            ),
-            SizedBox(height: getHeight(12)),
-            Text(
-              'No Background Apps Found',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodyLarge.copyWith(
-                fontSize: getFont(18),
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: getHeight(6)),
-            Text(
-              'Your device is already optimized.\nNo unnecessary background apps are running.',
-              textAlign: TextAlign.center,
-              style: AppTextStyles.bodySmall.copyWith(
-                fontSize: getFont(13),
-                color: Colors.white70,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+                BlocBuilder<PhoneBoostBloc, PhoneBoostState>(
+                  builder: (context, state) {
+                    final apps = state.topApps;
 
-    return AppsRunningInBackgroundWidget(
-      apps: state.runningApps,
-      selected: state.appsSelected,
-      allSelected: state.allSelected,
-      onToggleItem: (index) => context
-          .read<CleanBackgroundBloc>()
-          .add(ToggleAppSelectionEvent(index)),
-      onToggleAll: () => context
-          .read<CleanBackgroundBloc>()
-          .add(ToggleSelectAllAppsEvent()),
-    );
-  },
-),
+                    if (apps.isEmpty) {
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 30,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Color(0xFF232C6D),
+                              Color(0xFF1B2153),
+                              Color(0xFF13173A),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF4103AC)),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(Icons.check_circle_outline,
+                                color: Colors.green, size: 60),
+                            const SizedBox(height: 12),
+                            const Text(
+                              AppText.nobackgroundAppsFound,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // PhoneBoostBloc ka RunningAppInfo (name, memoryMb) ko
+                    // widget ke expected RunningAppInfo (appName, sizeFormatted,
+                    // packageName, iconBytes) mein convert karo.
+                    final convertedApps = apps
+                        .map(
+                          (e) => RunningAppInfo(
+                            appName: e.name,
+                            packageName: e.packageName,
+                            sizeFormatted: '${e.memoryMb} MB',
+                            iconBytes: null,
+                          ),
+                        )
+                        .toList();
+
+                    return AppsRunningInBackgroundWidget(
+                      apps: convertedApps,
+                      selected: state.selectedApps,
+                      allSelected: state.allSelected,
+                      onToggleItem: (index) {
+                        context.read<PhoneBoostBloc>().add(
+                              PhoneBoostSelectAppEvent(index),
+                            );
+                      },
+                      onToggleAll: () {
+                        context.read<PhoneBoostBloc>().add(
+                              PhoneBoostToggleAllEvent(),
+                            );
+                      },
+                    );
+                  },
+                ),
 
                 SizedBox(height: getHeight(24)),
 
                 // ── Clean Button ──────────────────────────────────
+                // ✅ FIX: Button now triggers BOTH:
+                //   1) CleanBackgroundBloc -> existing cache cleaning flow
+                //   2) PhoneBoostBloc -> stop + clear selected background apps
+                // Once both finish, the "Running Apps" section above will
+                // naturally show "No Background Apps Found" because
+                // PhoneBoostBloc removes the cleaned apps from topApps.
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
-  buildWhen: (prev, curr) =>
-      prev.phase       != curr.phase ||
-      prev.cleanResult != curr.cleanResult,
-  builder: (context, state) {
-    final isReady = state.phase == CleanPhase.cleanReady;
-    final isCleaning = state.phase == CleanPhase.cleaning;
+                  buildWhen: (prev, curr) =>
+                      prev.phase != curr.phase ||
+                      prev.cleanResult != curr.cleanResult,
+                  builder: (context, state) {
+                    final isReady = state.phase == CleanPhase.cleanReady;
+                    final isCleaning = state.phase == CleanPhase.cleaning;
 
-    final buttonText = isCleaning
-        ? 'Cleaning...'
-        : (state.cleanResult != null
-            ? 'Clean Now (${state.cleanResult!.cacheCleared})'
-            : 'Clean Now');
+                    final buttonText = isCleaning
+                        ? 'Cleaning...'
+                        : (state.cleanResult != null
+                            ? 'Clean Now (${state.cleanResult!.cacheCleared})'
+                            : 'Clean Now');
 
-    return CleanButtonWidget(
-      text: buttonText,
-      onPressed: isReady
-          ? () {
-              context.read<CleanBackgroundBloc>().add(StartCleaningEvent());
-            }
-          : null, // cleanReady ke ilawa har phase mein disabled
-    );
-  },
-),
+                    return CleanButtonWidget(
+                      text: buttonText,
+                      onPressed: isReady
+                          ? () {
+                              context
+                                  .read<CleanBackgroundBloc>()
+                                  .add(StartCleaningEvent());
+
+                              context.read<PhoneBoostBloc>().add(
+                                    const PhoneBoostCleanSelectedEvent(),
+                                  );
+                            }
+                          : null, // cleanReady ke ilawa har phase mein disabled
+                    );
+                  },
+                ),
               ],
             ),
           ),

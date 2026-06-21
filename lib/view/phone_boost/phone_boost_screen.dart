@@ -99,21 +99,21 @@ class _PhoneBoostView extends StatelessWidget {
                           ),
                         ),
                         // Animated count
-                        TweenAnimationBuilder<int>(
-                          tween: IntTween(
-                            begin: 0,
-                            end: state.runningProcessCount,
-                          ),
-                          duration: const Duration(milliseconds: 600),
-                          builder: (_, val, __) => Text(
-                            '$val',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              fontSize: getFont(16),
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                       TweenAnimationBuilder<int>(
+  tween: IntTween(
+    begin: 0,
+    end: state.topApps.length,
+  ),
+  duration: const Duration(milliseconds: 600),
+  builder: (_, val, __) => Text(
+    '$val',
+    style: AppTextStyles.bodySmall.copyWith(
+      fontSize: getFont(16),
+      color: Colors.white,
+      fontWeight: FontWeight.w700,
+    ),
+  ),
+),
                       ],
                     ),
 

@@ -277,4 +277,5 @@ static const String batteryUsage ="Battery Usage";
   static const String performanceScoretext = 'Performance Score';
   static const String  failedtofetchrealdata =  "Failed to fetch real data";
   static const String batteryLeveltext = 'Battery Level';
+  static const String nobackgroundAppsFound = "No Background Apps Found";
 }
