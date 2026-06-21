@@ -21,7 +21,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
-
+import android.os.SystemClock
 class MainActivity : FlutterActivity() {
 
     private val CPU_CHANNEL            = "com.example.battery_saver_app/cpu_info"
@@ -511,17 +511,17 @@ class MainActivity : FlutterActivity() {
             else                                        -> "Unknown"
         }
 
-        // ✅ Step 1: CHARGE_COUNTER se current capacity try karo
+        //  Step 1: CHARGE_COUNTER se current capacity try karo
         var currentCapacityMah = 0.0
         val chargeCounter = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER)
         if (chargeCounter > 0) {
             currentCapacityMah = chargeCounter / 1000.0
         }
 
-        // ✅ Step 2: Design capacity nikalo (6 methods try karega)
+        //  Step 2: Design capacity nikalo (6 methods try karega)
         val designCapacityMah = getDesignCapacity(currentCapacityMah, batteryLevel)
 
-        // ✅ Step 3: Agar currentCapacity abhi bhi 0 hai aur designCapacity mili toh estimate karo
+        //  Step 3: Agar currentCapacity abhi bhi 0 hai aur designCapacity mili toh estimate karo
         if (currentCapacityMah <= 0.0 && designCapacityMah > 0.0 && batteryLevel > 0) {
             currentCapacityMah = (designCapacityMah * batteryLevel) / 100.0
         }
@@ -1315,23 +1315,58 @@ class MainActivity : FlutterActivity() {
     // ─────────────────────────────────────────────────────────────────
     // CPU USAGE
     // ─────────────────────────────────────────────────────────────────
-    private fun getCpuUsage(): Double {
-        return try {
-            val line1  = File("/proc/stat").bufferedReader().readLine() ?: return 0.0
-            val toks1  = line1.trim().split("\\s+".toRegex())
-            val total1 = toks1.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
-            val idle1  = toks1.getOrNull(4)?.toLongOrNull() ?: 0L
-            Thread.sleep(500)
-            val line2  = File("/proc/stat").bufferedReader().readLine() ?: return 0.0
-            val toks2  = line2.trim().split("\\s+".toRegex())
-            val total2 = toks2.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
-            val idle2  = toks2.getOrNull(4)?.toLongOrNull() ?: 0L
-            val totalDiff = total2 - total1
-            val idleDiff  = idle2  - idle1
-            if (totalDiff <= 0L) return 0.0
-            ((totalDiff - idleDiff) * 100.0 / totalDiff).coerceIn(0.0, 100.0)
-        } catch (e: Exception) { 0.0 }
+  private fun getCpuUsage(): Double {
+    return try {
+        // Method 1: ActivityManager memory pressure → CPU estimate
+        val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memInfo = ActivityManager.MemoryInfo()
+        am.getMemoryInfo(memInfo)
+
+        // /proc/stat retry with longer delay
+        fun readStat(): Pair<Long, Long>? {
+            return try {
+                val lines = File("/proc/stat").bufferedReader().readLines()
+                // "cpu " line (aggregate)
+                val cpuLine = lines.firstOrNull { it.startsWith("cpu ") } ?: return null
+                val toks = cpuLine.trim().split("\\s+".toRegex())
+                val total = toks.drop(1).take(8).sumOf { it.toLongOrNull() ?: 0L }
+                val idle  = toks.getOrNull(4)?.toLongOrNull() ?: 0L
+                android.util.Log.d("CPU_DEBUG", "stat line: $cpuLine | total=$total idle=$idle")
+                Pair(total, idle)
+            } catch (e: Exception) {
+                android.util.Log.e("CPU_DEBUG", "readStat error: $e")
+                null
+            }
+        }
+
+        val r1 = readStat()
+        Thread.sleep(1000)
+        val r2 = readStat()
+
+        if (r1 != null && r2 != null) {
+            val totalDiff = r2.first  - r1.first
+            val idleDiff  = r2.second - r1.second
+            android.util.Log.d("CPU_DEBUG", "totalDiff=$totalDiff idleDiff=$idleDiff")
+            if (totalDiff > 50L) {  // minimum threshold
+                return ((totalDiff - idleDiff) * 100.0 / totalDiff).coerceIn(0.0, 100.0)
+            }
+        }
+
+        // Method 2: /proc/loadavg → reliable fallback
+        val loadAvg = File("/proc/loadavg").readText().trim()
+        android.util.Log.d("CPU_DEBUG", "loadavg: $loadAvg")
+        val load1min = loadAvg.split(" ").firstOrNull()?.toDoubleOrNull()
+        if (load1min != null) {
+            val cores = Runtime.getRuntime().availableProcessors()
+            return ((load1min / cores) * 100.0).coerceIn(0.0, 100.0)
+        }
+
+        0.0
+    } catch (e: Exception) {
+        android.util.Log.e("CPU_DEBUG", "getCpuUsage error: $e")
+        0.0
     }
+}
 
     // ─────────────────────────────────────────────────────────────────
     // CPU TEMPERATURE
@@ -1601,6 +1636,7 @@ private fun boostMemory() {
     System.gc()
     Runtime.getRuntime().gc()
 }
+
 
     // ─────────────────────────────────────────────────────────────────
     // APP USAGE WITH BATTERY

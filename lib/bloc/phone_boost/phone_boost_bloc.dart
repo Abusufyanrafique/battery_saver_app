@@ -44,27 +44,42 @@ class PhoneBoostBloc extends Bloc<PhoneBoostEvent, PhoneBoostState> {
     await _fetchAndEmit(emit, status: PhoneBoostStatus.monitoring);
   }
 
-  Future<void> _onBoostRequested(
-    PhoneBoostRequested event,
-    Emitter<PhoneBoostState> emit,
-  ) async {
-    _timer?.cancel();
-    emit(state.copyWith(status: PhoneBoostStatus.boosting));
+ Future<void> _onBoostRequested(
+  PhoneBoostRequested event,
+  Emitter<PhoneBoostState> emit,
+) async {
+  _timer?.cancel();
+  emit(state.copyWith(status: PhoneBoostStatus.boosting));
 
-    try {
-      await _channel.invokeMethod('boostMemory');
-    } catch (_) {}
+  // Collect all current app package names (not just selected ones) so
+  // Boost Now clears the whole list, same as Clean Selected does for
+  // selected apps.
+  final allPackageNames =
+      state.topApps.map((app) => app.packageName).toList();
 
-    // Wait for system to reclaim memory
-    await Future.delayed(const Duration(seconds: 2));
+  try {
+    await _channel.invokeMethod('boostMemory');
 
-    await _fetchAndEmit(emit, status: PhoneBoostStatus.boosted);
+    if (allPackageNames.isNotEmpty) {
+      await _channel.invokeMethod('stopApps', {
+        'packageNames': allPackageNames,
+      });
+    }
+  } catch (_) {}
 
-    // Resume polling
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
-      add(const PhoneBoostRefresh());
-    });
-  }
+  await Future.delayed(const Duration(seconds: 2));
+
+  emit(state.copyWith(
+    status: PhoneBoostStatus.boosted,
+    topApps: const [],
+    selectedApps: const [],
+    allSelected: false,
+  ));
+
+  _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+    add(const PhoneBoostRefresh());
+  });
+}
 
   /// Toggle selection for a single app at [index]
   void _onSelectApp(
@@ -105,10 +120,6 @@ class PhoneBoostBloc extends Bloc<PhoneBoostEvent, PhoneBoostState> {
     ));
   }
 
-  /// ✅ NEW: Stop every selected app (force-stop + clear its cache on the
-  /// native side), then remove those apps from topApps/selectedApps so the
-  /// UI naturally falls back to "No Background Apps Found" once the list
-  /// is empty.
   Future<void> _onCleanSelected(
     PhoneBoostCleanSelectedEvent event,
     Emitter<PhoneBoostState> emit,
@@ -134,14 +145,10 @@ class PhoneBoostBloc extends Bloc<PhoneBoostEvent, PhoneBoostState> {
         'packageNames': selectedPackageNames,
       });
     } catch (_) {
-      // Even if the native call fails/partially fails, we still update the
-      // UI optimistically below so the user sees progress. Adjust if you'd
-      // rather surface a hard error instead.
+      
     }
 
-    // Remove the cleaned apps from the local list immediately so the UI
-    // reflects "No Background Apps Found" without waiting for the next
-    // 5-second poll.
+  
     final remainingApps = <RunningAppInfo>[];
     for (var i = 0; i < state.topApps.length; i++) {
       final wasSelected =

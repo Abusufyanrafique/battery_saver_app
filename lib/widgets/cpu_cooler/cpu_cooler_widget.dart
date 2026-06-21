@@ -82,10 +82,10 @@ class CpuCoolerTile extends StatelessWidget {
         children: [
           Image.asset(
             item.imagePath,
-            width: 24,
-            height: 24,
+            width: getWidth(24),
+            height: getHeight(24),
           ),
-          const SizedBox(width: 16),
+           SizedBox(width: getWidth(16)),
           Expanded(
             child: Text(
               item.title,
