@@ -57,7 +57,7 @@ class _PhoneBoostView extends StatelessWidget {
                     // ───── GAUGE IMAGE ─────
                     _BoostGauge(percent: state.memoryUsedPercent),
 
-                     SizedBox(height: getHeight(16)),
+                    SizedBox(height: getHeight(16)),
 
                     // ───── MEMORY USED LABEL ─────
                     Center(
@@ -98,26 +98,25 @@ class _PhoneBoostView extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        // Animated count
-                       TweenAnimationBuilder<int>(
-  tween: IntTween(
-    begin: 0,
-    end: state.topApps.length,
-  ),
-  duration: const Duration(milliseconds: 600),
-  builder: (_, val, __) => Text(
-    '$val',
-    style: AppTextStyles.bodySmall.copyWith(
-      fontSize: getFont(16),
-      color: Colors.white,
-      fontWeight: FontWeight.w700,
-    ),
-  ),
-),
+                        TweenAnimationBuilder<int>(
+                          tween: IntTween(
+                            begin: 0,
+                            end: state.topApps.length,
+                          ),
+                          duration: const Duration(milliseconds: 600),
+                          builder: (_, val, __) => Text(
+                            '$val',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontSize: getFont(16),
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
 
-                     SizedBox(height: getHeight(12)),
+                    SizedBox(height: getHeight(12)),
 
                     // ───── LIST ─────
                     state.isLoading
@@ -129,9 +128,29 @@ class _PhoneBoostView extends StatelessWidget {
                               ),
                             ),
                           )
-                        : PhoneBoostListWidget(apps: state.topApps),
+                        : state.status == PhoneBoostStatus.boosted
+                            ? Center(
+                                child: Column(
+                                  children: [
+                                    const Icon(
+                                      Icons.check_circle,
+                                      color: Color(0xFF55D0FF),
+                                      size: 48,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Memory Optimized!',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: Colors.white,
+                                        fontSize: getFont(16),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : PhoneBoostListWidget(apps: state.topApps),
 
-                     SizedBox(height: getHeight(20)),
+                    SizedBox(height: getHeight(20)),
 
                     // ───── BOOST BUTTON ─────
                     CleanButtonWidget(
@@ -164,12 +183,6 @@ class _BoostGauge extends StatelessWidget {
   final int percent;
   const _BoostGauge({required this.percent});
 
-  // Color get _gaugeColor {
-  //   // if (percent < 50) return const Color(0xFF55D0FF);
-  //   // if (percent < 75) return const Color(0xFFFFAA00);
-  //   // return const Color(0xFFFF4444);
-  // }
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -183,21 +196,14 @@ class _BoostGauge extends StatelessWidget {
           return Stack(
             alignment: Alignment.center,
             children: [
-              // Arc ring
               CustomPaint(
                 size: Size(getHeight(180), getHeight(180)),
-                // painter: _ArcPainter(
-                //   value: arcValue,
-                //   // color: _gaugeColor,
-                // ),
               ),
-              // Rocket image
               Image.asset(
                 "assets/images/phone_boost/rooket.png",
                 height: getHeight(200),
                 fit: BoxFit.contain,
               ),
-              // Percent text — same animated value
               Positioned(
                 bottom: getHeight(10),
                 child: Text(
@@ -216,6 +222,7 @@ class _BoostGauge extends StatelessWidget {
     );
   }
 }
+
 class _ArcPainter extends CustomPainter {
   final double value;
   final Color color;
@@ -227,7 +234,6 @@ class _ArcPainter extends CustomPainter {
     final radius = size.width / 2 - 8;
     final rect = Rect.fromCircle(center: center, radius: radius);
 
-    // Track
     canvas.drawArc(
       rect, -3.14159, 3.14159, false,
       Paint()
@@ -236,7 +242,6 @@ class _ArcPainter extends CustomPainter {
         ..strokeWidth = 8,
     );
 
-    // Active arc (bottom semicircle, like UI)
     canvas.drawArc(
       rect, -3.14159, 3.14159 * value, false,
       Paint()
@@ -246,7 +251,6 @@ class _ArcPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round,
     );
 
-    // Glow
     canvas.drawArc(
       rect, -3.14159, 3.14159 * value, false,
       Paint()
