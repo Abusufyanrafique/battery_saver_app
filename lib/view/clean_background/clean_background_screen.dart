@@ -202,28 +202,29 @@ class _CleanBackGroundView extends StatelessWidget {
 
                 // ── Clean Button ──────────────────────────────────
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
-                  buildWhen: (prev, curr) =>
-                      prev.phase       != curr.phase ||
-                      prev.cleanResult != curr.cleanResult,
-                  builder: (context, state) {
-                    final isReady = state.phase == CleanPhase.cleanReady;
+  buildWhen: (prev, curr) =>
+      prev.phase       != curr.phase ||
+      prev.cleanResult != curr.cleanResult,
+  builder: (context, state) {
+    final isReady = state.phase == CleanPhase.cleanReady;
+    final isCleaning = state.phase == CleanPhase.cleaning;
 
-                    final buttonText = state.cleanResult != null
-                        ? 'Clean Now (${state.cleanResult!.cacheCleared})'
-                        : 'Clean Now';
+    final buttonText = isCleaning
+        ? 'Cleaning...'
+        : (state.cleanResult != null
+            ? 'Clean Now (${state.cleanResult!.cacheCleared})'
+            : 'Clean Now');
 
-                    return CleanButtonWidget(
-                      text: buttonText,
-                      onPressed: isReady
-                          ? () {
-                              context
-                                  .read<CleanBackgroundBloc>()
-                                  .add(StartCleaningEvent());
-                            }
-                          : null,
-                    );
-                  },
-                ),
+    return CleanButtonWidget(
+      text: buttonText,
+      onPressed: isReady
+          ? () {
+              context.read<CleanBackgroundBloc>().add(StartCleaningEvent());
+            }
+          : null, // cleanReady ke ilawa har phase mein disabled
+    );
+  },
+),
               ],
             ),
           ),

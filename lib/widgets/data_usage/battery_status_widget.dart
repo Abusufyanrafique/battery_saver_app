@@ -3,6 +3,7 @@
 import 'dart:math';
 import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -20,11 +21,35 @@ class BatteryStatusWidget extends StatefulWidget {
   State<BatteryStatusWidget> createState() => _BatteryStatusWidgetState();
 }
 
-class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
+class _BatteryStatusWidgetState extends State<BatteryStatusWidget>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    context.read<BatteryStatusCubit>().loadBatteryStatus();
+    WidgetsBinding.instance.addObserver(this);
+    // Pehli load + periodic auto refresh start
+    context.read<BatteryStatusCubit>().startAutoRefresh();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final cubit = context.read<BatteryStatusCubit>();
+    if (state == AppLifecycleState.resumed) {
+      // App foreground mein wapas aaye -> turant refresh + timer restart
+      cubit.startAutoRefresh();
+    } else if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached) {
+      // App background mein gayi -> timer band, battery bachao
+      cubit.stopAutoRefresh();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    context.read<BatteryStatusCubit>().stopAutoRefresh();
+    super.dispose();
   }
 
   String _formatTime(int ms) {
@@ -76,7 +101,7 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
 
         return Container(
           width: double.infinity,
-          padding: EdgeInsets.all(getWidth(10)), 
+          padding: EdgeInsets.all(getWidth(10)),
           decoration: BoxDecoration(
             border: Border.all(
               color: const Color(0xFF4103AC),
@@ -101,22 +126,19 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _CircularBattery(level: level),
-                    SizedBox(width: getWidth(16)), // ← thoda zyada gap
-            
-                    // SizedBox(width: getWidth(16)), // ← divider ke baad space
+                    SizedBox(width: getWidth(16)),
                     Expanded(
                       child: Column(
                         children: [
-                          // ── Top Row ──
                           Row(
                             children: [
                               Expanded(
                                 child: _StatItem(
                                   imagepath: AppImages.time,
                                   iconColor: const Color(0xFF9A3CFF),
-                                  title: 'Remaining Time',
+                                  title: AppText.remainingTime,
                                   value: remainingTime,
-                                  subtitle: 'Usage Time',
+                                  subtitle: AppText.usageTime,
                                   showRightBorder: true,
                                 ),
                               ),
@@ -124,34 +146,28 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget> {
                                 child: _StatItem(
                                   imagepath: AppImages.phone,
                                   iconColor: const Color(0xFFCE93D8),
-                                  title: 'Screen On Time',
+                                  title: AppText.screenOnTime,
                                   value: screenOnTime,
-                                  subtitle: 'Today',
+                                  subtitle: AppText.todaytext,
                                   showRightBorder: false,
                                 ),
                               ),
                             ],
                           ),
-
-            //Horizontal Divider ──==================================
-                         //Horizontal Divider ──==================================
-SizedBox(height: getHeight(8)),
-Container(
-  height: 1,
-  color: Color(0xFF4103AC),
-),
-SizedBox(height: getHeight(8)),
-                          SizedBox(width: getWidth(3),),
-  
-
-                          // ── Bottom Row ──
+                          SizedBox(height: getHeight(8)),
+                          Container(
+                            height: 1,
+                            color: const Color(0xFF4103AC),
+                          ),
+                          SizedBox(height: getHeight(8)),
+                          SizedBox(width: getWidth(3)),
                           Row(
                             children: [
                               Expanded(
                                 child: _StatItem(
                                   imagepath: AppImages.heart,
                                   iconColor: const Color(0xFFE53935),
-                                  title: 'Battery Health',
+                                  title: AppText.batteryHealthtext1,
                                   value: health,
                                   subtitle: capacity,
                                   showRightBorder: true,
@@ -161,7 +177,7 @@ SizedBox(height: getHeight(8)),
                                 child: _StatItem(
                                   imagepath: AppImages.performance,
                                   iconColor: const Color(0xFF00BCD4),
-                                  title: 'Performance Score',
+                                  title: AppText.performanceScoretext,
                                   value: score,
                                   subtitle: label,
                                   showRightBorder: false,
@@ -175,7 +191,6 @@ SizedBox(height: getHeight(8)),
                   ],
                 ),
               ),
-
               if (state is BatteryStatusLoading)
                 const Positioned.fill(
                   child: Center(
@@ -184,7 +199,6 @@ SizedBox(height: getHeight(8)),
                     ),
                   ),
                 ),
-
               if (state is BatteryStatusError)
                 Positioned.fill(
                   child: Container(
@@ -193,7 +207,7 @@ SizedBox(height: getHeight(8)),
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
-                          "Failed to fetch real data",
+                          AppText.failedtofetchrealdata,
                           style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                         IconButton(
@@ -215,7 +229,7 @@ SizedBox(height: getHeight(8)),
 }
 
 // ─────────────────────────────────────────────
-// CIRCULAR BATTERY
+// CIRCULAR BATTERY (unchanged)
 // ─────────────────────────────────────────────
 class _CircularBattery extends StatelessWidget {
   final int level;
@@ -225,7 +239,7 @@ class _CircularBattery extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: getWidth(114),
-      height: getWidth(108),
+      height: getWidth(110),
       child: CustomPaint(
         painter: _CircularBatteryPainter(level: level),
         child: Center(
@@ -233,7 +247,7 @@ class _CircularBattery extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.bolt_rounded,
-                  color: const Color(0xFFFF2D9B), size: getWidth(20)),
+                  color: const Color(0xFFFE39C6), size: getWidth(20)),
               Text(
                 '$level%',
                 style: TextStyle(
@@ -242,10 +256,10 @@ class _CircularBattery extends StatelessWidget {
                     color: Colors.white),
               ),
               Text(
-                'Battery Level',
-                style:
-                    TextStyle(fontSize: getFont(9), color: Colors.white),
+                AppText.batteryLeveltext,
+                style: TextStyle(fontSize: getFont(9), color: Colors.white),
               ),
+              const SizedBox(height: 6),
             ],
           ),
         ),
@@ -280,16 +294,13 @@ class _CircularBatteryPainter extends CustomPainter {
     final fgPaint = Paint()
       ..shader = const SweepGradient(
         colors: [
-          // Color(0xFF9A3CFF),
-          //  Color(0xFFFF2D9B), 
-          //  Color(0xFF00BFFF)
-           Color(0xFFFF19BD),
-           Color(0xFF7F1DE7), 
-           Color(0xFF55D0FF),
-            Color(0xFF55D0FF),
-           Color(0xFF7F1DE7), 
-           Color(0xFFA24BFF)
-           ],
+          Color(0xFFFF19BD),
+          Color(0xFF7F1DE7),
+          Color(0xFF55D0FF),
+          Color(0xFF55D0FF),
+          Color(0xFF7F1DE7),
+          Color(0xFFA24BFF)
+        ],
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
@@ -308,7 +319,7 @@ class _CircularBatteryPainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────
-// STAT ITEM
+// STAT ITEM (unchanged)
 // ─────────────────────────────────────────────
 class _StatItem extends StatelessWidget {
   final String imagepath;
@@ -332,11 +343,10 @@ class _StatItem extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(
         right: showRightBorder ? getWidth(12) : 0,
-        left: showRightBorder ? 0 : getWidth(12), // ← left side bhi space
+        left: showRightBorder ? 0 : getWidth(12),
       ),
       decoration: showRightBorder
-      //verticalll divider ==========================================here
-          ? BoxDecoration(
+          ? const BoxDecoration(
               border: Border(
                 right: BorderSide(
                   color: Color(0xFF4103AC),
@@ -350,26 +360,27 @@ class _StatItem extends StatelessWidget {
         children: [
           Row(
             children: [
-              Image.asset(imagepath,
-                  width: getWidth(12), height: getWidth(16)),
+              Image.asset(imagepath, width: getWidth(12), height: getWidth(16)),
               SizedBox(width: getWidth(4)),
               Expanded(
                 child: Text(
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
-                      fontSize: getFont(9), color: Colors.white),
+                      fontSize: getFont(10),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
-          SizedBox(height: getHeight(5)), // ← thodi zyada spacing
+          SizedBox(height: getHeight(5)),
           Padding(
             padding: const EdgeInsets.only(left: 9),
             child: Text(
               value,
               style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: getFont(13), // ← thoda bada
-                  fontWeight: FontWeight.bold,
+                  fontSize: getFont(10),
+                  fontWeight: FontWeight.w500,
                   color: Colors.white),
             ),
           ),
@@ -379,7 +390,9 @@ class _StatItem extends StatelessWidget {
             child: Text(
               subtitle,
               style: AppTextStyles.bodyMedium.copyWith(
-                  fontSize: getFont(10), color: Colors.white70),
+                  fontSize: getFont(10),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500),
             ),
           ),
         ],

@@ -16,7 +16,7 @@ import 'package:go_router/go_router.dart';
 class CleaningCompleteScreen extends StatelessWidget {
   const CleaningCompleteScreen({super.key});
 
-  // ─── Estimate helpers ─────────────────────────────────────────────────────
+  // ─── Estimate helpers (sirf tab use honge jab performanceData bilkul null ho) ──
 
   double _estimatedRamGBFromApps(int selectedApps) =>
       (selectedApps * 0.12).clamp(0.5, double.infinity);
@@ -35,25 +35,30 @@ class CleaningCompleteScreen extends StatelessWidget {
 
     final state = context.watch<CleanBackgroundBloc>().state;
 
-    final performance  = state.performanceData;
-    final progress     = state.scanProgress;
-    final selectedApps = state.appsSelected.where((e) => e).length;
+    final performance = state.performanceData;
+    final progress = state.scanProgress;
+
+    
+    // actual removed apps 
+    final cleanedApps = state.cleanedApps;
+    final cleanedAppsCount = cleanedApps.length;
 
     // ── Performance values ────────────────────────────────────────────────────
-    // Only PerformanceBoostWidget still needs these passed as params.
-    // CleanResultGridWidget & StorageComparisonWidget read BLoC themselves.
-    final estimatedRamGB = _estimatedRamGBFromApps(selectedApps);
+    // Agar performanceData available hai (jo normal flow mein hamesha hoga
+    // jab tak completed phase tak pohanch jaaye), wahi use karo — ye real
+    // cleaning ke baad bloc mein set hota hai. Sirf null hone par fallback estimate lagao.
+    final estimatedRamGB = _estimatedRamGBFromApps(cleanedAppsCount);
 
-    final speedValue = (performance?.speedImproved?.isNotEmpty == true)
-        ? performance!.speedImproved
+    final speedValue = (performance != null && performance.speedImproved.isNotEmpty)
+        ? performance.speedImproved
         : _estimatedSpeed(progress);
 
-    final ramValue = (performance?.ramFreed?.isNotEmpty == true)
-        ? performance!.ramFreed
+    final ramValue = (performance != null && performance.ramFreed.isNotEmpty)
+        ? performance.ramFreed
         : '+${estimatedRamGB.toStringAsFixed(1)} GB';
 
-    final batteryValue = (performance?.batterySaved?.isNotEmpty == true)
-        ? performance!.batterySaved
+    final batteryValue = (performance != null && performance.batterySaved.isNotEmpty)
+        ? performance.batterySaved
         : _estimatedBattery(estimatedRamGB, progress);
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -128,11 +133,93 @@ class CleaningCompleteScreen extends StatelessWidget {
               const CleanResultGridWidget(),
 
               SizedBox(height: getHeight(20)),
+              if (cleanedAppsCount > 0) ...[
+                Text(
+                  'Removed Apps ($cleanedAppsCount)',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontSize: getFont(16),
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textwhitecolor,
+                  ),
+                ),
+                SizedBox(height: getHeight(10)),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF232C6D),
+                        Color(0xFF1B2153),
+                        Color(0xFF13173A),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF4103AC)),
+                  ),
+                  child: Column(
+                    children: cleanedApps.map((app) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(vertical: getHeight(6)),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: app.iconBytes != null
+                                  ? Image.memory(
+                                      app.iconBytes!,
+                                      width: getHeight(32),
+                                      height: getHeight(32),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      width: getHeight(32),
+                                      height: getHeight(32),
+                                      color: Colors.white24,
+                                      child: const Icon(
+                                        Icons.apps,
+                                        color: Colors.white70,
+                                        size: 18,
+                                      ),
+                                    ),
+                            ),
+                            SizedBox(width: getHeight(10)),
+                            Expanded(
+                              child: Text(
+                                app.appName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  fontSize: getFont(14),
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              app.sizeFormatted,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontSize: getFont(13),
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                SizedBox(height: getHeight(20)),
+              ],
 
-              // ── Performance Boost — only widget that still needs params ─────
+              // ── Performance Boost ───────────────────────────────────────────
               PerformanceBoostWidget(
-                speedValue:   speedValue,
-                ramValue:     ramValue,
+                speedValue: speedValue,
+                ramValue: ramValue,
                 batteryValue: batteryValue,
               ),
 

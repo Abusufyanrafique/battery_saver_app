@@ -267,4 +267,14 @@ static const String batteryUsage ="Battery Usage";
   static const String chargeCycles = 'Charge Cycles';
   static const String wifiUsagetext = 'Wi-Fi Usage';
   static const String mobileData = 'Mobile Data';
+  static const String closebackgroundapps = 'Close background apps';
+  static const String appsarerunninginbackground = '6 apps are running in background';
+  static const String remainingTime = 'Remaining Time';
+  static const String usageTime = 'Usage Time';
+  static const String screenOnTime = 'Screen On Time';
+  static const String todaytext = 'Today';
+  static const String batteryHealthtext1 = 'Battery Health';
+  static const String performanceScoretext = 'Performance Score';
+  static const String  failedtofetchrealdata =  "Failed to fetch real data";
+  static const String batteryLeveltext = 'Battery Level';
 }

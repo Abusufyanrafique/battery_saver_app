@@ -206,7 +206,7 @@ class BatteryUsageHomeBloc
 
       if (trackedApps.isEmpty) {
         emit(const BatteryUsageHomeError(
-          message: 'Tracked apps ka data nahi mila',
+          message: 'Data No Found',
         ));
         return;
       }

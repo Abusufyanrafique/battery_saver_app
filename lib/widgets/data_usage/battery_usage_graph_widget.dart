@@ -116,10 +116,11 @@ class _BatteryUsageGraphWidgetState extends State<BatteryUsageGraphWidget> {
 
         return SizedBox(
           height: getHeight(178),
+          // width: getWidth(200),
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(
-              horizontal: getWidth(10),
+              horizontal: getWidth(25),
               vertical: getHeight(8),
             ),
             decoration: BoxDecoration(

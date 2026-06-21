@@ -113,7 +113,7 @@ class CleanBackgroundState {
   factory CleanBackgroundState.initial() => const CleanBackgroundState(
         phase:        CleanPhase.idle,
         scanProgress: 0.0,
-        appsSelected: [],   // ✅ empty — real data aane pe dynamically resize hoga
+        appsSelected: [],   //empty — real data aane pe dynamically resize hoga
         cleanResult:  null,
         errorMessage: null,
       );
@@ -124,7 +124,7 @@ class CleanBackgroundState {
   // Convenient getters
   List<DeviceFile>     get cacheFiles    => cleanResult?.cacheFileList    ?? [];
   List<DeviceFile>     get residualFiles => cleanResult?.residualFileList ?? [];
-  List<RunningAppInfo> get runningApps   => cleanResult?.runningApps      ?? []; // ✅
+  List<RunningAppInfo> get runningApps   => cleanResult?.runningApps      ?? []; 
 
   CleanBackgroundState copyWith({
     CleanPhase?      phase,

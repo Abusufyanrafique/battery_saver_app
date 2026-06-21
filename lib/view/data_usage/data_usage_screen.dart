@@ -75,8 +75,8 @@ class DataUsageScreen extends StatelessWidget {
            SystemUsageWidget(),
            SizedBox(height: getHeight(6),),
             OptimizationSuggestionsWidget(
-             title: 'Close background apps',
-             subtitle: '6 apps are running in background',
+             title: AppText.closebackgroundapps,
+             subtitle: AppText.appsarerunninginbackground,
              onViewAll: () {
               Navigator.pushNamed(context, '/OptimizationScreen');
             },

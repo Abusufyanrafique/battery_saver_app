@@ -35,6 +35,10 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
               ],
             ),
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Color(0xFF4103AC),
+              width: 1
+            )
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

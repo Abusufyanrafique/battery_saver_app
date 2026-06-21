@@ -24,7 +24,9 @@ class CleanResultItem {
 }
 
 class CleanResultGridWidget extends StatelessWidget {
-  const CleanResultGridWidget({super.key});
+  final bool useFinalResult;
+
+  const CleanResultGridWidget({super.key, this.useFinalResult = false});
 
   // ─── Format helper ────────────────────────────────────────────────────────
   static String _fmtGB(double gb) =>
@@ -32,65 +34,99 @@ class CleanResultGridWidget extends StatelessWidget {
 
   // ─── Check if a BLoC value is usable (not null/empty/zero) ────────────────
   static bool _hasValue(String? v) =>
-      v != null && v.isNotEmpty && !v.startsWith('0 ') && v != '0MB' && v != '0 MB' && v != '0.0 GB';
+      v != null &&
+      v.isNotEmpty &&
+      !v.startsWith('0 ') &&
+      v != '0MB' &&
+      v != '0 MB' &&
+      v != '0.0 GB';
 
   @override
   Widget build(BuildContext context) {
     final state = context.watch<CleanBackgroundBloc>().state;
 
-    final result       = state.cleanResult;
-    final progress     = state.scanProgress;
-    final selectedApps = state.appsSelected.where((e) => e).length;
+    final progress = state.scanProgress;
 
-    // ── RAM context ───────────────────────────────────────────────────────────
-    // result.beforeGB = real system RAM used (from system_info2 during scan)
-    // fallback = app-count estimate, min 0.5 GB so estimates are never 0
-    final usedRamGB = (result?.beforeGB != null && result!.beforeGB > 0)
-        ? result.beforeGB
-        : (selectedApps * 0.12).clamp(0.5, double.infinity);
+    String junkValue;
+    String appsValue;
+    String cacheValue;
+    String residualValue;
 
-    // Safe progress: if scan just started use at least 0.1 so estimates show
-    final safeProgress = progress.clamp(0.1, 1.0);
+    if (useFinalResult) {
+      //  Summary screen mode — sirf finalCleanResult (removed apps ke
+      //    proportion se calculate hua, LOCKED) use hota hai. Countdown ya
+      //    live cleanResult ko yahan kabhi nahi dekha jata.
+      final result = state.finalCleanResult;
 
-    // ── Estimated values (scaled to real RAM + progress) ─────────────────────
-    final estJunk     = _fmtGB(usedRamGB * safeProgress * 0.20);
-    final estCache    = _fmtGB(usedRamGB * safeProgress * 0.15);
-    final estResidual = _fmtGB(usedRamGB * safeProgress * 0.10);
-    final estApps     = '$selectedApps Apps';
+      junkValue = result?.junkRemoved ?? '0 MB';
+      appsValue = result?.appsClosed ?? '0 Apps';
+      cacheValue = result?.cacheCleared ?? '0 MB';
+      residualValue = result?.residualFiles ?? '0 MB';
+    } else {
+      final result = state.cleanResult;
 
-    // ── Resolve: real BLoC value OR estimate (never zero/empty) ──────────────
-    final junkValue     = _hasValue(result?.junkRemoved)    ? result!.junkRemoved    : estJunk;
-    final appsValue     = _hasValue(result?.appsClosed)     ? result!.appsClosed     : estApps;
-    final cacheValue    = _hasValue(result?.cacheCleared)   ? result!.cacheCleared   : estCache;
-    final residualValue = _hasValue(result?.residualFiles)  ? result!.residualFiles  : estResidual;
+      // Cleaning complete ho chuki ho ya cleaning chal rahi ho,
+      // to hamesha LOCKED snapshot (result) use karo — naya estimate calculate mat karo.
+      // Estimate sirf scanning/cleanReady phase mein chahiye, jab result null ho sakta hai.
+      final isFinalized = state.phase == CleanPhase.completed ||
+          state.phase == CleanPhase.cleaning;
+
+      if (isFinalized && result != null) {
+        // Locked summary — jo cleaning ke waqt save hui thi, usi se dikhao
+        junkValue = result.junkRemoved;
+        appsValue = result.appsClosed;
+        cacheValue = result.cacheCleared;
+        residualValue = result.residualFiles;
+      } else {
+        // ── Scanning/cleanReady phase: estimate dikhao (real data abhi build ho raha hai) ──
+        final selectedApps = state.appsSelected.where((e) => e).length;
+
+        final usedRamGB = (result?.beforeGB != null && result!.beforeGB > 0)
+            ? result.beforeGB
+            : (selectedApps * 0.12).clamp(0.5, double.infinity);
+
+        final safeProgress = progress.clamp(0.1, 1.0);
+
+        final estJunk = _fmtGB(usedRamGB * safeProgress * 0.20);
+        final estCache = _fmtGB(usedRamGB * safeProgress * 0.15);
+        final estResidual = _fmtGB(usedRamGB * safeProgress * 0.10);
+        final estApps = '$selectedApps Apps';
+
+        junkValue = _hasValue(result?.junkRemoved) ? result!.junkRemoved : estJunk;
+        appsValue = _hasValue(result?.appsClosed) ? result!.appsClosed : estApps;
+        cacheValue = _hasValue(result?.cacheCleared) ? result!.cacheCleared : estCache;
+        residualValue =
+            _hasValue(result?.residualFiles) ? result!.residualFiles : estResidual;
+      }
+    }
 
     final items = [
       CleanResultItem(
-        iconPath:   AppIcons.files,
-        title:      'Junk Removed',
-        value:      junkValue,
-        subtitle:   'Space Freed',
+        iconPath: AppIcons.files,
+        title: 'Junk Removed',
+        value: junkValue,
+        subtitle: 'Space Freed',
         valueColor: const Color(0xFFFE39C6),
       ),
       CleanResultItem(
-        iconPath:   AppIcons.appsClosed,
-        title:      'Apps Closed',
-        value:      appsValue,
-        subtitle:   'Background',
+        iconPath: AppIcons.appsClosed,
+        title: 'Apps Closed',
+        value: appsValue,
+        subtitle: 'Background',
         valueColor: const Color(0xFFEDB309),
       ),
       CleanResultItem(
-        iconPath:   AppIcons.cacheCleared,
-        title:      'Cache Cleared',
-        value:      cacheValue,
-        subtitle:   'Cache',
+        iconPath: AppIcons.cacheCleared,
+        title: 'Cache Cleared',
+        value: cacheValue,
+        subtitle: 'Cache',
         valueColor: const Color(0xFF55D0FF),
       ),
       CleanResultItem(
-        iconPath:   AppIcons.files2,
-        title:      'Residual Files Removed',
-        value:      residualValue,
-        subtitle:   'Files',
+        iconPath: AppIcons.files2,
+        title: 'Residual Files Removed',
+        value: residualValue,
+        subtitle: 'Files',
         valueColor: const Color(0xFF9A3CFF),
       ),
     ];
@@ -99,7 +135,7 @@ class CleanResultGridWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: List.generate(items.length, (index) {
-          final item   = items[index];
+          final item = items[index];
           final isLast = index == items.length - 1;
           return Expanded(
             child: Padding(
@@ -125,12 +161,12 @@ class _CleanResultCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: getWidth(8),
-        vertical:   getHeight(2),
+        vertical: getHeight(2),
       ),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
-          end:   Alignment.bottomCenter,
+          end: Alignment.bottomCenter,
           colors: [
             Color(0xFF232C6D),
             Color(0xFF1B2153),
@@ -144,13 +180,13 @@ class _CleanResultCard extends StatelessWidget {
         ),
       ),
       child: Column(
-        mainAxisSize:     MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(height: getHeight(6)),
           SvgPicture.asset(
             item.iconPath,
-            width:  getWidth(20),
+            width: getWidth(20),
             height: getHeight(20),
           ),
           SizedBox(height: getHeight(4)),
@@ -158,17 +194,17 @@ class _CleanResultCard extends StatelessWidget {
             item.title,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
-              fontSize:   getFont(9),
+              fontSize: getFont(9),
               fontWeight: FontWeight.w600,
-              color:      AppColors.textwhitecolor,
+              color: AppColors.textwhitecolor,
             ),
           ),
           Text(
             item.value,
             style: AppTextStyles.bodyMedium.copyWith(
-              fontSize:   getFont(14),
+              fontSize: getFont(14),
               fontWeight: FontWeight.w600,
-              color:      item.valueColor,
+              color: item.valueColor,
             ),
           ),
           SizedBox(height: getHeight(4)),
@@ -176,9 +212,9 @@ class _CleanResultCard extends StatelessWidget {
             item.subtitle,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(
-              fontSize:   getFont(10),
+              fontSize: getFont(10),
               fontWeight: FontWeight.w500,
-              color:      AppColors.allsmalltextcolor,
+              color: AppColors.allsmalltextcolor,
             ),
           ),
         ],
