@@ -27,3 +27,11 @@ class AppManagerToggleApp extends AppManagerEvent {
 class AppManagerUninstallSelected extends AppManagerEvent {
   const AppManagerUninstallSelected();
 }
+
+//  NEW: Install APK event
+class AppManagerInstallApk extends AppManagerEvent {
+  final String apkPath;
+  const AppManagerInstallApk(this.apkPath);
+  @override
+  List<Object?> get props => [apkPath];
+}

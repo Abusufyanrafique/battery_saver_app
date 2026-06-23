@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,12 +16,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
   bool _obscurePassword = true;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  // ─── Colors (match your screenshot) ───────────────────────────────────────       
-  static const Color _accent = Color(0xFF3B82F6);       
-  static const Color _gradEnd = Color(0xFF3B82F6);      
-  static const Color _textHint = Color(0xFF6B7FAB);
-  static const Color _white = Colors.white;
 
   @override
   void dispose() {
@@ -39,85 +34,73 @@ class _SignUpScreenState extends State<SignUpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-               SizedBox(height: getHeight(100)),
+              SizedBox(height: getHeight(100)),
 
-              // ── Heading ──────────────────────────────────────────────────
-               Text(
-                'Welcome Back',
+              // ── Heading ─────────────────────────────
+              Text(
+                AppText.welcomeBacktext,
                 textAlign: TextAlign.center,
-                style:AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(30),
                   fontWeight: FontWeight.w700,
-                  color: Colors.white
-                )
+                  color: Colors.white,
+                ),
               ),
-              const SizedBox(height: 8),
-               Text(
-                'Sign uo to get started',
+
+              SizedBox(height: getHeight(8)),
+
+              Text(
+                AppText.signuotogetstarted,
                 textAlign: TextAlign.center,
-                style:AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(16),
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFFD9D9D9),
-                )
+                  color: const Color(0xFFD9D9D9),
+                ),
               ),
 
-              const SizedBox(height: 48),
+              SizedBox(height: getHeight(48)),
 
-              // ── Email / Phone Field ───────────────────────────────────────
+              // ── Name Field ─────────────────────────
               _buildTextField(
                 controller: _emailController,
-                hint: 'Name',
+                hint: AppText.name,
                 icon: null,
                 obscure: false,
               ),
 
-               SizedBox(height: getHeight(16)),
+              SizedBox(height: getHeight(16)),
 
-              // ── Password Field ────────────────────────────────────────────
+              // ── Email Field ─────────────────────────
+              _buildTextField(
+                controller: _emailController,
+                hint: AppText.emailOrPhone,
+                icon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textHint,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+                obscure: _obscurePassword,
+              ),
+
+              SizedBox(height: getHeight(16)),
+
+              // ── Password ───────────────────────────
               _buildTextField(
                 controller: _passwordController,
-                hint: 'Email or Phone',
+                hint: AppText.passwordtext,
                 icon: IconButton(
                   icon: Icon(
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: _textHint,
-                    size: 20,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
-                ),
-                obscure: _obscurePassword,
-              ),
-                SizedBox(height: getHeight(16)),
-               _buildTextField(
-                controller: _passwordController,
-                hint: 'Password',
-                icon: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    color: _textHint,
-                    size: 20,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
-                ),
-                obscure: _obscurePassword,
-              ),
-                SizedBox(height: getHeight(16)),
-               _buildTextField(
-                controller: _passwordController,
-                hint: 'Confirm Password',
-                icon: IconButton(
-                  icon: Icon(
-                    _obscurePassword
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    color: _textHint,
+                    color: AppColors.textHint,
                     size: 20,
                   ),
                   onPressed: () =>
@@ -126,44 +109,63 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 obscure: _obscurePassword,
               ),
 
-              
-               SizedBox(height: getHeight(32)),
+              SizedBox(height: getHeight(16)),
 
-              // ── Log In Button ─────────────────────────────────────────────
+              // ── Confirm Password ────────────────────
+              _buildTextField(
+                controller: _passwordController,
+                hint: AppText.confirmPassword,
+                icon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textHint,
+                    size: 20,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+                obscure: _obscurePassword,
+              ),
+
+              SizedBox(height: getHeight(32)),
+
+              // ── Sign Up Button ─────────────────────
               _buildGradientButton(
-                label: 'Sign Up',
+                label: AppText.signUp,
                 onTap: () {
-                   context.push('/bottombar');
+                  context.push('/bottombar');
                 },
               ),
 
               const SizedBox(height: 28),
 
-              // ── OR Divider ────────────────────────────────────────────────
+              // ── Divider ────────────────────────────
               Row(
                 children: [
                   Expanded(child: _divider()),
-                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      'or',
+                      AppText.or,
                       style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: getFont(20)
-                      )
+                        fontSize: getFont(20),
+                      ),
                     ),
                   ),
                   Expanded(child: _divider()),
                 ],
               ),
 
-              const SizedBox(height: 36),
+              SizedBox(height: getHeight(36)),
 
-              // ── Sign Up Link ──────────────────────────────────────────────
+              // ── Footer ─────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Text(
-                    "Don't have an account? ",
+                  Text(
+                    AppText.dontHaveAccount,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       fontWeight: FontWeight.w500,
@@ -171,13 +173,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   GestureDetector(
                     onTap: () {},
-                    child:  Text(
-                      'Sign Up',
-                     style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: getFont(16),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white
-                    ),
+                    child: Text(
+                      AppText.signUp,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: getFont(16),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -191,36 +193,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-
- Widget _buildTextField({
-  required TextEditingController controller,
-  required String hint,
-  required bool obscure,
-  Widget? icon,
-}) {
-  return Container(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-     
-    ),
-    child: Container(
+  // ── TEXT FIELD ─────────────────────────────
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required bool obscure,
+    Widget? icon,
+  }) {
+    return Container(
       margin: const EdgeInsets.all(1),
       decoration: BoxDecoration(
-     gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF1B235C), // top (lighter blue)
-          Color(0xFF1B2153), // middle
-          Color(0xFF13173A), // bottom (dark blue)
-        ],
-      ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: AppColors.fieldGradient,
+        ),
         borderRadius: BorderRadius.circular(11),
         border: Border.all(
-          color: Color(0xFF4103AC),
-          width: 0.5
-        )
+          color: AppColors.borderPurple,
+          width: 0.5,
+        ),
       ),
       child: TextField(
         controller: controller,
@@ -228,7 +220,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         style: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle:AppTextStyles.bodySmall.copyWith(
+          hintStyle: AppTextStyles.bodySmall.copyWith(
             fontSize: getFont(16),
             fontWeight: FontWeight.w600,
           ),
@@ -240,10 +232,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  // ── BUTTON ────────────────────────────────
   Widget _buildGradientButton({
     required String label,
     required VoidCallback onTap,
@@ -253,19 +245,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
       child: Container(
         height: getHeight(60),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF55D0FF),
-               Color(0xFF0E5AA7),
-               
-               ],
+          gradient: LinearGradient(
+            colors: AppColors.buttonGradient,
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: _gradEnd.withOpacity(0.35),
+              color: AppColors.buttonGradient[1].withOpacity(0.35),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -274,44 +262,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
         alignment: Alignment.center,
         child: Text(
           label,
-        style: AppTextStyles.bodyMedium.copyWith(
-          fontSize: getFont(20),
-          fontWeight:FontWeight.w700,
-        ),
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontSize: getFont(20),
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
   }
 
-  Widget _socialButton({
-    required VoidCallback onTap,
-    required Widget child,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF1B235C), // top (lighter blue)
-          Color(0xFF1B2153), // middle
-          Color(0xFF13173A), // bottom (dark blue)
-        ],
-      ),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF2A3F6F), width: 1),
-        ),
-        alignment: Alignment.center,
-        child: child,
-      ),
-    );
-  }
-
+  // ── DIVIDER ───────────────────────────────
   Widget _divider() => Container(
         height: 1,
-        color: const Color(0xFF373C62),
+        color: AppColors.divider,
       );
 }

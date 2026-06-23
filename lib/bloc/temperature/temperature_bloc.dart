@@ -8,6 +8,8 @@ part 'temperature_state.dart';
 class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
   static const _cpuChannel =
       MethodChannel('com.example.battery_saver_app/cpu_info');
+  static const _autoCoolChannel =
+      MethodChannel('com.example.battery_saver_app/auto_cool'); 
 
   TemperatureBloc() : super(const TemperatureState()) {
     on<TemperatureStarted>(_onStarted);
@@ -15,6 +17,11 @@ class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
     on<TemperatureCpuCoolerToggled>(_onCpuCoolerToggled);
     on<TemperatureCoolDownStarted>(_onCoolDownStarted);
     on<TemperatureCoolDownCancelled>(_onCoolDownCancelled);
+    // ── NEW handlers ──────────────────────────────────────────
+    on<TemperatureAutoCoolServiceStarted>(_onAutoCoolServiceStarted);
+    on<TemperatureAutoCoolServiceStopped>(_onAutoCoolServiceStopped);
+    on<TemperatureCpuCoolerKillTriggered>(_onCpuCoolerKillTriggered);
+    // ── Internal ──────────────────────────────────────────────
     on<_TemperatureStepOneCompleted>(_onStepOneCompleted);
     on<_TemperatureStepTwoCompleted>(_onStepTwoCompleted);
     on<_TemperatureStepThreeCompleted>(_onStepThreeCompleted);
@@ -26,9 +33,9 @@ class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
     Emitter<TemperatureState> emit,
   ) async {
     try {
-      print('🌡️ TemperatureBloc: Fetching real CPU info...');
+      print(' TemperatureBloc: Fetching real CPU info...');
       final Map<String, dynamic> cpuMap = await _fetchCpuInfo();
-      print('📊 CPU Map: $cpuMap');
+      print(' CPU Map: $cpuMap');
 
       final double tempCelsius =
           (cpuMap['temperature'] as num?)?.toDouble() ?? 32.0;
@@ -44,13 +51,101 @@ class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
         runningApps: runningApps,
         isLoading: false,
       ));
-      print('✅ Temp loaded: ${tempCelsius}°C | CPU: $cpuUsage% | Apps: $runningApps');
     } on PlatformException catch (e) {
-      print('❌ PlatformException in _onStarted: ${e.message}');
+      print(' PlatformException in _onStarted: ${e.message}');
       emit(state.copyWith(isLoading: false));
     } catch (e) {
-      print('❌ Unknown error in _onStarted: $e');
+      print(' Unknown error in _onStarted: $e');
       emit(state.copyWith(isLoading: false));
+    }
+  }
+
+  // ── Auto Cool Toggle → Service Start/Stop ───────────────────
+  Future<void> _onAutoCoolServiceStarted(
+    TemperatureAutoCoolServiceStarted event,
+    Emitter<TemperatureState> emit,
+  ) async {
+    try {
+      print(' Starting AutoCool background service...');
+      await _autoCoolChannel.invokeMethod('startAutoCool');
+      emit(state.copyWith(
+        autoCool: true,
+        autoCoolServiceRunning: true,
+        serviceError: null,
+      ));
+      print(' AutoCool service started');
+    } on PlatformException catch (e) {
+      print(' AutoCool start failed: ${e.message}');
+      emit(state.copyWith(
+        autoCool: false,
+        autoCoolServiceRunning: false,
+        serviceError: e.message,
+      ));
+    }
+  }
+
+  Future<void> _onAutoCoolServiceStopped(
+    TemperatureAutoCoolServiceStopped event,
+    Emitter<TemperatureState> emit,
+  ) async {
+    try {
+      print(' Stopping AutoCool background service...');
+      await _autoCoolChannel.invokeMethod('stopAutoCool');
+      emit(state.copyWith(
+        autoCool: false,
+        autoCoolServiceRunning: false,
+        serviceError: null,
+      ));
+      print(' AutoCool service stopped');
+    } on PlatformException catch (e) {
+      print(' AutoCool stop failed: ${e.message}');
+      emit(state.copyWith(serviceError: e.message));
+    }
+  }
+
+  // ── CPU Cooler Toggle → Immediate Kill ──────────────────────
+  Future<void> _onCpuCoolerKillTriggered(
+    TemperatureCpuCoolerKillTriggered event,
+    Emitter<TemperatureState> emit,
+  ) async {
+    try {
+
+      // kill heavys apps ============================================================================
+      
+      print(' CPU Cooler: Killing heavy apps...');
+      await _autoCoolChannel.invokeMethod('killHeavyApps');
+      emit(state.copyWith(
+        cpuCooler: true,
+        serviceError: null,
+      ));
+      print(' Heavy apps killed via CPU Cooler');
+    } on PlatformException catch (e) {
+      print(' killHeavyApps failed: ${e.message}');
+      emit(state.copyWith(serviceError: e.message));
+    }
+  }
+
+  // ── Auto Cool Toggle (UI toggle handler) ────────────────────
+  void _onAutoCoolToggled(
+    TemperatureAutoCoolToggled event,
+    Emitter<TemperatureState> emit,
+  ) {
+    // Service start/stop event trigger karo
+    if (event.value) {
+      add(TemperatureAutoCoolServiceStarted());
+    } else {
+      add(TemperatureAutoCoolServiceStopped());
+    }
+  }
+
+  // ── CPU Cooler Toggle (UI toggle handler) ───────────────────
+  void _onCpuCoolerToggled(
+    TemperatureCpuCoolerToggled event,
+    Emitter<TemperatureState> emit,
+  ) {
+    emit(state.copyWith(cpuCooler: event.value));
+    if (event.value) {
+      add(TemperatureCpuCoolerKillTriggered()); // ON hote hi kill
     }
   }
 
@@ -67,86 +162,60 @@ class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
       isCancelled: false,
     ));
 
-    // ── STEP 1: Scan Temperature ──────────────────────────────
+    // STEP 1: Scan Temperature
     try {
-      print('🔍 Step 1: Scanning temperature...');
+      print(' Step 1: Scanning temperature...');
       final Map<String, dynamic> cpuMap = await _fetchCpuInfo();
-
       if (state.isCancelled) return;
-
-      final double tempCelsius =
-          (cpuMap['temperature'] as num?)?.toDouble() ?? state.tempCelsius;
-      final double cpuUsage =
-          (cpuMap['cpuUsage'] as num?)?.toDouble() ?? state.cpuUsage;
-      final int runningApps =
-          (cpuMap['runningApps'] as num?)?.toInt() ?? state.runningApps;
 
       emit(state.copyWith(
         completedSteps: 1,
-        tempCelsius: tempCelsius,
-        tempValue: _normalize(tempCelsius),
-        cpuUsage: cpuUsage,
-        runningApps: runningApps,
+        tempCelsius: (cpuMap['temperature'] as num?)?.toDouble() ?? state.tempCelsius,
+        tempValue: _normalize((cpuMap['temperature'] as num?)?.toDouble() ?? state.tempCelsius),
+        cpuUsage: (cpuMap['cpuUsage'] as num?)?.toDouble() ?? state.cpuUsage,
+        runningApps: (cpuMap['runningApps'] as num?)?.toInt() ?? state.runningApps,
       ));
-      print('✅ Step 1 done: ${tempCelsius}°C | ${runningApps} apps running');
+      print(' Step 1 done');
     } catch (e) {
-      print('⚠️ Step 1 error (non-fatal): $e');
       if (state.isCancelled) return;
       emit(state.copyWith(completedSteps: 1));
     }
 
-    // ── STEP 2: Kill Background Apps ──────────────────────────
+    // STEP 2: Kill Background Apps
     try {
-      print('🔧 Step 2: Killing background apps...');
-      await _cpuChannel.invokeMethod('coolDown');
-
+      print(' Step 2: Killing background apps...');
+      await _autoCoolChannel.invokeMethod('killHeavyApps'); 
       if (state.isCancelled) return;
-
       emit(state.copyWith(completedSteps: 2));
-      print('✅ Step 2 done: Background apps killed');
+      print(' Step 2 done');
     } catch (e) {
-      print('⚠️ Step 2 error (non-fatal): $e');
       if (state.isCancelled) return;
       emit(state.copyWith(completedSteps: 2));
     }
 
-    // ── Wait: CPU ko settle hone do apps kill ke baad ─────────
-    // Android ko 6-8 seconds lagte hain CPU load kam karne mein
-    print('⏳ Waiting 7s for CPU to settle...');
+    // Wait for CPU to settle
+    print(' Waiting 7s for CPU to settle...');
     await Future.delayed(const Duration(seconds: 7));
-
     if (state.isCancelled) return;
 
-    // ── STEP 3: Re-measure Cooled Temperature ─────────────────
+    // STEP 3: Re-measure
     try {
-      print('🌡️ Step 3: Re-measuring temperature...');
+      print('Step 3: Re-measuring temperature...');
       final Map<String, dynamic> cpuMap = await _fetchCpuInfo();
-
       if (state.isCancelled) return;
-
-      final double cooledTemp =
-          (cpuMap['temperature'] as num?)?.toDouble() ?? state.tempCelsius;
-      final double cooledCpuUsage =
-          (cpuMap['cpuUsage'] as num?)?.toDouble() ?? state.cpuUsage;
-      final int cooledRunningApps =
-          (cpuMap['runningApps'] as num?)?.toInt() ?? state.runningApps;
 
       emit(state.copyWith(
         completedSteps: 3,
         coolingStatus: CoolingStatus.done,
-        tempCelsius: cooledTemp,
-        tempValue: _normalize(cooledTemp),
-        cpuUsage: cooledCpuUsage,
-        runningApps: cooledRunningApps,
+        tempCelsius: (cpuMap['temperature'] as num?)?.toDouble() ?? state.tempCelsius,
+        tempValue: _normalize((cpuMap['temperature'] as num?)?.toDouble() ?? state.tempCelsius),
+        cpuUsage: (cpuMap['cpuUsage'] as num?)?.toDouble() ?? state.cpuUsage,
+        runningApps: (cpuMap['runningApps'] as num?)?.toInt() ?? state.runningApps,
       ));
-      print('✅ Step 3 done — Cooled temp: ${cooledTemp}°C | Apps: $cooledRunningApps');
+      print(' Step 3 done');
     } catch (e) {
-      print('⚠️ Step 3 error: $e');
       if (state.isCancelled) return;
-      emit(state.copyWith(
-        completedSteps: 3,
-        coolingStatus: CoolingStatus.done,
-      ));
+      emit(state.copyWith(completedSteps: 3, coolingStatus: CoolingStatus.done));
     }
   }
 
@@ -154,23 +223,13 @@ class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
     TemperatureCoolDownCancelled event,
     Emitter<TemperatureState> emit,
   ) {
-    print('🚫 CoolDown cancelled');
+    print(' CoolDown cancelled');
     emit(state.copyWith(
       coolingStatus: CoolingStatus.cancelled,
       completedSteps: 0,
       isCancelled: true,
     ));
   }
-
-  void _onAutoCoolToggled(
-    TemperatureAutoCoolToggled event,
-    Emitter<TemperatureState> emit,
-  ) => emit(state.copyWith(autoCool: event.value));
-
-  void _onCpuCoolerToggled(
-    TemperatureCpuCoolerToggled event,
-    Emitter<TemperatureState> emit,
-  ) => emit(state.copyWith(cpuCooler: event.value));
 
   void _onStepOneCompleted(_TemperatureStepOneCompleted e, Emitter<TemperatureState> emit) {}
   void _onStepTwoCompleted(_TemperatureStepTwoCompleted e, Emitter<TemperatureState> emit) {}
@@ -182,6 +241,5 @@ class TemperatureBloc extends Bloc<TemperatureEvent, TemperatureState> {
     return Map<String, dynamic>.from(raw as Map);
   }
 
-  /// 20°C = cool end, 60°C = hot end → 0.0–1.0
   double _normalize(double celsius) => ((celsius - 20) / 40).clamp(0.0, 1.0);
 }

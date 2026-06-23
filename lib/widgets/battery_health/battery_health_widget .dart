@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
@@ -39,6 +40,7 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
       duration: const Duration(milliseconds: 1200),
     );
 
+    // Animation 0 se healthPercent/100 tak jati hai (e.g. 0 -> 0.85)
     _progressAnimation = Tween<double>(
       begin: 0,
       end: widget.healthPercent / 100,
@@ -60,11 +62,11 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
 
   Color get _statusColor {
     if (widget.healthPercent >= 80) {
-      return const Color(0xFF10E3D6);
+      return AppColors.batteryHealthGood;
     } else if (widget.healthPercent >= 50) {
-      return const Color(0xFFFFC107);
+      return AppColors.batteryHealthFair;
     } else {
-      return const Color(0xFFFF5252);
+      return AppColors.batteryHealthPoor;
     }
   }
 
@@ -77,18 +79,18 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
         vertical: getHeight(18),
       ),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
+            AppColors.batteryCardGradientStart,
+            AppColors.batteryCardGradientMid,
+            AppColors.batteryCardGradientEnd,
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.batteryCardBorder,
           width: 1,
         ),
         boxShadow: [
@@ -127,11 +129,14 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
           SizedBox(height: getHeight(8)),
 
           // PERCENT
+          // FIX: pehle "_progressAnimation.value * widget.healthPercent" likha tha,
+          // jo double-multiplication bug create kar raha tha (e.g. 0.85 * 85 = 72%
+          // dikhta tha jab asal healthPercent 85% tha).
+          // Animation already 0 -> healthPercent/100 tak jati hai, isliye sirf *100 karna hai.
           AnimatedBuilder(
             animation: _progressAnimation,
             builder: (context, _) {
-              final displayPercent =
-                  (_progressAnimation.value * widget.healthPercent).round();
+              final displayPercent = (_progressAnimation.value * 100).round();
 
               return Text(
                 '$displayPercent%',
@@ -158,7 +163,7 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
                         height: getHeight(6),
                         width: constraints.maxWidth,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: AppColors.progressBarTrack,
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -167,10 +172,10 @@ class _BatteryHealthWidgetState extends State<BatteryHealthWidget>
                         width:
                             constraints.maxWidth * _progressAnimation.value,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: LinearGradient(
                             colors: [
-                              Color(0xFF2979FF),
-                              Color(0xFF00B0FF),
+                              AppColors.progressBarStart,
+                              AppColors.progressBarEnd,
                             ],
                           ),
                           borderRadius: BorderRadius.circular(10),
@@ -236,7 +241,7 @@ class _InfoRow extends StatelessWidget {
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(11),
               fontWeight: FontWeight.w500,
-              color: const Color(0xFFD9D9D9),
+              color: AppColors.infoLabelColor,
             ),
           ),
           Flexible(

@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
 import 'package:battery_saver_app/view/app_manager/app_manager_screen.dart';
 import 'package:battery_saver_app/view/auth/login_screen.dart';
 import 'package:battery_saver_app/view/auth/sign_up_screen.dart';
@@ -25,6 +26,7 @@ import 'package:battery_saver_app/view/splash/splash_screen.dart';
 import 'package:battery_saver_app/view/temperature_control/result_temperature_control_screen.dart';
 import 'package:battery_saver_app/view/temperature_control/temperature_control_screen.dart';
 import 'package:battery_saver_app/view/tool_data_usage/tool_data_usage.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app_routes.dart';
@@ -47,99 +49,134 @@ final GoRouter router = GoRouter(
       path: AppRoutes.onboarding,
       builder: (context, state) => const OnboardingScreen(),
     ),
-            //  auth routes
-     GoRoute(
+
+    // ── Auth routes ──────────────────────────────────────────
+    GoRoute(
       path: AppRoutes.login,
       builder: (context, state) => const LoginScreen(),
     ),
 
-     GoRoute(
+    GoRoute(
       path: AppRoutes.signup,
       builder: (context, state) => const SignUpScreen(),
     ),
-      GoRoute(
+
+    GoRoute(
       path: AppRoutes.bottomBar,
       builder: (context, state) => const BottomBarScreen(),
     ),
-    GoRoute(
-      path: AppRoutes.batterySaverHome,
-      builder: (context, state) => const BatterySaverHomeScreen(),
+
+
+    ShellRoute(
+      builder: (context, state, child) => BlocProvider(
+        create: (_) => BatterySaverHomeBloc()
+          ..add(const LoadBatteryInfo()),
+        child: child,
+      ),
+      routes: [
+        GoRoute(
+          path: AppRoutes.batterySaverHome,
+          builder: (context, state) => const BatterySaverHomeScreen(),
+        ),
+       GoRoute(
+  path: '/ResultBatterySaverScreen',
+  builder: (context, state) {
+    final bloc = state.extra as BatterySaverHomeBloc;
+    return BlocProvider.value(
+      value: bloc,                          // ← same instance
+      child: const ResultBatterySaverScreen(),
+    );
+  },
+),
+      ],
     ),
+
     GoRoute(
-      path: AppRoutes.resultBatterySaver,
-      builder: (context, state) => const ResultBatterySaverScreen(),
-    ),
-     GoRoute(
       path: AppRoutes.powerBoostHome,
       builder: (context, state) => const PowerBoostHomeScreen(),
     ),
+
     GoRoute(
-  path: '/ResultPowerBoostScreen',
-  builder: (context, state) {
-    return const ResultPowerBoostScreen();
-  },
-),
-     GoRoute(
+      path: '/ResultPowerBoostScreen',
+      builder: (context, state) => const ResultPowerBoostScreen(),
+    ),
+
+    GoRoute(
       path: AppRoutes.temperatureControlScreen,
       builder: (context, state) => const TemperatureControlScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.resultTemperatureControlScreen,
       builder: (context, state) => const ResultTemperatureControlScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.batteryHealthScreen,
       builder: (context, state) => const BatteryHealthScreen(),
     ),
-     GoRoute(
-      path: AppRoutes.resultBatteryHealthScreen,
-      builder: (context, state) => const ResultBatteryHealthScreen(),
-    ),
-    // ========================tools screen routes =======================
 
-      GoRoute(
+    // fix: extra cast kiya — BatteryHealthModel pass hogi
+    GoRoute(
+      path: AppRoutes.resultBatteryHealthScreen,
+      builder: (context, state) {
+        final data = state.extra as BatteryHealthModel?;
+        return ResultBatteryHealthScreen(passedData: data);
+      },
+    ),
+
+    // ── Tools routes ─────────────────────────────────────────
+    GoRoute(
       path: AppRoutes.junkCleanerScreen,
       builder: (context, state) => const JunkCleanerScreen(),
     ),
 
-      GoRoute(
+    GoRoute(
       path: AppRoutes.phoneBoostScreen,
       builder: (context, state) => const PhoneBoostScreen(),
     ),
-      GoRoute(
+
+    GoRoute(
       path: AppRoutes.batterySaverScreen,
       builder: (context, state) => const BatterySaverScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.cpuCoolerScreen,
       builder: (context, state) => const CpuCoolerScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.securityScanScreen,
       builder: (context, state) => const SecurityScanScreen(),
     ),
-      GoRoute(
+
+    GoRoute(
       path: AppRoutes.notificationCleanerScreen,
       builder: (context, state) => const NotificationCleanerScreen(),
     ),
 
-      GoRoute(
+    GoRoute(
       path: AppRoutes.optimizeScreen,
       builder: (context, state) => const OptimizeScreen(),
     ),
+
     GoRoute(
       path: AppRoutes.optimizationResultScreen,
       builder: (context, state) => const OptimizationResultScreen(),
     ),
+
     GoRoute(
       path: AppRoutes.appManagerScreen,
       builder: (context, state) => const AppManagerScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.fileManagerScreen,
       builder: (context, state) => const FileManagerScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.cleanBackGroundScreen,
       builder: (context, state) => const CleanBackGroundScreen(),
     ),
@@ -148,7 +185,8 @@ final GoRouter router = GoRouter(
       path: AppRoutes.cleaningCompleteScreen,
       builder: (context, state) => const CleaningCompleteScreen(),
     ),
-     GoRoute(
+
+    GoRoute(
       path: AppRoutes.tooldataUsageScreen,
       builder: (context, state) => const ToolDataUsageScreen(),
     ),

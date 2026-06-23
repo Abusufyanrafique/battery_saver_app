@@ -1,11 +1,13 @@
 // ─────────────────────────────────────────────
 //  MAIN DRAWER WIDGET
 // ─────────────────────────────────────────────
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/routes/app_routes.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
@@ -21,82 +23,12 @@ class PhoneOptimizerDrawer extends StatelessWidget {
     required this.onItemSelected,
   });
 
-//   static final List<_DrawerItem> _mainItems = [
-//     _DrawerItem(
-//       'Home', "assets/images/home/menuhome.png", 
-//       Color(0xFF9A3CFF).withOpacity(0.20),
-//       onTap: () {
-//   // context.push(AppRoutes.home);
-// }
-      
-//       ),
-//     _DrawerItem(
-//       'Junk Cleaner', AppImages.menujunk,
-//       Color(0xFF2FE55D).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Phone Boost', AppImages.menuphoneboost, 
-//       Color(0xFF55D0FF).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Battery Saver', AppImages.menubatterysaver, 
-//       Color(0xFF00FF09).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'CPU Cooler', AppImages.menuCPUCooler, 
-//       Color(0xFF1F8EFF).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Security Scan', AppImages.menusecurityscan, 
-//       Color(0xFF69FF89).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Notification Cleaner', AppImages.menunotificationcleaner, 
-//       Color(0xFF891BFF).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Apps Manager', AppImages.menuappsmanager, 
-//       Color(0xFF37C8FF).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'File Manager', AppImages.menufilemanager, 
-//       Color(0xFFF3D917).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Data Usage', AppImages.menudatausage, 
-//       Color(0xFF27C3FE).withOpacity(0.20)
-//       ),
-//   ];
-
-//   static final List<_DrawerItem> _bottomItems = [
-//     _DrawerItem(
-//       'Settings', AppImages.menusettings, 
-//       Color(0xFF989CDF).withOpacity(0.20)
-//       ),
-//     // ignore: deprecated_member_use
-//     _DrawerItem(
-//       'Feedback',AppImages.menufeedback, 
-//       Color(0xFF7075C9).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Rate Us', AppImages.menurateus, 
-//       Color(0xFFFFDD55).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Share App', AppImages.menushareapp, 
-//       Color(0xFF989CDF).withOpacity(0.20)
-//       ),
-//     _DrawerItem(
-//       'Privacy Policy', AppImages.menuprivacyPolicy, 
-//       Color(0xFF878DF1).withOpacity(0.20)
-//       ),
-//   ];
 
   @override
   Widget build(BuildContext context) {
      final List<_DrawerItem> _mainItems = [
     _DrawerItem(
-      'Home', "assets/images/home/menuhome.png", 
+      AppText.hometext, AppImages.menuhome, 
       Color(0xFF9A3CFF).withOpacity(0.20),
       onTap: () {
   context.push(AppRoutes.home);
@@ -104,23 +36,22 @@ class PhoneOptimizerDrawer extends StatelessWidget {
       
       ),
     _DrawerItem(
-      'Junk Cleaner', AppImages.menujunk,
+      AppText.junkCleaner, AppImages.menujunk,
       Color(0xFF2FE55D).withOpacity(0.20),
         onTap: () {
-          print("push to junk clesner ");
+          
   context.push(AppRoutes.junkCleanerScreen);
 }
       ),
     _DrawerItem(
-      'Phone Boost', AppImages.menuphoneboost, 
+     AppText.phoneBoost, AppImages.menuphoneboost, 
       Color(0xFF55D0FF).withOpacity(0.20),
        onTap: () {
-          print("push to phone boost ");
   context.push(AppRoutes.phoneBoostScreen);
 }
       ),
     _DrawerItem(
-      'Battery Saver', AppImages.menubatterysaver, 
+      AppText.batterySaver, AppImages.menubatterysaver, 
       Color(0xFF00FF09).withOpacity(0.20),
         onTap: () {
           print("push to battery saver ");
@@ -128,50 +59,46 @@ class PhoneOptimizerDrawer extends StatelessWidget {
 }
       ),
     _DrawerItem(
-      'CPU Cooler', AppImages.menuCPUCooler, 
+      AppText.cpuCooler, AppImages.menuCPUCooler, 
       Color(0xFF1F8EFF).withOpacity(0.20),
       onTap: () {
-          print("push to cpu cooler ");
   context.push(AppRoutes.cpuCoolerScreen);
 }
       ),
     _DrawerItem(
-      'Security Scan', AppImages.menusecurityscan, 
+      AppText.securityScan, AppImages.menusecurityscan, 
       Color(0xFF69FF89).withOpacity(0.20),
        onTap: () {
-          print("push to phone boost ");
+          
   context.push(AppRoutes.securityScanScreen);
 }
       ),
     _DrawerItem(
-      'Notification Cleaner', AppImages.menunotificationcleaner, 
+     AppText.notificationCleaner, AppImages.menunotificationcleaner, 
       Color(0xFF891BFF).withOpacity(0.20),
        onTap: () {
-          print("push to phone boost ");
   context.push(AppRoutes.notificationCleanerScreen);
 }
       ),
     _DrawerItem(
-      'Apps Manager', AppImages.menuappsmanager, 
+      AppText.appManager, AppImages.menuappsmanager, 
       Color(0xFF37C8FF).withOpacity(0.20),
        onTap: () {
-          print("push to phone boost ");
   context.push(AppRoutes.appManagerScreen);
 }
       ),
     _DrawerItem(
-      'File Manager', AppImages.menufilemanager, 
+      AppText.fileManager, AppImages.menufilemanager, 
       Color(0xFFF3D917).withOpacity(0.20),
        onTap: () {
-          print("push to phone boost ");
   context.push(AppRoutes.fileManagerScreen);
 }
       ),
     _DrawerItem(
-      'Data Usage', AppImages.menudatausage, 
+     AppText.dataUsage, AppImages.menudatausage, 
       Color(0xFF27C3FE).withOpacity(0.20),
        onTap: () {
-          print("push to phone boost ");
+
   context.push(AppRoutes.tooldataUsageScreen);
 }
       ),
@@ -179,32 +106,31 @@ class PhoneOptimizerDrawer extends StatelessWidget {
 
    final List<_DrawerItem> _bottomItems = [
     _DrawerItem(
-      'Settings', AppImages.menusettings, 
+      AppText.settings, AppImages.menusettings, 
       Color(0xFF989CDF).withOpacity(0.20), onTap: () {
-          print("push to phone boost ");
-  context.push("AppRoutes.settings");
+    context.push("AppRoutes.settings");
 }
       ),
     // ignore: deprecated_member_use
     _DrawerItem(
-      'Feedback',AppImages.menufeedback, 
+     AppText.feedback,AppImages.menufeedback, 
       Color(0xFF7075C9).withOpacity(0.20)
       ),
     _DrawerItem(
-      'Rate Us', AppImages.menurateus, 
+      AppText.rateUs, AppImages.menurateus, 
       Color(0xFFFFDD55).withOpacity(0.20)
       ),
     _DrawerItem(
-      'Share App', AppImages.menushareapp, 
+      AppText.shareApp, AppImages.menushareapp, 
       Color(0xFF989CDF).withOpacity(0.20)
       ),
     _DrawerItem(
-      'Privacy Policy', AppImages.menuprivacyPolicy, 
+      AppText.privacyPolicy, AppImages.menuprivacyPolicy, 
       Color(0xFF878DF1).withOpacity(0.20)
       ),
   ];
     return Drawer(
-      width: 220,
+      width: getWidth(240),
 
       //  BACKGROUND GRADIENT ADDED
       child: Container(
@@ -230,7 +156,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
               child: ListView(
                 padding: EdgeInsets.zero,
                 children: [
-                  const SizedBox(height: 8),
+                   SizedBox(height: getHeight(8)),
 
                   ..._mainItems.map(
                     (item) => _DrawerTile(
@@ -326,19 +252,19 @@ class PhoneOptimizerDrawer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Phone Optimizer',
+                AppText.phoneOptimizerdrawer,
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(14),
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 2),
+               SizedBox(height: getHeight(2)),
               Text(
-                'Version 1.0.0',
+                AppText.versiontext,
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(12),
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFFD9D9D9),
+                  color: AppColors.allsmalltextcolor,
                 ),
               ),
             ],
@@ -381,13 +307,14 @@ class _DrawerTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
             decoration: BoxDecoration(
               gradient: isSelected
-                  ? const LinearGradient(
+                  ?  LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Color(0xFF1B235C),
-                        Color(0xFF1B2153),
-                        Color(0xFF13173A),
+                        AppColors.selectedTileTop,
+                        AppColors.selectedTileMid,
+                        AppColors.selectedTileBottom,
+                        
                       ],
                     )
                   : null,

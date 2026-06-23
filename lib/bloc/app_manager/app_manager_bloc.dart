@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:android_intent_plus/flag.dart';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -22,6 +23,7 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
     on<AppManagerTabChanged>(_onTabChanged);
     on<AppManagerToggleApp>(_onToggle);
     on<AppManagerUninstallSelected>(_onUninstall);
+    on<AppManagerInstallApk>(_onInstallApk); // ✅ NEW
   }
 
   Future<int> _getAndroidSdk() async {
@@ -40,7 +42,6 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
     emit(state.copyWith(status: AppManagerStatus.loading));
 
     try {
-      // ── Runtime permissions ──────────────────────────────
       if (Platform.isAndroid) {
         final sdkInt = await _getAndroidSdk();
         if (sdkInt >= 30) {
@@ -54,15 +55,13 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
         }
       }
 
-      // ── Real installed apps ──────────────────────────────
       final List<AppInfo> apps = await InstalledApps.getInstalledApps(
-        true, // excludeSystemApps
-        true, // withIcon
+        true,
+        true,
       );
 
       debugPrint('=== Total apps found: ${apps.length}');
 
-      // Build initial list without sizes
       final rawApps = <RealAppModel>[];
       for (final app in apps) {
         Uint8List? iconBytes;
@@ -79,7 +78,6 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
         ));
       }
 
-      // ── Fetch APK sizes in batch ─────────────────────────
       final packageNames =
           rawApps.map((a) => a.packageName).where((p) => p.isNotEmpty).toList();
 
@@ -102,10 +100,8 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
         return app.copyWith(sizeMB: sizeMap[app.packageName] ?? 0);
       }).toList();
 
-      // size descending sort
       realApps.sort((a, b) => b.sizeMB.compareTo(a.sizeMB));
 
-      // ── APK files scan ───────────────────────────────────
       final apkFiles = await _scanApkFiles();
 
       emit(state.copyWith(
@@ -203,5 +199,37 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
       } catch (_) {}
     }
     add(const AppManagerLoadApps());
+  }
+
+  // NEW: Install APK handler
+  Future<void> _onInstallApk(
+    AppManagerInstallApk event,
+    Emitter<AppManagerState> emit,
+  ) async {
+    try {
+      // Android 8+ ke liye install permission check
+      if (Platform.isAndroid) {
+        final sdkInt = await _getAndroidSdk();
+        if (sdkInt >= 26) {
+          if (!await Permission.requestInstallPackages.isGranted) {
+            final status = await Permission.requestInstallPackages.request();
+            if (!status.isGranted) {
+              debugPrint('=== Install permission denied');
+              return;
+            }
+          }
+        }
+      }
+
+      final intent = AndroidIntent(
+        action: 'android.intent.action.VIEW',
+        data: Uri.file(event.apkPath).toString(),
+        type: 'application/vnd.android.package-archive',
+        flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
+      );
+      await intent.launch();
+    } catch (e) {
+      debugPrint('=== Install APK error: $e');
+    }
   }
 }

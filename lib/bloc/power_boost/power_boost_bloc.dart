@@ -80,11 +80,12 @@ class PowerBoostBloc extends Bloc<PowerBoostEvent, PowerBoostState> {
     // Step 3: Close Background Apps — yahan se after-boost RAM milega
     double afterUsedPercent = _beforeUsedPercent;
     try {
-      final Map result = await _channel.invokeMethod('closeBackgroundApps');
-      final double availBytes = (result['availableRamBytes'] as num).toDouble();
-      final double totalBytes = (result['totalRamBytes'] as num).toDouble();
-      final double usedBytes = totalBytes - availBytes;
-      afterUsedPercent = (usedBytes / totalBytes) * 100;
+      await _channel.invokeMethod('closeBackgroundApps');
+      await Future.delayed(const Duration(milliseconds: 500)); // memory stats update hone do
+      final Map result = await _channel.invokeMethod('getPowerBoostData'); // fresh read after closing apps
+      final double ramUsedBytes = (result['ramUsedBytes'] as num).toDouble();
+      final double totalRamBytes = (result['totalRamBytes'] as num).toDouble();
+      afterUsedPercent = (ramUsedBytes / totalRamBytes) * 100;
     } catch (_) {}
 
     await Future.delayed(const Duration(seconds: 2));
@@ -102,15 +103,9 @@ class PowerBoostBloc extends Bloc<PowerBoostEvent, PowerBoostState> {
     ));
   }
 
-  /// Real RAM freed % ko UI-friendly range (60–95%) mein scale karta hai.
-  /// Calculation real data se aata hai, sirf random nahi.
+  // power boost percentage value (REAL value — no fake scaling/clamp) ========================
   int _calculateBoostPercent(double before, double after) {
     final double freedPercent = (before - after).clamp(0, 100);
-
-    // Real freed % chhota hota hai (e.g. 2-8%), is liye scale karo
-    // taake user ko meaningful number nazar aaye.
-    final double scaled = 60 + (freedPercent * 6);
-
-    return scaled.clamp(60, 95).round();
+    return freedPercent.round();
   }
 }

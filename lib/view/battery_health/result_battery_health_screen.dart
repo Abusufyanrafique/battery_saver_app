@@ -4,8 +4,8 @@ import 'package:battery_saver_app/bloc/battery_health/battery_health_bloc.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_event.dart';
 import 'package:battery_saver_app/bloc/battery_health/battery_health_state.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
- //  Correct import
 import 'package:battery_saver_app/data/repositories/battery_repository.dart';
+import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/battery_health/battery_capacity_card.dart';
@@ -16,35 +16,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ResultBatteryHealthScreen extends StatelessWidget {
-  // BatteryHealthScreen se real data GoRouter extra ke zariye aata hai
+
   final BatteryHealthModel? passedData;
 
   const ResultBatteryHealthScreen({super.key, this.passedData});
-
+ 
   @override
   Widget build(BuildContext context) {
-    // Agar passedData already hai to BlocProvider bilkul zaroorat nahi
-    // Data already BatteryHealthScreen ne fetch karke pass kar diya hai
+     SizeConfig().init(context);
     if (passedData != null) {
       return Scaffold(
-        backgroundColor:AppColors.allscreenBackgroundColor,
+        backgroundColor: AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: _buildBody(passedData!),
       );
     }
 
-    // Sirf tab naya BLoC banao jab passedData null ho (direct navigation case)
     return BlocProvider(
       create: (_) => BatteryHealthBloc(repository: BatteryRepository())
         ..add(const LoadBatteryHealth()),
       child: Scaffold(
-         backgroundColor:AppColors.allscreenBackgroundColor,
+        backgroundColor: AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: BlocBuilder<BatteryHealthBloc, BatteryHealthState>(
           builder: (context, state) {
             if (state is BatteryHealthLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              return Center(
+                child: CircularProgressIndicator(color: AppColors.loaderBlue),
               );
             }
 
@@ -53,15 +51,15 @@ class ResultBatteryHealthScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline,
-                        color: Colors.red, size: 48),
-                    const SizedBox(height: 12),
+                    Icon(Icons.error_outline,
+                        color: AppColors.errorRed, size: 48),
+                     SizedBox(height: getHeight(12)),
                     Text(
                       state.message,
-                      style: const TextStyle(color: Colors.white70),
+                      style: TextStyle(color: AppColors.errorTextWhite70),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
+                     SizedBox(height: getHeight(16)),
                     ElevatedButton(
                       onPressed: () => context
                           .read<BatteryHealthBloc>()
@@ -95,28 +93,28 @@ class ResultBatteryHealthScreen extends StatelessWidget {
             status: data.healthStatus,
             description: data.healthDescription,
           ),
-          const SizedBox(height: 12),
+           SizedBox(height: getHeight(12)),
 
           BatteryCapacityCard(
             designCapacity: data.formattedDesignCapacity,
             currentCapacity: data.formattedCurrentCapacity,
           ),
-          const SizedBox(height: 12),
+           SizedBox(height: getHeight(12)),
 
           HealthDetailsCard(
             voltage: data.formattedVoltage,
             temperature: data.formattedTemperature,
             chargingCycles: data.formattedCycles,
-            manufactureDate: data.deviceModel,
+            manufactureDate: data.manufactureDate,
           ),
-          const SizedBox(height: 12),
+           SizedBox(height: getHeight(12)),
 
           BatteryTipsCard(
             tip: _getTipForStatus(data.healthStatus),
             subTip: _getSubTipForStatus(data.healthStatus),
           ),
 
-          const SizedBox(height: 24),
+           SizedBox(height: getHeight(24)),
         ],
       ),
     );
@@ -148,6 +146,7 @@ class ResultBatteryHealthScreen extends StatelessWidget {
     }
   }
 }
+
 class BatteryHealthModel {
   final int batteryLevel;
   final String batteryState;

@@ -27,7 +27,7 @@ class BatteryHealthScreen extends StatelessWidget {
       create: (_) => BatteryHealthBloc(repository: BatteryRepository())
         ..add(const LoadBatteryHealth()),
       child: Scaffold(
-        backgroundColor:AppColors.allscreenBackgroundColor,
+        backgroundColor: AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.batteryHealth),
         body: SafeArea(
           child: BlocBuilder<BatteryHealthBloc, BatteryHealthState>(
@@ -49,13 +49,16 @@ class BatteryHealthScreen extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                     SizedBox(height: getHeight(16)),
 
                     // Title 1
                     Center(
                       child: ShaderMask(
-                        shaderCallback: (bounds) => const LinearGradient(
-                          colors: [Color(0xFFB8CBEF), Color(0xFF0E65B0)],
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [
+                            AppColors.titleGradientStart,
+                            AppColors.titleGradientEnd,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ).createShader(bounds),
@@ -77,18 +80,18 @@ class BatteryHealthScreen extends StatelessWidget {
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(20),
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF7634C0),
+                        color: AppColors.subtitlePurple,
                       ),
                     ),
 
-                    const SizedBox(height: 6),
+                     SizedBox(height: getHeight(6)),
 
                     Text(
                       AppText.checkbatteryhealthandgettipstoextendbattery,
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(14),
-                        color: const Color(0xFFD9D9D9),
+                        color: AppColors.infoLabelColor,
                       ),
                     ),
 
@@ -96,8 +99,8 @@ class BatteryHealthScreen extends StatelessWidget {
 
                     // State handling
                     if (state is BatteryHealthLoading)
-                      const CircularProgressIndicator(
-                        color: Color(0xFF3B82F6),
+                      CircularProgressIndicator(
+                        color: AppColors.loaderBlue,
                       )
                     else if (state is BatteryHealthLoaded)
                       BatteryHealthWidget(
@@ -111,7 +114,7 @@ class BatteryHealthScreen extends StatelessWidget {
                     else if (state is BatteryHealthError)
                       Text(
                         state.message,
-                        style: const TextStyle(color: Colors.red),
+                        style: TextStyle(color: AppColors.errorRed),
                       )
                     else
                       const SizedBox.shrink(),

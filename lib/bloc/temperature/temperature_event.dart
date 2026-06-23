@@ -15,8 +15,12 @@ class TemperatureCpuCoolerToggled extends TemperatureEvent {
 }
 
 class TemperatureCoolDownStarted extends TemperatureEvent {}
-
 class TemperatureCoolDownCancelled extends TemperatureEvent {}
+
+// ── Auto Cool Service Events ──────────────────────────────────
+class TemperatureAutoCoolServiceStarted extends TemperatureEvent {}
+class TemperatureAutoCoolServiceStopped extends TemperatureEvent {}
+class TemperatureCpuCoolerKillTriggered extends TemperatureEvent {}
 
 // ── Internal step events (private) ───────────────────────────
 class _TemperatureStepOneCompleted extends TemperatureEvent {}

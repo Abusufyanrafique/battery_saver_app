@@ -1,7 +1,8 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
-import 'package:lottie/lottie.dart';
 
 class OnboardingScreen1 extends StatelessWidget {
   const OnboardingScreen1({super.key});
@@ -16,10 +17,10 @@ class OnboardingScreen1 extends StatelessWidget {
          Container(
           height: getHeight(296),
           width: getWidth(284),
-          child: Image.asset('assets/images/onboarding/onboardingimageone.png')),
+          child: Image.asset(AppImages.onboardingimageone)),
          SizedBox(height: getHeight(100),),
           Text(
-            "Welcome to\n Phone Optimizer",
+            AppText.welcometoPhoneOptimizer,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(30),
@@ -29,7 +30,7 @@ class OnboardingScreen1 extends StatelessWidget {
 
 
           Text(
-            "Your all-in -one solution for a faster,\ncleaner and more secure device.",
+           AppText.cleanerandmoresecuredevice,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(16),

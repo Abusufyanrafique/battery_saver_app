@@ -1,5 +1,7 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingScreen3 extends StatelessWidget {
@@ -15,10 +17,10 @@ class OnboardingScreen3 extends StatelessWidget {
            Container(
           height: getHeight(296),
           width: getWidth(284),
-          child: Image.asset('assets/images/onboarding/onboardingimagethree.png')),
+          child: Image.asset(AppImages.onboardingimagethree)),
            SizedBox(height: getHeight(100),),
           Text(
-            "All tools in\n One Place",
+            AppText.toolsinOnePlace,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(30),
@@ -28,7 +30,7 @@ class OnboardingScreen3 extends StatelessWidget {
 
 
           Text(
-            "Junk Cleaner, phone Boost, Battery\nSaver, and more Handy Tools.",
+            AppText.saverandmoreHandyTools,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(16),

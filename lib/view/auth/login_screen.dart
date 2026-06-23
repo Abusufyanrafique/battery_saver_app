@@ -18,13 +18,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // ─── Colors (match your screenshot) ───────────────────────────────────────
-  
-  static const Color _accent = Color(0xFF3B82F6);       // blue accent   // cyan
-  static const Color _gradEnd = Color(0xFF3B82F6);      // blue
-  static const Color _textHint = Color(0xFF6B7FAB);
-  static const Color _white = Colors.white;
-
   @override
   void dispose() {
     _emailController.dispose();
@@ -42,32 +35,34 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-               SizedBox(height: getHeight(100)),
+              SizedBox(height: getHeight(100)),
 
-              // ── Heading ──────────────────────────────────────────────────
-               Text(
+              // ── Heading ─────────────────────────────
+              Text(
                 AppText.welcomeBack,
                 textAlign: TextAlign.center,
-                style:AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(30),
                   fontWeight: FontWeight.w700,
-                  color: Colors.white
-                )
+                  color: Colors.white,
+                ),
               ),
-              const SizedBox(height: 8),
-               Text(
+
+              SizedBox(height: getHeight(8)),
+
+              Text(
                 AppText.signContinue,
                 textAlign: TextAlign.center,
-                style:AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(16),
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFFD9D9D9),
-                )
+                  color: const Color(0xFFD9D9D9),
+                ),
               ),
 
-              const SizedBox(height: 48),
+              SizedBox(height: getHeight(48)),
 
-              // ── Email / Phone Field ───────────────────────────────────────
+              // ── Email Field ─────────────────────────
               _buildTextField(
                 controller: _emailController,
                 hint: AppText.emailorPhone,
@@ -75,18 +70,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscure: false,
               ),
 
-              const SizedBox(height: 16),
+              SizedBox(height: getHeight(16)),
 
-              // ── Password Field ────────────────────────────────────────────
+              // ── Password Field ───────────────────────
               _buildTextField(
                 controller: _passwordController,
-                hint:AppText.password,
+                hint: AppText.password,
                 icon: IconButton(
                   icon: Icon(
                     _obscurePassword
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
-                    color: _textHint,
+                    color: AppColors.textHint,
                     size: 20,
                   ),
                   onPressed: () =>
@@ -95,17 +90,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 obscure: _obscurePassword,
               ),
 
-              const SizedBox(height: 12),
+              SizedBox(height: getHeight(12)),
 
-              // ── Forgot Password ───────────────────────────────────────────
+              // ── Forgot Password ──────────────────────
               Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: () {},
                   child: const Text(
-                    'Forgot Password?',
+                    AppText.forgotPassword,
                     style: TextStyle(
-                      color: _accent,
+                      color: AppColors.accent,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -115,42 +110,42 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 32),
 
-              // ── Log In Button ─────────────────────────────────────────────
+              // ── Login Button ─────────────────────────
               _buildGradientButton(
-                label: 'Log in',
+                label: AppText.login,
                 onTap: () {
-                 context.push('/signup');
+                  context.push('/signup');
                 },
               ),
 
               const SizedBox(height: 28),
 
-              // ── OR Divider ────────────────────────────────────────────────
+              // ── Divider ──────────────────────────────
               Row(
                 children: [
                   Expanded(child: _divider()),
-                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Text(
-                      'or',
+                      AppText.or,
                       style: AppTextStyles.bodySmall.copyWith(
-                        fontSize: getFont(20)
-                      )
+                        fontSize: getFont(20),
+                      ),
                     ),
                   ),
                   Expanded(child: _divider()),
                 ],
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: getHeight(24)),
 
-              // ── Social Buttons ────────────────────────────────────────────
+              // ── Social Buttons ───────────────────────
               Row(
                 children: [
                   Expanded(
                     child: _socialButton(
                       onTap: () {},
-                      child:Image(image: AssetImage(AppImages.googlebattery))
+                      child: Image(image: AssetImage(AppImages.googlebattery)),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -159,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onTap: () {},
                       child: const Icon(
                         Icons.apple,
-                        color: _white,
+                        color: AppColors.white,
                         size: 26,
                       ),
                     ),
@@ -169,12 +164,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 36),
 
-              // ── Sign Up Link ──────────────────────────────────────────────
+              // ── Sign Up ──────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                   Text(
-                    "Don't have an account? ",
+                  Text(
+                    AppText.dontHaveAccount,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       fontWeight: FontWeight.w500,
@@ -182,13 +177,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   GestureDetector(
                     onTap: () {},
-                    child:  Text(
-                      'Sign Up',
-                     style: AppTextStyles.bodySmall.copyWith(
-                      fontSize: getFont(16),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white
-                    ),
+                    child: Text(
+                      AppText.signUp,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        fontSize: getFont(16),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -202,36 +197,26 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-
- Widget _buildTextField({
-  required TextEditingController controller,
-  required String hint,
-  required bool obscure,
-  Widget? icon,
-}) {
-  return Container(
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(12),
-     
-    ),
-    child: Container(
-      margin: const EdgeInsets.all(1), // border effect
+  // ── TEXT FIELD ─────────────────────────────
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required bool obscure,
+    Widget? icon,
+  }) {
+    return Container(
+      margin: const EdgeInsets.all(1),
       decoration: BoxDecoration(
-         gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF1B235C), // top (lighter blue)
-          Color(0xFF1B2153), // middle
-          Color(0xFF13173A), // bottom (dark blue)
-        ],
-      ),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: AppColors.fieldGradient,
+        ),
         borderRadius: BorderRadius.circular(11),
         border: Border.all(
-          color: Color(0xFF4103AC),
-          width: 0.5
-        )
+          color: AppColors.borderPurple,
+          width: 0.5,
+        ),
       ),
       child: TextField(
         controller: controller,
@@ -239,7 +224,7 @@ class _LoginScreenState extends State<LoginScreen> {
         style: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle:AppTextStyles.bodySmall.copyWith(
+          hintStyle: AppTextStyles.bodySmall.copyWith(
             fontSize: getFont(16),
             fontWeight: FontWeight.w600,
           ),
@@ -251,10 +236,10 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
+  // ── BUTTON ────────────────────────────────
   Widget _buildGradientButton({
     required String label,
     required VoidCallback onTap,
@@ -264,19 +249,15 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Container(
         height: getHeight(60),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF55D0FF),
-               Color(0xFF0E5AA7),
-               
-               ],
+          gradient: LinearGradient(
+            colors: AppColors.buttonGradient,
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: _gradEnd.withOpacity(0.35),
+              color: AppColors.buttonGradient[1].withOpacity(0.35),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -285,15 +266,16 @@ class _LoginScreenState extends State<LoginScreen> {
         alignment: Alignment.center,
         child: Text(
           label,
-        style: AppTextStyles.bodyMedium.copyWith(
-          fontSize: getFont(20),
-          fontWeight:FontWeight.w700,
-        ),
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontSize: getFont(20),
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
   }
 
+  // ── SOCIAL BUTTON ─────────────────────────
   Widget _socialButton({
     required VoidCallback onTap,
     required Widget child,
@@ -303,17 +285,16 @@ class _LoginScreenState extends State<LoginScreen> {
       child: Container(
         height: 52,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF1B235C), // top (lighter blue)
-          Color(0xFF1B2153), // middle
-          Color(0xFF13173A), // bottom (dark blue)
-        ],
-      ),
+          gradient: LinearGradient(
+            colors: AppColors.socialGradient,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: const Color(0xFF2A3F6F), width: 1),
+          border: Border.all(
+            color: AppColors.borderPurple,
+            width: 1,
+          ),
         ),
         alignment: Alignment.center,
         child: child,
@@ -323,6 +304,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _divider() => Container(
         height: 1,
-        color: const Color(0xFF373C62),
+        color: AppColors.divider,
       );
 }

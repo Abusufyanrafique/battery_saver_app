@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'app_list_tile.dart';
 
 class AppListContainer extends StatelessWidget {
-  final List<dynamic> apps; // RealAppModel ya ApkFileModel dono
+  final List<dynamic> apps;
   final Function(int index) onToggle;
   final bool isApkMode;
+
+  // ── Colors ───────────────────────────────────────────
+  static const Color _gradientTop    = Color(0xFF232C6D);
+  static const Color _gradientMid    = Color(0xFF1B2153);
+  static const Color _gradientBottom = Color(0xFF13173A);
 
   const AppListContainer({
     super.key,
@@ -21,9 +26,9 @@ class AppListContainer extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
+            _gradientTop,
+            _gradientMid,
+            _gradientBottom,
           ],
         ),
         borderRadius: BorderRadius.circular(12),

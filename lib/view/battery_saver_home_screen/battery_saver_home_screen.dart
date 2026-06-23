@@ -31,13 +31,16 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
   Widget build(BuildContext context) {
     SizeConfig().init(context);
 
-    return BlocConsumer<BatterySaverHomeBloc, BatterySaverHomeState>(
-      // Jab saver active ho jaye to result screen par navigate karo
-      listener: (context, state) {
-        if (state.status == BatterySaverStatus.active) {
-          context.push('/ResultBatterySaverScreen');
-        }
-      },
+ return BlocConsumer<BatterySaverHomeBloc, BatterySaverHomeState>(
+  listenWhen: (previous, current) =>
+      previous.status != BatterySaverStatus.active &&
+      current.status == BatterySaverStatus.active,
+  listener: (context, state) {
+    context.push(
+      '/ResultBatterySaverScreen',
+      extra: context.read<BatterySaverHomeBloc>(), 
+    );
+  },
       builder: (context, state) {
         return Scaffold(
           backgroundColor: AppColors.allscreenBackgroundColor,

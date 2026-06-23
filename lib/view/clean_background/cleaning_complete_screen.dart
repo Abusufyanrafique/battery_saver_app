@@ -65,7 +65,7 @@ class CleaningCompleteScreen extends StatelessWidget {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F1633),
+        backgroundColor: AppColors.allscreenBackgroundColor,
         appBar: CustomAppBar(title: AppText.cleaningComplete),
         body: SingleChildScrollView(
           padding: const EdgeInsets.only(left: 16.0, right: 16),

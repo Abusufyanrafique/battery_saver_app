@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:battery_optimization_helper/battery_optimization_helper.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:disk_space_plus/disk_space_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -13,10 +14,30 @@ part 'optimization_state.dart';
 const _kTaskDurationMs = 1400;
 const _kTotalTasks = 5;
 
+/// Platform channel for real OS-level battery temperature.
+/// Backed by BatteryManager.EXTRA_TEMPERATURE on Android (see MainActivity.kt).
+/// Returns null on platforms/devices where this isn't available — the UI
+/// must hide the temperature row in that case rather than show a fake value.
+const _kDeviceInfoChannel = MethodChannel('device_info/battery');
+
 class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   Timer? _taskTimer;
   int _currentTaskIndex = 0;
   final Battery _battery = Battery();
+
+  /// Real battery % captured the moment the optimize session starts.
+  /// This is the ONLY valid "before" value — never derived/guessed.
+  int? _sessionStartBatteryLevel;
+
+  /// Real free disk space (MB) captured the moment the optimize session
+  /// starts — the genuine "before" snapshot for the disk-space half of
+  /// the performance score.
+  double? _sessionStartFreeDiskMB;
+  double? _sessionStartTotalDiskMB;
+
+  /// Real performance score computed from the two real readings above,
+  /// at session start. This is the genuine "before" score — not fabricated.
+  int? _sessionStartScore;
 
   OptimizationBloc() : super(OptimizationState.initial(_kTotalTasks)) {
     on<StartOptimizationEvent>(_onStart);
@@ -35,6 +56,40 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     Emitter<OptimizationState> emit,
   ) async {
     if (state.isRunning) return;
+
+    // Real baseline capture — this is what makes the later "battery saved"
+    // AND the "before" performance score genuine instead of fabricated.
+    try {
+      _sessionStartBatteryLevel = await _battery.batteryLevel;
+    } catch (_) {
+      _sessionStartBatteryLevel = null; // unavailable — handled later, never guessed
+    }
+
+    try {
+      final diskSpace = DiskSpacePlus();
+      _sessionStartFreeDiskMB = (await diskSpace.getFreeDiskSpace) ?? 0;
+      _sessionStartTotalDiskMB = (await diskSpace.getTotalDiskSpace) ?? 1;
+    } catch (_) {
+      _sessionStartFreeDiskMB = null;
+      _sessionStartTotalDiskMB = null;
+    }
+
+    // Real "before" score — only computed if both real readings succeeded.
+    if (_sessionStartBatteryLevel != null &&
+        _sessionStartFreeDiskMB != null &&
+        _sessionStartTotalDiskMB != null) {
+      final freePercentBefore = (_sessionStartFreeDiskMB! /
+              _sessionStartTotalDiskMB! *
+              100)
+          .clamp(0.0, 100.0)
+          .toDouble();
+      _sessionStartScore = _calcScore(
+        batteryPct: _sessionStartBatteryLevel!.toDouble(),
+        freePct: freePercentBefore,
+      );
+    } else {
+      _sessionStartScore = null;
+    }
 
     emit(state.copyWith(
       phase: OptimizationPhase.requestingPermission,
@@ -162,7 +217,8 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  //  RESULT SCREEN LOGIC — real device data
+  //  RESULT SCREEN LOGIC — every value here is independently real-measurable.
+  //  Nothing is randomized, guessed, or back-computed from a fake baseline.
   // ════════════════════════════════════════════════════════════════════════════
 
   Future<void> _onLoadResult(
@@ -172,63 +228,65 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     emit(state.copyWith(resultStatus: ResultLoadStatus.loading));
 
     try {
-      // ── 1. Battery level (real) ──────────────────────────────────────────
-      final batteryLevel = await _battery.batteryLevel;       // e.g. 78
-      final batteryState = await _battery.batteryState;
-      final batteryBefore = (batteryLevel - _variance(3, 7)).clamp(1, 100);
-      final batterySavedText = _formatBatterySaved(
-          batteryState, batteryLevel, batteryBefore);
+      // ── 1. Battery % now — real, direct OS read ──────────────────────────
+      final batteryNow = await _battery.batteryLevel;
 
-      // ── 2. App cache — actual size read + clear ──────────────────────────
+      // ── 2. Cache: measure real size, delete it, measure real size again ──
       final cacheDir = await getTemporaryDirectory();
-      final cacheBefore = await _dirSizeBytes(cacheDir);
+      final cacheBeforeBytes = await _dirSizeBytes(cacheDir);
+
+      // Real free disk space BEFORE clearing, so the disk delta below is
+      // a genuine measured difference, not an estimate.
+      final diskSpace = DiskSpacePlus();
+      final freeDiskBeforeMB = (await diskSpace.getFreeDiskSpace) ?? 0;
+
       await _clearDir(cacheDir);
-      final cacheAfter = await _dirSizeBytes(cacheDir);
-      final clearedBytes = (cacheBefore - cacheAfter).clamp(0, double.maxFinite);
+
+      final cacheAfterBytes = await _dirSizeBytes(cacheDir);
+      final clearedBytes =
+          (cacheBeforeBytes - cacheAfterBytes).clamp(0, double.maxFinite).toDouble();
       final clearedMB = clearedBytes / (1024 * 1024);
 
-      // ── 3. RAM freed (cache + background estimate) ───────────────────────
-      final ramFreedMB = clearedMB + _variance(150, 350).toDouble();
+      // ── 3. Real free disk space AFTER clearing ───────────────────────────
+      final freeDiskAfterMB = (await diskSpace.getFreeDiskSpace) ?? 0;
+      final totalDiskMB = (await diskSpace.getTotalDiskSpace) ?? 1;
+      final diskFreedMB =
+          (freeDiskAfterMB - freeDiskBeforeMB).clamp(0, double.maxFinite).toDouble();
 
-      // ── 4. Disk space ────────────────────────────────────────────────────
-      final diskSpace = DiskSpacePlus();
-      double freeDisk = (await diskSpace.getFreeDiskSpace) ?? 0;
-      double totalDisk = (await diskSpace.getTotalDiskSpace) ?? 1;
+      // ── 4. Real temperature via platform channel. Null if unavailable —
+      //       we do NOT fall back to a guessed value. ──────────────────────
+      double? temperatureCelsius;
+      try {
+        final result = await _kDeviceInfoChannel
+            .invokeMethod<num>('getBatteryTemperature');
+        temperatureCelsius = result?.toDouble();
+      } on PlatformException {
+        temperatureCelsius = null;
+      } on MissingPluginException {
+        temperatureCelsius = null; // e.g. running on iOS or channel not wired up
+      }
 
-      // ── 5. Temperature from thermal state ───────────────────────────────
-      final tempText = _thermalText(batteryState);
-      final tempChange = _thermalChange(batteryState);
-
-      // ── 6. Performance score (real calculation) ──────────────────────────
-      final freePercent = (freeDisk / totalDisk * 100).clamp(0.0, 100.0);
-      final scoreBefore = _calcScore(
-        batteryPct: batteryBefore.toDouble(),
-        freePct: (freePercent - 5).clamp(0, 100),
-        cacheClean: false,
+      // ── 5. Performance score — built only from real, current readings.
+      //       No fabricated "before" baseline is subtracted. ───────────────
+      final freePercentNow =
+          (freeDiskAfterMB / totalDiskMB * 100).clamp(0.0, 100.0).toDouble();
+      final performanceScore = _calcScore(
+        batteryPct: batteryNow.toDouble(),
+        freePct: freePercentNow,
       );
-      final scoreAfter = _calcScore(
-        batteryPct: batteryLevel.toDouble(),
-        freePct: freePercent,
-        cacheClean: true,
-      );
-
-      // ── 7. Battery health ────────────────────────────────────────────────
-      final isHealthGood =
-          batteryLevel > 20 && batteryState != BatteryState.unknown;
 
       emit(state.copyWith(
         resultStatus: ResultLoadStatus.loaded,
-        batteryLevelBefore: batteryBefore,
-        batteryLevelAfter: batteryLevel,
-        batterySavedText: batterySavedText,
-        ramFreedText: '+${_fmtMB(ramFreedMB)}',
+        batteryLevelAtSessionStart: _sessionStartBatteryLevel,
+        batteryLevelNow: batteryNow,
         junkClearedMB: clearedMB,
         junkClearedText: _fmtMB(clearedMB),
-        temperatureText: tempText,
-        temperatureChange: tempChange,
-        scoreBefore: scoreBefore,
-        scoreAfter: scoreAfter,
-        isBatteryHealthGood: isHealthGood,
+        diskSpaceFreedMB: diskFreedMB,
+        diskSpaceFreedText: _fmtMB(diskFreedMB),
+        temperatureCelsius: temperatureCelsius,
+        performanceScore: performanceScore,
+        scoreBefore: _sessionStartScore, // real, or null if no session started
+        scoreAfter: performanceScore,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -273,41 +331,15 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     return '${mb.toStringAsFixed(0)} MB';
   }
 
-  String _formatBatterySaved(BatteryState state, int current, int before) {
-    final diff = (current - before).abs();
-    if (state == BatteryState.charging) return '+$diff%';
-    final mins = diff * 6; // ~6 min per 1% screen-on average
-    if (mins >= 60) return '+${mins ~/ 60}h ${mins % 60}m';
-    return '+${mins}m';
-  }
-
-  String _thermalText(BatteryState s) {
-    switch (s) {
-      case BatteryState.charging:
-        return 'Warm';
-      default:
-        return 'Normal';
-    }
-  }
-
-  double _thermalChange(BatteryState s) {
-    return s == BatteryState.charging ? -2.0 : -3.0;
-  }
-
+  /// Score from two genuinely-measured current values only.
+  /// No fabricated baseline, no random variance.
   int _calcScore({
     required double batteryPct,
     required double freePct,
-    required bool cacheClean,
   }) {
-    final b = (batteryPct * 0.4).clamp(0, 40);
-    final s = (freePct * 0.4).clamp(0, 40);
-    final c = cacheClean ? 20.0 : 5.0;
-    return (b + s + c).round().clamp(0, 100);
-  }
-
-  /// Deterministic pseudo-random — same session mein consistent rehta hai
-  int _variance(int min, int max) {
-    return min + (DateTime.now().millisecondsSinceEpoch % (max - min));
+    final b = (batteryPct * 0.5).clamp(0.0, 50.0);
+    final s = (freePct * 0.5).clamp(0.0, 50.0);
+    return (b + s).round().clamp(0, 100);
   }
 
   @override

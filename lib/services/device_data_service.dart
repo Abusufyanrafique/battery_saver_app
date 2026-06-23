@@ -7,7 +7,7 @@ class DeviceDataService {
 
   Future<CleanResultData> fetchRealData() async {
     try {
-      print("🚀 DEVICE SCAN STARTED");
+      print(" DEVICE SCAN STARTED");
 
       final results = await Future.wait([
         _channel.invokeMethod('getStorageStats'),
@@ -16,7 +16,7 @@ class DeviceDataService {
         _cacheChannel.invokeMethod('getResidualFiles'),
       ]);
 
-      print("📦 RAW RESULTS RECEIVED");
+      print(" RAW RESULTS RECEIVED");
 
       final stats     = Map<String, dynamic>.from(results[0] as Map);
       final appsCount = (results[1] as int?) ?? 0;

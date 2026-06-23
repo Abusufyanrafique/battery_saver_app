@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/bloc/junk_cleaner/junk_bloc.dart';
 import 'package:battery_saver_app/bloc/junk_cleaner/junk_event.dart';
 import 'package:battery_saver_app/bloc/junk_cleaner/junk_state.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -32,7 +33,7 @@ class _JunkCleanerView extends StatelessWidget {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF050D2D),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.appBarTitle),
       body: Container(
         decoration: const BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class OnboardingScreen2 extends StatelessWidget {
@@ -16,10 +17,10 @@ SizedBox(height: getHeight(80),),
          Container(
           height: getHeight(296),
           width: getWidth(284),
-          child: Image.asset('assets/images/onboarding/onboardingcleanimage.png')),
+          child: Image.asset(AppImages.onboardingcleanimage)),
           SizedBox(height: getHeight(100),),
           Text(
-            "Clean, Boost &\n Optimize",
+            AppText.cleanBoostOptimize,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(30),
@@ -29,7 +30,7 @@ SizedBox(height: getHeight(80),),
 
 
           Text(
-            "Remove junk, boost performance,\ncool down CPU and save battery.",
+            AppText.cooldownCpuandsavebattery,
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(16),

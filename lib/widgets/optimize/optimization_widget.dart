@@ -133,6 +133,7 @@ class _TaskTile extends StatelessWidget {
   Widget _buildStatus() {
     switch (status) {
       case TaskStatus.completed:
+      case TaskStatus.done:
         return Container(
           width: 16,
           height: 16,
@@ -154,7 +155,6 @@ class _TaskTile extends StatelessWidget {
         );
 
       case TaskStatus.pending:
-      case TaskStatus.done:
         return const Row(
           mainAxisSize: MainAxisSize.min,
           children: [

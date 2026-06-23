@@ -125,4 +125,10 @@ static const String tp = "assets/images/battery_saver/tp.png";
 static const String powerboostimaget = "assets/images/power_boost/powerboostimaget.png";
 static const String energy = "assets/images/power_boost/energy.png";
 static const String rooket = "assets/images/phone_boost/rooket.png";
+static const String onboardingimageone = 'assets/images/onboarding/onboardingimageone.png';
+static const String onboardingcleanimage = 'assets/images/onboarding/onboardingcleanimage.png';
+static const String onboardingimagethree = 'assets/images/onboarding/onboardingimagethree.png';
+static const String  temp =  "assets/images/home/temp.png";
+static const String menuhome = "assets/images/home/menuhome.png";
+static const String rooketimage = "assets/images/phone_boost/rooket.png";
 } 

@@ -70,7 +70,7 @@ class AppText {
   static const String youTube = "YouTube";
   static const String telegram = "Telegram";
   static const String spotify = "Spotify";
-  static const String  appManager =  'App Manager';
+  static const String  appManager =  'Apps Manager';
   // optimize screen===================================================================
    static const String optimizationInProgress = "Optimization in Progress";
 
@@ -278,4 +278,56 @@ static const String batteryUsage ="Battery Usage";
   static const String  failedtofetchrealdata =  "Failed to fetch real data";
   static const String batteryLeveltext = 'Battery Level';
   static const String nobackgroundAppsFound = "No Background Apps Found";
+  // ───── Auth ─────
+  static const String welcomeBacktext = "Welcome Back";
+  static const String signContinuetext = "Sign in to continue";
+
+  static const String emailOrPhone = "Email or Phone";
+  static const String passwordtext = "Password";
+
+  static const String forgotPassword = "Forgot Password?";
+  static const String login = "Log in";
+
+  static const String or = "or";
+
+  static const String dontHaveAccount = "Don't have an account? ";
+  static const String signUp = "Sign Up";
+  static const String   signuotogetstarted =   'Sign uo to get started';
+  static const String  confirmPassword =  'Confirm Password';
+  static const String  name =  'Name';
+  static const String welcometoPhoneOptimizer = "Welcome to\n Phone Optimizer";
+  static const String  cleanerandmoresecuredevice =  "Your all-in -one solution for a faster,\ncleaner and more secure device.";
+  static const String cleanBoostOptimize = "Clean, Boost &\n Optimize";
+  static const String cooldownCpuandsavebattery = "Remove junk, boost performance,\ncool down CPU and save battery.";
+  static const String toolsinOnePlace = "All tools in\n One Place";
+  static const String saverandmoreHandyTools = "Junk Cleaner, phone Boost, Battery\nSaver, and more Handy Tools.";
+  static const String hometemperaturetext = 'Temperature';
+  static const String calculating = 'Calculating...';
+  static const String remaining = 'Remaining';
+  static const String charginghometext = 'Charging';
+  static const String notCharging = 'Not Charging';
+  static const String phoneOptimizerdrawer = 'Phone Optimizer';
+  static const String versiontext = 'Version 1.0.0';
+  //---------------------------
+  //  static const String home = "Home";
+  // static const String junkCleaner = "Junk Cleaner";
+  // static const String phoneBoost = "Phone Boost";
+  // static const String batterySaver = "Battery Saver";
+  // static const String cpuCooler = "CPU Cooler";
+  // static const String securityScan = "Security Scan";
+  // static const String notificationCleaner = "Notification Cleaner";
+  // static const String appsManager = "Apps Manager";
+  // static const String fileManager = "File Manager";
+  // static const String dataUsage = "Data Usage";
+
+  // Drawer Bottom Items
+  static const String settings = "Settings";
+  static const String feedback = "Feedback";
+  static const String rateUs = "Rate Us";
+  static const String shareApp = "Share App";
+  static const String privacyPolicy = "Privacy Policy";
+  static const String  memoryOptimize =  'Memory Optimized!';
+  static const String boosting = 'Boosting...';
+  static const String boosted = 'Boosted!';
+  static const String hometext = 'Home';
 }

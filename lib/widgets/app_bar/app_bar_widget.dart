@@ -23,7 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.maybePop(context),
+            onPressed: () => Navigator.pop(context),
             icon: const Image(
               image: AssetImage(AppImages.chevron),
             ),
@@ -38,7 +38,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ),
           ),
-          const SizedBox(width: 48),
+           SizedBox(width: getWidth(48)),
         ],
       ),
     );

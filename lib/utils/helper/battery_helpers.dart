@@ -70,7 +70,7 @@ String remainingTimeFromLevel(
   const double normalHours = 10.0;
   const double powerSavingHours = 18.0;
   const double superSavingHours = 30.0;
-  const double customHours = 14.0; // safe balanced estimate
+  const double customHours = 14.0; 
 
   double totalHours;
 

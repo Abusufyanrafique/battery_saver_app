@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/bloc/onboarding/onboarding_cubit.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
+import 'package:battery_saver_app/data/database/shared_preferences/onboarding_pref.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/view/onboarding/onboarding_screen1.dart';
 import 'package:battery_saver_app/view/onboarding/onboarding_screen2.dart';
@@ -25,6 +26,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingScreen3(),
   ];
 
+  Future<void> _finishOnboarding() async {
+    await OnboardingPref.setSeen();
+    if (!mounted) return;
+    context.go('/login');
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -40,17 +47,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Expanded(
                   child: PageView(
                     controller: _controller,
-
-                    //  THIS FIX swipe sync issue
                     onPageChanged: (i) {
                       cubit.changePage(i);
                     },
-
                     children: pages,
                   ),
                 ),
 
-                //  INDICATOR
+                // ─── INDICATOR ─────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(3, (i) {
@@ -58,68 +62,75 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       duration: const Duration(milliseconds: 300),
                       margin: const EdgeInsets.all(10),
                       height: 8,
-                      width: index == i ? 8 : 8,
+                      width: 8,
                       decoration: BoxDecoration(
-                        color: index == i ? Color(0xFF55D0FF) : Color(0xFFD9D9D9),
+                        color: index == i
+                            ? AppColors.indicatorActive
+                            : AppColors.indicatorInactive,
                         borderRadius: BorderRadius.circular(20),
                       ),
                     );
                   }),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: getHeight(20)),
 
-                // BUTTONS
+                // ─── BUTTONS ─────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
-                     Container(
-  height: getHeight(60),
-  width: getWidth(390),
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(12),
-    gradient: const LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [
-        Color(0xFF55D0FF),
-        Color(0xFF0E5AA7),
-      ],
-    ),
-  ),
-  child: Material(
-    color: Colors.transparent,
-    child: InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () {
-         if (index == 2) {
-    context.go('/login'); // 👈 LOGIN SCREEN
-  } else {
-    cubit.nextPage(_controller);
-  }
-      },
-      child: Center(
-        child: Text(
-          index == 2 ? "Get Started" : "Next",
-          style:AppTextStyles.displayMedium.copyWith(
-            fontSize: getFont(16),
-            fontWeight: FontWeight.w600
-          )
-        ),
-      ),
-    ),
-  ),
-),
 
+                      // BUTTON
+                      Container(
+                        height: getHeight(60),
+                        width: getWidth(390),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: AppColors.buttonGradient,
+                          ),
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {
+                              if (index == pages.length - 1) {
+                                _finishOnboarding();
+                              } else {
+                                cubit.nextPage(_controller);
+                              }
+                            },
+                            child: Center(
+                              child: Text(
+                                index == pages.length - 1
+                                    ? "Get Started"
+                                    : "Next",
+                                style: AppTextStyles.displayMedium.copyWith(
+                                  fontSize: getFont(16),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // SKIP
                       TextButton(
                         onPressed: () {
-                          cubit.skip(_controller); //  FIXED
+                          _finishOnboarding();
                         },
-                        child:  Text("Skip",style: AppTextStyles.bodyMedium.copyWith(
-                          fontSize: getFont(16),
-                          fontWeight: FontWeight.w600,
-                        ),),
+                        child: Text(
+                          "Skip",
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            fontSize: getFont(16),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ],
                   ),

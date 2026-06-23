@@ -1,14 +1,10 @@
 part of 'battery_saver_bloc.dart';
 
-// ─── Battery Saver Status ────────────────────────────────────────────────────
-
 enum BatterySaverStatus { initial, loading, loaded, activating, active, error }
 
-// ─── Computed Battery Life Model ─────────────────────────────────────────────
-
 class BatteryLifeInfo {
-  final String estimatedTime;   // e.g. "15h 30m"
-  final String lifeLabel;       // e.g. "Extended" / "Normal" / "Low"
+  final String estimatedTime;
+  final String lifeLabel;
   final Color lifeColor;
   final String brightnessStatus;
   final String backgroundAppsStatus;
@@ -24,30 +20,38 @@ class BatteryLifeInfo {
     required this.autoSyncStatus,
     required this.notificationsStatus,
   });
-}
 
-// ─── Main State ───────────────────────────────────────────────────────────────
+  BatteryLifeInfo copyWith({
+    String? estimatedTime,
+    String? lifeLabel,
+    Color? lifeColor,
+    String? brightnessStatus,
+    String? backgroundAppsStatus,
+    String? autoSyncStatus,
+    String? notificationsStatus,
+  }) {
+    return BatteryLifeInfo(
+      estimatedTime: estimatedTime ?? this.estimatedTime,
+      lifeLabel: lifeLabel ?? this.lifeLabel,
+      lifeColor: lifeColor ?? this.lifeColor,
+      brightnessStatus: brightnessStatus ?? this.brightnessStatus,
+      backgroundAppsStatus: backgroundAppsStatus ?? this.backgroundAppsStatus,
+      autoSyncStatus: autoSyncStatus ?? this.autoSyncStatus,
+      notificationsStatus: notificationsStatus ?? this.notificationsStatus,
+    );
+  }
+}
 
 class BatterySaverHomeState extends Equatable {
   final BatterySaverStatus status;
-
-  /// Real battery level (0-100), null agar abhi load nahi hua
   final int? batteryLevel;
-
-  /// Real battery charging/discharging/full state
   final BatteryState? batteryChargeState;
-
-  /// User ka selected mode
   final SaverMode selectedMode;
-
-  /// Saver active hai ya nahi
   final bool isActive;
-
-  /// Computed battery life info (active hone ke baad)
   final BatteryLifeInfo? batteryLifeInfo;
-
-  /// Error message agar kuch galat ho
   final String? errorMessage;
+  // ← yeh flag add kiya — null reset track karne ke liye
+  final bool clearBatteryLifeInfo;
 
   const BatterySaverHomeState({
     this.status = BatterySaverStatus.initial,
@@ -57,9 +61,8 @@ class BatterySaverHomeState extends Equatable {
     this.isActive = false,
     this.batteryLifeInfo,
     this.errorMessage,
+    this.clearBatteryLifeInfo = false,
   });
-
-  // ── Convenience getters ──────────────────────────────────────────────────
 
   bool get isCharging => batteryChargeState == BatteryState.charging;
   bool get isFull => batteryChargeState == BatteryState.full;
@@ -84,8 +87,6 @@ class BatterySaverHomeState extends Equatable {
     }
   }
 
-  // ── CopyWith ─────────────────────────────────────────────────────────────
-
   BatterySaverHomeState copyWith({
     BatterySaverStatus? status,
     int? batteryLevel,
@@ -94,6 +95,7 @@ class BatterySaverHomeState extends Equatable {
     bool? isActive,
     BatteryLifeInfo? batteryLifeInfo,
     String? errorMessage,
+    bool clearBatteryLifeInfo = false, // ← explicit flag
   }) {
     return BatterySaverHomeState(
       status: status ?? this.status,
@@ -101,8 +103,10 @@ class BatterySaverHomeState extends Equatable {
       batteryChargeState: batteryChargeState ?? this.batteryChargeState,
       selectedMode: selectedMode ?? this.selectedMode,
       isActive: isActive ?? this.isActive,
-      batteryLifeInfo: batteryLifeInfo ?? this.batteryLifeInfo,
+      // agar clearBatteryLifeInfo true hai to null karo, warna raho
+      batteryLifeInfo: clearBatteryLifeInfo ? null : (batteryLifeInfo ?? this.batteryLifeInfo),
       errorMessage: errorMessage ?? this.errorMessage,
+      clearBatteryLifeInfo: clearBatteryLifeInfo,
     );
   }
 

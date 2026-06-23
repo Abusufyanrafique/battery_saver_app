@@ -2,9 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 class JunkScannerService {
-  static const _channel = MethodChannel(
-    'com.example.battery_saver_app/junk_scanner',
-  );
+ static const _channel = MethodChannel('com.example.battery_saver_app/junk',   
+);
 
   // ─────────────────────────────────────────────
   // SCAN METHODS

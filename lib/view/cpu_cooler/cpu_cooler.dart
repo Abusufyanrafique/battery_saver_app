@@ -42,7 +42,9 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
 
     return Scaffold(
       backgroundColor: AppColors.allscreenBackgroundColor,
-      appBar: CustomAppBar(title: AppText.cooler),
+      appBar: CustomAppBar(
+        title: AppText.cooler,
+      ),
       body: Container(
         width: double.infinity,
         height: double.infinity,

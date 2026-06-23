@@ -187,7 +187,7 @@ class _SaverOptionTile extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(width: 14),
+             SizedBox(width: 14),
 
             // TEXT
             Expanded(

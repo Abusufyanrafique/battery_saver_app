@@ -21,7 +21,7 @@ class OptimizationResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => OptimizationBloc()
-        ..add(LoadResultDataEvent()), // screen open 
+        ..add(LoadResultDataEvent()), // screen open
       child: const _ResultView(),
     );
   }
@@ -41,7 +41,7 @@ class _ResultViewState extends State<_ResultView>
   late Animation<double> _scoreBefore;
   late Animation<double> _scoreAfter;
 
-  // Score values jo Bloc se aayenge
+  // Real score values jo Bloc se aayenge
   int _lastScoreBefore = 0;
   int _lastScoreAfter = 0;
 
@@ -64,7 +64,10 @@ class _ResultViewState extends State<_ResultView>
     _scoreAfter = Tween<double>(begin: 0, end: 0).animate(_scoreCtrl);
   }
 
-  /// Bloc se real scores milne par animation re-run karo
+  /// Bloc se real scores milne par animation re-run karo.
+  /// Both values are genuinely measured — before at session start,
+  /// after at result-load time. Falls back to 0 only if no session
+  /// baseline exists (user reached this screen without optimizing).
   void _animateScores(int before, int after) {
     if (before == _lastScoreBefore && after == _lastScoreAfter) return;
     _lastScoreBefore = before;
@@ -90,9 +93,11 @@ class _ResultViewState extends State<_ResultView>
   Widget build(BuildContext context) {
     return BlocConsumer<OptimizationBloc, OptimizationState>(
       listener: (context, state) {
-        // Real scores aaye — animate karo
-        if (state.resultStatus == ResultLoadStatus.loaded) {
-          _animateScores(state.scoreBefore, state.scoreAfter);
+        // Real before/after scores aaye — animate karo.
+        // scoreBefore can be null if no session was started; treat as 0.
+        if (state.resultStatus == ResultLoadStatus.loaded &&
+            state.scoreAfter != null) {
+          _animateScores(state.scoreBefore ?? 0, state.scoreAfter!);
         }
       },
       builder: (context, state) {
@@ -103,6 +108,23 @@ class _ResultViewState extends State<_ResultView>
             backgroundColor: AppColors.allscreenBackgroundColor,
             body: Center(
               child: CircularProgressIndicator(color: Color(0xFF55D0FF)),
+            ),
+          );
+        }
+
+        if (state.resultStatus == ResultLoadStatus.error) {
+          return Scaffold(
+            backgroundColor: AppColors.allscreenBackgroundColor,
+            appBar: CustomAppBar(title: AppText.optimizationResult),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  state.errorMessage ?? 'Could not load device data.',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+                ),
+              ),
             ),
           );
         }
@@ -142,15 +164,15 @@ class _ResultViewState extends State<_ResultView>
                   ),
                   SizedBox(height: getHeight(10)),
 
-                  // ── Summary Card with REAL values ──
+                  // ── Summary Card with REAL values only ──
                   _buildSummaryCard(state),
                   SizedBox(height: getHeight(10)),
 
-                  // ── Performance Card with REAL scores ──
+                  // ── Performance Card with REAL score + real charge status ──
                   _buildPerformanceCard(state),
                   SizedBox(height: getHeight(10)),
 
-                  // ── Recommendations (same as before) ──
+                  // ── Recommendations (design same, no change needed) ──
                   _buildRecommendations(),
                   SizedBox(height: getHeight(10)),
 
@@ -174,42 +196,58 @@ class _ResultViewState extends State<_ResultView>
     );
   }
 
-  // ── Summary Card — REAL values ────────────────────────────────────────────
+  // ── Summary Card — REAL values only ──────────────────────────────────────
   Widget _buildSummaryCard(OptimizationState state) {
-    final items = [
+    final items = <_SummaryItem>[
+      // Battery saved — only shown with a real number if a session baseline
+      // exists. Otherwise shows the current charge level honestly instead
+      // of inventing a "saved" figure.
       _SummaryItem(
         iconsvg: AppIcons.optimizebattery,
         color: const Color(0xFF00FF09),
         valueColor: const Color(0xFF00FF09),
         label: AppText.batterySaved,
-        value: state.batterySavedText,   // REAL: e.g. "+42m"
-        sub: AppText.extended,
+        value: state.batteryPercentSavedDuringSession != null
+            ? '${state.batteryPercentSavedDuringSession! >= 0 ? '+' : ''}${state.batteryPercentSavedDuringSession}%'
+            : '${state.batteryLevelNow ?? '--'}%',
+        sub: state.batteryPercentSavedDuringSession != null
+            ? AppText.extended
+            : 'Current charge',
       ),
-      
-      _SummaryItem(
-        iconsvg: AppIcons.optimizeram,
-        color: const Color(0xFF9A3CFF),
-        valueColor: const Color(0xFF9A3CFF),
-        label: AppText.ramFreed,
-        value: state.ramFreedText,       // REAL: e.g. "+312 MB"
-        sub: AppText.memoryCleared,
-      ),
+
+      // Real measured cache cleared (this was always genuinely real).
       _SummaryItem(
         iconsvg: AppIcons.optimizedelete,
         color: const Color(0xFF55D0FF),
         valueColor: const Color(0xFF55D0FF),
         label: AppText.junkCleared,
-        value: state.junkClearedText,    // REAL: actual cache cleared
+        value: state.junkClearedText,
         sub: AppText.spaceFreed,
       ),
+
+      // Replaces the old fake "RAM Freed" tile with real measured disk
+      // space recovered by the cache clear — genuinely verifiable.
       _SummaryItem(
-        iconsvg: AppIcons.optimizetemp,
-        color: const Color(0xFFED6D09),
-        valueColor: const Color(0xFFED6D09),
-        label: AppText.temperatureChange ,
-        value: '${state.temperatureChange.toStringAsFixed(1)}°C', // REAL
-        sub: state.temperatureText,      // "Normal" / "Warm"
+        iconsvg: AppIcons.optimizeram,
+        color: const Color(0xFF9A3CFF),
+        valueColor: const Color(0xFF9A3CFF),
+        label: 'Disk Space Freed',
+        value: state.diskSpaceFreedText,
+        sub: 'Storage recovered',
       ),
+
+      // Only included if a real temperature reading was available from
+      // the platform channel. If null, this tile is simply not built —
+      // never replaced with a guessed value.
+      if (state.temperatureCelsius != null)
+        _SummaryItem(
+          iconsvg: AppIcons.optimizetemp,
+          color: const Color(0xFFED6D09),
+          valueColor: const Color(0xFFED6D09),
+          label: AppText.temperatureChange,
+          value: '${state.temperatureCelsius!.toStringAsFixed(1)}°C',
+          sub: 'Current reading',
+        ),
     ];
 
     return _CardWrapper(
@@ -227,18 +265,20 @@ class _ResultViewState extends State<_ResultView>
     );
   }
 
-  // ── Performance Card — REAL scores ───────────────────────────────────────
- Widget _buildPerformanceCard(OptimizationState state) {
+  // ── Performance Card — REAL before/after scores, honest charge status ────
+  Widget _buildPerformanceCard(OptimizationState state) {
     return _CardWrapper(
       title: AppText.performanceImprovement,
       child: IntrinsicHeight(
         child: Row(
           children: [
-            // Left: Performance Score
+            // Left: Performance Score — real before/after comparison.
+            // "Before" was measured the moment the user pressed Optimize;
+            // "After" is measured right now. If no session was started,
+            // before falls back to 0 (animation handles this gracefully).
             Expanded(
               flex: 3,
               child: Column(
-                // crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
@@ -327,7 +367,8 @@ class _ResultViewState extends State<_ResultView>
               margin: EdgeInsets.symmetric(horizontal: getWidth(12)),
             ),
 
-            // Right: Battery Health
+            // Right: Charge status — honest label, not a fake "health"
+            // diagnosis. Based only on the real current battery %.
             Expanded(
               flex: 2,
               child: Column(
@@ -335,7 +376,7 @@ class _ResultViewState extends State<_ResultView>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    AppText.batteryHealth,
+                    'Charge Level',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
@@ -350,11 +391,11 @@ class _ResultViewState extends State<_ResultView>
                   ),
                   SizedBox(height: getHeight(5)),
                   Text(
-                    state.isBatteryHealthGood
-                        ? AppText.improved
-                        : 'Check Battery',
+                    state.batteryLevelNow != null
+                        ? '${state.batteryLevelNow}%'
+                        : '--',
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: state.isBatteryHealthGood
+                      color: state.isChargeLevelHealthy
                           ? const Color(0xFF00FF09)
                           : const Color(0xFFED6D09),
                       fontSize: getFont(10),
@@ -369,6 +410,7 @@ class _ResultViewState extends State<_ResultView>
       ),
     );
   }
+
   // ── Recommendations (design same, no change needed) ───────────────────────
   Widget _buildRecommendations() {
     final recs = [
@@ -540,7 +582,7 @@ class _ScoreRing extends StatelessWidget {
         child: Center(
           child: Text(score.toInt().toString(),
               style:
-                  AppTextStyles.bodyMedium.copyWith(fontSize: getFont(13))),
+                  AppTextStyles.bodyMedium.copyWith(fontSize: getFont(16))),
         ),
       ),
     );

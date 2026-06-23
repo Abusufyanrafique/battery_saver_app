@@ -12,15 +12,21 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     on<RequestPermissionEvent>(_onRequestPermission);
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // LOAD — Summary fetch karo, listener active check karo, items load
+  // ─────────────────────────────────────────────────────────────────
   Future<void> _onLoad(
     LoadNotifications event,
     Emitter<NotificationState> emit,
   ) async {
     emit(state.copyWith(status: NotificationStatus.loading));
 
-    final bool permitted = await NotificationScannerService.hasPermission();
+    // 1. Pehle summary se check karo listener active hai ya nahi
+    final NotificationSummary summary =
+        await NotificationScannerService.getNotificationSummary();
 
-    if (!permitted) {
+    if (!summary.isListenerActive) {
+      // Listener connected nahi — permission denied treat karo
       emit(state.copyWith(
         status: NotificationStatus.permissionDenied,
         hasPermission: false,
@@ -29,23 +35,21 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
       return;
     }
 
-    // Listener start karo
-    await NotificationScannerService.startListening();
-
-    // 2 second wait karo stream events ke liye
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Chahe counts hon ya na hon — loaded emit karo
+    // 2. Items fetch karo (async)
     final List<SocialStatItem> items =
-        NotificationScannerService.getCurrentItems();
+        await NotificationScannerService.getCurrentItems();
 
     emit(state.copyWith(
       status: NotificationStatus.loaded,
       hasPermission: true,
       items: items,
+      summary: summary,
     ));
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // TOGGLE — checkbox toggle
+  // ─────────────────────────────────────────────────────────────────
   void _onToggle(
     ToggleItemEvent event,
     Emitter<NotificationState> emit,
@@ -57,29 +61,32 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     emit(state.copyWith(items: updated));
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // CLEAN — checked labels ki notifications cancel karo
+  // ─────────────────────────────────────────────────────────────────
   Future<void> _onClean(
     CleanNotificationsEvent event,
     Emitter<NotificationState> emit,
   ) async {
     emit(state.copyWith(status: NotificationStatus.cleaning));
-    await Future.delayed(const Duration(seconds: 2));
 
     final List<String> checkedLabels = state.items
         .where((e) => e.isChecked)
         .map((e) => e.label)
         .toList();
 
-    NotificationScannerService.clearCounts(checkedLabels);
+    // Real cancel — MethodChannel via Kotlin NotifListenerBridge
+    await NotificationScannerService.clearCounts(checkedLabels);
 
-    final List<SocialStatItem> updated = [];
-    for (final SocialStatItem item in state.items) {
+    // UI update — checked items ka count 0 karo
+    final List<SocialStatItem> updated = state.items.map((item) {
       if (item.isChecked) {
-        updated.add(item.copyWith(count: 0, isChecked: false));
-      } else {
-        updated.add(item);
+        return item.copyWith(count: 0, isChecked: false);
       }
-    }
+      return item;
+    }).toList();
 
+    // Sirf woh items dikhao jinka count > 0 hai
     final List<SocialStatItem> filtered =
         updated.where((e) => e.count > 0).toList();
 
@@ -89,11 +96,17 @@ class NotificationBloc extends Bloc<NotificationEvent, NotificationState> {
     ));
   }
 
+  // ─────────────────────────────────────────────────────────────────
+  // REQUEST PERMISSION — system settings open karo
+  // ─────────────────────────────────────────────────────────────────
   Future<void> _onRequestPermission(
     RequestPermissionEvent event,
     Emitter<NotificationState> emit,
   ) async {
-    await NotificationScannerService.requestPermission();
+    // System notification listener settings kholo
+    await NotificationScannerService.openPermissionSettings();
+
+    // Wapas load karo — user ne permission de di hogi
     add(LoadNotifications());
   }
 }

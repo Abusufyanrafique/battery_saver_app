@@ -1,5 +1,9 @@
 package com.example.battery_saver_app
 
+import android.app.NotificationManager
+import android.media.AudioManager
+import android.net.Uri
+import android.provider.Settings
 import android.app.ActivityManager
 import android.app.AppOpsManager
 import android.app.usage.NetworkStats
@@ -22,6 +26,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import android.os.SystemClock
+import com.example.battery_saver_app.junk.JunkScanner
 class MainActivity : FlutterActivity() {
 
     private val CPU_CHANNEL            = "com.example.battery_saver_app/cpu_info"
@@ -31,12 +36,28 @@ class MainActivity : FlutterActivity() {
     private val BATTERY_CHANNEL        = "com.example.battery_saver_app/battery_status"
     private val BATTERY_HEALTH_CHANNEL = "com.example.battery_saver_app/battery_health"
     private val SECURITY_CHANNEL       = "com.example.battery_saver_app/security"
-    private val NOTIFICATION_CHANNEL   = "notification_scanner"
+   private val NOTIFICATION_CHANNEL =    "com.example.battery_saver_app/notification_cleaner"
     private val CACHE_CHANNEL          = "com.example.battery_saver_app/device"
     private val STORAGE_CHANNEL        = "com.example.battery_saver_app/device_storage"
     private val POWER_BOOST_CHANNEL    = "com.example.battery_saver_app/power_boost"
+    private val CHANNEL = "device_info/battery"
+    private val SETTINGS_CHANNEL = "device_info/settings"
+    val COOL_CHANNEL = "com.example.battery_saver_app/auto_cool"
+    private  val JUNK_CHANNEL = "com.example.battery_saver_app/junk"
+    private val SCAN_CHANNEL = "com.example.battery_saver_app/security_scan"
+    private val BATTERY_CHANNEL_INFO = "battery_info"
+    private val BATTERY_OPTIMIZER_CHANNEL = "battery_optimizer"
+ 
+private val batteryHelper by lazy { BatteryHelper(this) }
+private val brightnessHelper by lazy { BrightnessHelper(this) }
+private val powerSaverHelper by lazy { PowerSaverHelper(this) }
+private val autoSyncHelper by lazy { AutoSyncHelper() }
+private val notificationHelper by lazy { NotificationHelper(this) }
+private val backgroundAppsHelper by lazy { BackgroundAppsHelper(this) }
 
     private val storageManager = StorageManager()
+
+    private val junkScanner by lazy { JunkScanner(this) }
 
     private val dangerousPermissions = listOf(
         android.Manifest.permission.READ_CONTACTS,
@@ -57,7 +78,240 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+   //============================     battery saver ======================
+    MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            BATTERY_OPTIMIZER_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+ 
+                // ---------- BATTERY ----------
+                "getBatteryInfo" -> result.success(batteryHelper.getBatteryInfo())
+ 
+                // ---------- BRIGHTNESS ----------
+                "getBrightness" -> result.success(brightnessHelper.getBrightness())
+                "setBrightness" -> {
+                    val value = call.argument<Int>("value") ?: 128
+                    result.success(brightnessHelper.setBrightness(value))
+                }
+                "hasWriteSettingsPermission" ->
+                    result.success(brightnessHelper.hasWriteSettingsPermission())
+                "requestWriteSettingsPermission" -> {
+                    brightnessHelper.requestWriteSettingsPermission()
+                    result.success(null)
+                }
+ 
+                // ---------- POWER SAVER ----------
+                "isPowerSaverEnabled" -> result.success(powerSaverHelper.isPowerSaverEnabled())
+                "openPowerSaverSettings" -> {
+                    powerSaverHelper.openPowerSaverSettings()
+                    result.success(null)
+                }
+ 
+                // ---------- AUTO SYNC ----------
+                "isAutoSyncEnabled" -> result.success(autoSyncHelper.isAutoSyncEnabled())
+                "setAutoSyncEnabled" -> {
+                    val enabled = call.argument<Boolean>("enabled") ?: false
+                    autoSyncHelper.setAutoSyncEnabled(enabled)
+                    result.success(true)
+                }
+ 
+                // ---------- NOTIFICATIONS / DND ----------
+                "isNotificationPolicyAccessGranted" ->
+                    result.success(notificationHelper.isNotificationPolicyAccessGranted())
+                "requestNotificationPolicyAccess" -> {
+                    notificationHelper.requestNotificationPolicyAccess()
+                    result.success(null)
+                }
+                "setNotificationsLimited" -> {
+                    val limited = call.argument<Boolean>("limited") ?: false
+                    result.success(notificationHelper.setNotificationsLimited(limited))
+                }
+                "getNotificationStatus" ->
+                    result.success(notificationHelper.getNotificationStatus())
+ 
+                // ---------- BACKGROUND APPS ----------
+                "isBackgroundRestricted" ->
+                    result.success(backgroundAppsHelper.isBackgroundRestricted())
+                "openBackgroundAppsSettings" -> {
+                    backgroundAppsHelper.openBackgroundAppsSettings()
+                    result.success(null)
+                }
+ 
+                else -> result.notImplemented()
+            }
+        }
+        //================junk Channel===============
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, JUNK_CHANNEL)
+    .setMethodCallHandler { call, result ->
+        when (call.method) {
+            "scanAll"          -> result.success(junkScanner.scanAll())
+            "getCacheSize"     -> result.success(junkScanner.getCacheSize())
+            "getResidualSize"  -> result.success(junkScanner.getResidualSize())
+            "getApkSize"       -> result.success(junkScanner.getApkSize())
+            "getTrackedSize"   -> result.success(junkScanner.getTrackedSize())
+            "getMemoryInfo"    -> result.success(junkScanner.getMemoryInfo())
+            "cleanCache"       -> { junkScanner.cleanCache(); result.success(null) }
+            "cleanResidual"    -> { junkScanner.cleanResidual(); result.success(null) }
+            "cleanApk"         -> { junkScanner.cleanApk(); result.success(null) }
+            "cleanTracked"     -> { junkScanner.cleanTracked(); result.success(null) }
+            else               -> result.notImplemented()
+        }
+    }
+         //============AutoCoolService
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, COOL_CHANNEL).setMethodCallHandler { call, result ->
+    when (call.method) {
+        "startAutoCool" -> {
+            val intent = Intent(this, AutoCoolService::class.java)
+            startForegroundService(intent)
+            result.success(true)
+        }
+        "stopAutoCool" -> {
+            stopService(Intent(this, AutoCoolService::class.java))
+            result.success(true)
+        }
+        else -> result.notImplemented()
+    }
+}
+//========================security scan===========
+MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SCAN_CHANNEL)
+    .setMethodCallHandler { call, result ->
+        SecurityScanHandler(this).handle(call, result)
+    }
+    //========================security scan===========
+      //===============  battery saver home ================
 
+ MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+            .setMethodCallHandler { call, result ->
+
+                when (call.method) {
+
+                    //  Battery Level
+                    "getBatteryLevel" -> {
+                        val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
+                        val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+                        result.success(level)
+                    }
+
+                    //  Charging Status
+                    "isCharging" -> {
+                        val bm = getSystemService(BATTERY_SERVICE) as BatteryManager
+                        val status = bm.isCharging
+                        result.success(status)
+                    }
+
+                    // 🌡 Battery Temperature (real sensor)
+                    "getBatteryTemp" -> {
+                        val intent = registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                        val temp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+                        result.success(temp / 10.0) // Celsius
+                    }
+
+                    // 🌡 Battery Temperature (merged from duplicate CHANNEL handler)
+                    "getBatteryTemperature" -> {
+                        val celsius = readRealBatteryTemperature()
+                        if (celsius != null) {
+                            result.success(celsius)
+                        } else {
+                            result.error(
+                                "UNAVAILABLE",
+                                "Battery temperature not available",
+                                null
+                            )
+                        }
+                    }
+
+                    //  Power Save Mode
+                    "isPowerSaveMode" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+                            result.success(pm.isPowerSaveMode)
+                        } else {
+                            result.success(false)
+                        }
+                    }
+
+                    //  Set Volume
+                    "setVolume" -> {
+                        val level = call.argument<Int>("level") ?: 5
+                        val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audio.setStreamVolume(
+                            AudioManager.STREAM_MUSIC,
+                            level,
+                            0
+                        )
+                        result.success(true)
+                    }
+
+                    //  Open App Settings
+                    "openAppSettings" -> {
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        intent.data = Uri.parse("package:$packageName")
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                        result.success(true)
+                    }
+
+                    //  Battery Optimization Settings
+                    "openBatteryOptimization" -> {
+                        val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                        result.success(true)
+                    }
+
+                    //  DND Status (your existing logic)
+                    "getDndStatus" -> {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                            result.success("unsupported")
+                            return@setMethodCallHandler
+                        }
+
+                        val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        val filter = nm.currentInterruptionFilter
+
+                        val status = when (filter) {
+                            NotificationManager.INTERRUPTION_FILTER_ALL -> "all"
+                            NotificationManager.INTERRUPTION_FILTER_PRIORITY -> "priority"
+                            NotificationManager.INTERRUPTION_FILTER_NONE -> "none"
+                            NotificationManager.INTERRUPTION_FILTER_ALARMS -> "alarms"
+                            else -> "unknown"
+                        }
+
+                        result.success(status)
+                    }
+
+                    //  Open DND Settings
+                    "openDndSettings" -> {
+                        val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                        result.success(true)
+                    }
+
+                    //  Brightness (your existing)
+                    "setScreenBrightness" -> {
+                        val level = call.argument<Int>("level") ?: 128
+
+                        if (!Settings.System.canWrite(applicationContext)) {
+                            result.error("NO_PERMISSION", "WRITE_SETTINGS not granted", null)
+                            return@setMethodCallHandler
+                        }
+
+                        Settings.System.putInt(
+                            contentResolver,
+                            Settings.System.SCREEN_BRIGHTNESS,
+                            level.coerceIn(0, 255)
+                        )
+
+                        result.success(true)
+                    }
+
+                    else -> result.notImplemented()
+                }
+            }
+        //=================================================================
+        //==============  tempeture channel===============
         // ======== POWER BOOST CHANNEL ===========
        MethodChannel(
     flutterEngine.dartExecutor.binaryMessenger,
@@ -234,18 +488,84 @@ class MainActivity : FlutterActivity() {
         }
 
         // ======== NOTIFICATION SCANNER CHANNEL ===========
+       // ======== NOTIFICATION SCANNER CHANNEL ===========
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             NOTIFICATION_CHANNEL
         ).setMethodCallHandler { call, result ->
             when (call.method) {
-                "getActiveNotifications" -> {
+
+                // 1. Total active notifications count
+                "getActiveNotificationCount" -> {
                     try {
-                        result.success(getActiveNotifs())
+                        result.success(NotifListenerBridge.getActiveNotificationCount())
                     } catch (e: Exception) {
                         result.error("ERROR", e.message, null)
                     }
                 }
+
+                // 2. Per-app notification count
+                "getNotificationCountPerApp" -> {
+                    try {
+                        result.success(NotifListenerBridge.getNotificationCountPerApp())
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+
+                // 3. Suspicious / spam apps
+                "getSuspiciousNotificationApps" -> {
+                    try {
+                        result.success(NotifListenerBridge.getSuspiciousNotificationApps())
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+
+                // 4. Cancel specific app ki notifications
+                "cancelNotificationsForPackage" -> {
+                    try {
+                        val packageName = call.argument<String>("packageName")
+                        if (packageName.isNullOrEmpty()) {
+                            result.error("INVALID_ARG", "packageName is required", null)
+                        } else {
+                            result.success(NotifListenerBridge.cancelNotificationsForPackage(packageName))
+                        }
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+
+                // 5. Cancel all notifications
+                "cancelAllNotifications" -> {
+                    try {
+                        result.success(NotifListenerBridge.cancelAllNotifications())
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+
+                // 6. Full summary
+                "getNotificationSummary" -> {
+                    try {
+                        result.success(NotifListenerBridge.getNotificationSummary())
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+
+                // 7. Notification Listener Settings open karo
+                "openNotificationListenerSettings" -> {
+                    try {
+                        val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(intent)
+                        result.success(null)
+                    } catch (e: Exception) {
+                        result.error("ERROR", e.message, null)
+                    }
+                }
+
                 else -> result.notImplemented()
             }
         }
@@ -460,7 +780,21 @@ class MainActivity : FlutterActivity() {
                 }
             }
     }
+    //   ===========getBatteryTemperature==================
 
+private fun readRealBatteryTemperature(): Double? {
+    val intent: Intent? = applicationContext.registerReceiver(
+        null,
+        IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+    )
+
+    val tenths = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1) ?: -1
+    if (tenths < 0) return null
+
+    return tenths / 10.0
+}
+
+//   ===========getBatteryTemperature==================
     // ─────────────────────────────────────────────────────────────────
     // CACHE SIZE
     // ─────────────────────────────────────────────────────────────────
@@ -489,7 +823,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // BATTERY HEALTH DATA  ✅ FIXED
+    // BATTERY HEALTH DATA   FIXED
     // ─────────────────────────────────────────────────────────────────
     private fun getBatteryHealthData(): Map<String, Any> {
         val bm            = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
@@ -543,7 +877,7 @@ class MainActivity : FlutterActivity() {
     }
 
     // ─────────────────────────────────────────────────────────────────
-    // DESIGN CAPACITY — 6 fallback methods  ✅ FIXED
+    // DESIGN CAPACITY — 6 fallback methods   FIXED
     // ─────────────────────────────────────────────────────────────────
     private fun getDesignCapacity(currentCapacityMah: Double, batteryLevel: Int): Double {
 

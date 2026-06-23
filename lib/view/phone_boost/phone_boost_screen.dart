@@ -1,6 +1,8 @@
 import 'package:battery_saver_app/bloc/phone_boost/phone_boost_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/junk_cleaner/clean_button_widget.dart';
@@ -28,7 +30,7 @@ class _PhoneBoostView extends StatelessWidget {
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1633),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.phoneBoost),
       body: Container(
         width: double.infinity,
@@ -38,9 +40,9 @@ class _PhoneBoostView extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0F1633),
-              Color(0xFF0B122B),
-              Color(0xFF070C1F),
+              AppColors.phoneBoostGradientTop,
+              AppColors.phoneBoostGradientMid,
+              AppColors.phoneBoostGradientBottom,
             ],
           ),
         ),
@@ -71,14 +73,14 @@ class _PhoneBoostView extends StatelessWidget {
                       ),
                     ),
 
-                    // ───── RAM detail (used / total) ─────
+                  
                     if (!state.isLoading)
                       Center(
                         child: Text(
                           '${state.usedRamMb} MB / ${state.totalRamMb} MB',
                           style: AppTextStyles.bodySmall.copyWith(
                             fontSize: getFont(12),
-                            color: const Color(0xFF55D0FF),
+                            color: AppColors.phoneBoostAccentBlue,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -94,7 +96,7 @@ class _PhoneBoostView extends StatelessWidget {
                           AppText.runningProcesses,
                           style: AppTextStyles.bodySmall.copyWith(
                             fontSize: getFont(20),
-                            color: const Color(0xFFD9D9D9),
+                            color: AppColors.phoneBoostProcessLabel,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -118,13 +120,13 @@ class _PhoneBoostView extends StatelessWidget {
 
                     SizedBox(height: getHeight(12)),
 
-                    // ───── LIST ─────
+                  
                     state.isLoading
                         ? const Center(
                             child: Padding(
                               padding: EdgeInsets.all(24.0),
                               child: CircularProgressIndicator(
-                                color: Color(0xFF55D0FF),
+                                color: AppColors.phoneBoostAccentBlue,
                               ),
                             ),
                           )
@@ -132,14 +134,14 @@ class _PhoneBoostView extends StatelessWidget {
                             ? Center(
                                 child: Column(
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.check_circle,
-                                      color: Color(0xFF55D0FF),
+                                      color: AppColors.phoneBoostAccentBlue,
                                       size: 48,
                                     ),
-                                    const SizedBox(height: 8),
+                                     SizedBox(height: getHeight(8)),
                                     Text(
-                                      'Memory Optimized!',
+                                     AppText.memoryOptimize,
                                       style: AppTextStyles.bodySmall.copyWith(
                                         color: Colors.white,
                                         fontSize: getFont(16),
@@ -151,13 +153,11 @@ class _PhoneBoostView extends StatelessWidget {
                             : PhoneBoostListWidget(apps: state.topApps),
 
                     SizedBox(height: getHeight(20)),
-
-                    // ───── BOOST BUTTON ─────
                     CleanButtonWidget(
                       text: state.isBoosting
-                          ? 'Boosting...'
+                          ? AppText.boosting
                           : state.status == PhoneBoostStatus.boosted
-                              ? 'Boosted!'
+                              ? AppText.boosted
                               : AppText.boostNow1,
                       onPressed: state.isBoosting
                           ? null
@@ -178,6 +178,9 @@ class _PhoneBoostView extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Gauge widget — rocket image + live % overlay
+// NOTE: '% number' yahan 'memoryUsedPercent' se aata hai, jo
+// (usedRamMb / totalRamMb) * 100 se calculate hota hai — real RAM
+// usage hai, koi fake scaling formula nahi.
 // ─────────────────────────────────────────────────────────────────────────────
 class _BoostGauge extends StatelessWidget {
   final int percent;
@@ -200,7 +203,7 @@ class _BoostGauge extends StatelessWidget {
                 size: Size(getHeight(180), getHeight(180)),
               ),
               Image.asset(
-                "assets/images/phone_boost/rooket.png",
+                AppImages.rooketimage,
                 height: getHeight(200),
                 fit: BoxFit.contain,
               ),

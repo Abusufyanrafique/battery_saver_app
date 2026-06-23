@@ -1,34 +1,31 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_notification_listener/flutter_notification_listener.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/view/notification_cleaner/notification_cleaner.dart';
 
 class NotificationScannerService {
-  static final Map<String, int> _liveCounts = {};
-  static bool _isListening = false;
-  static const _channel = MethodChannel('notification_scanner');
+  static const _channel = MethodChannel('com.example.battery_saver_app/notification_cleaner');
 
   // ─────────────────────────────────────────────
   static void _log(String tag, String msg) =>
       debugPrint('🟢 [NOTIF][$tag] $msg');
-  static void _error(String msg) =>
-      debugPrint('🔴 [NOTIF][ERROR] $msg');
-  static void _warn(String msg) =>
-      debugPrint('🟡 [NOTIF][WARN] $msg');
+  static void _error(String tag, String msg) =>
+      debugPrint('🔴 [NOTIF][ERROR][$tag] $msg');
+  static void _warn(String tag, String msg) =>
+      debugPrint('🟡 [NOTIF][WARN][$tag] $msg');
 
   // ─────────────────────────────────────────────
   static const Map<String, Map<String, String>> _appMap = {
-    'com.whatsapp':              {'label': 'WhatsApp',  'icon': 'whatsapp'},
-    'com.facebook.katana':       {'label': 'Facebook',  'icon': 'facebook'},
-    'com.facebook.orca':         {'label': 'Facebook',  'icon': 'facebook'},
-    'com.instagram.android':     {'label': 'Instagram', 'icon': 'instagram'},
-    'com.google.android.youtube':{'label': 'YouTube',   'icon': 'youtube'},
-    'com.snapchat.android':      {'label': 'Snapchat',  'icon': 'others'},
-    'com.twitter.android':       {'label': 'Twitter',   'icon': 'others'},
-    'com.tiktok.android':        {'label': 'Others',    'icon': 'others'},
-    'com.google.android.gm':     {'label': 'Others',    'icon': 'others'},
-    'com.microsoft.teams':       {'label': 'Others',    'icon': 'others'},
+    'com.whatsapp':               {'label': 'WhatsApp',  'icon': 'whatsapp'},
+    'com.facebook.katana':        {'label': 'Facebook',  'icon': 'facebook'},
+    'com.facebook.orca':          {'label': 'Facebook',  'icon': 'facebook'},
+    'com.instagram.android':      {'label': 'Instagram', 'icon': 'instagram'},
+    'com.google.android.youtube': {'label': 'YouTube',   'icon': 'youtube'},
+    'com.snapchat.android':       {'label': 'Snapchat',  'icon': 'others'},
+    'com.twitter.android':        {'label': 'Twitter',   'icon': 'others'},
+    'com.tiktok.android':         {'label': 'TikTok',    'icon': 'others'},
+    'com.google.android.gm':      {'label': 'Gmail',     'icon': 'others'},
+    'com.microsoft.teams':        {'label': 'Teams',     'icon': 'others'},
   };
 
   // ─────────────────────────────────────────────
@@ -43,136 +40,177 @@ class NotificationScannerService {
   }
 
   // ─────────────────────────────────────────────
-  static Future<bool> hasPermission() async {
-    final status = await NotificationsListener.hasPermission;
-    _log('PERMISSION', 'Status = $status');
-    return status ?? false;
-  }
-
-  static Future<void> requestPermission() async {
-    _log('PERMISSION', 'Opening system settings...');
-    await NotificationsListener.openPermissionSettings();
-  }
-
+  // PERMISSION — Notification Listener Settings open karo
+  //    AndroidManifest mein NotifListenerBridge registered honi chahiye
   // ─────────────────────────────────────────────
-  // EXISTING NOTIFICATIONS — MethodChannel se fetch karo
-  // ─────────────────────────────────────────────
-  static Future<void> fetchExistingNotifications() async {
+  static Future<void> openPermissionSettings() async {
     try {
-      _log('FETCH', 'Fetching existing notifications via MethodChannel...');
-
-      final List<dynamic>? result =
-          await _channel.invokeListMethod('getActiveNotifications');
-
-      if (result == null || result.isEmpty) {
-        _warn('No existing notifications found');
-        return;
-      }
-
-      _log('FETCH', 'Found ${result.length} existing notifications');
-
-      // Pehle clear karo
-      _liveCounts.clear();
-
-      for (final item in result) {
-        final pkg = (item as Map)['packageName'] as String?;
-        if (pkg == null || pkg.isEmpty) continue;
-        _liveCounts[pkg] = (_liveCounts[pkg] ?? 0) + 1;
-        _log('FETCH_COUNT', '$pkg → ${_liveCounts[pkg]}');
-      }
-
-      _log('FETCH', 'Final map = $_liveCounts');
+      _log('PERMISSION', 'Opening notification listener settings...');
+      await _channel.invokeMethod('openNotificationListenerSettings');
     } catch (e) {
-      _error('fetchExistingNotifications failed: $e');
+      _error('PERMISSION', 'openPermissionSettings failed: $e');
     }
   }
 
   // ─────────────────────────────────────────────
-  // START LISTENING
+  // 1. TOTAL ACTIVE NOTIFICATIONS COUNT
+  //    NotifListenerBridge → getActiveNotificationCount()
   // ─────────────────────────────────────────────
-  static Future<void> startListening() async {
-    if (_isListening) {
-      _warn('Listener already running');
-      return;
+  static Future<int> getActiveNotificationCount() async {
+    try {
+      _log('COUNT', 'Fetching total active notification count...');
+      final int result =
+          await _channel.invokeMethod('getActiveNotificationCount');
+      _log('COUNT', 'Total = $result');
+      return result;
+    } catch (e) {
+      _error('COUNT', 'getActiveNotificationCount failed: $e');
+      return 0;
     }
+  }
 
-    _log('INIT', 'Starting notification listener...');
+  // ─────────────────────────────────────────────
+  // 2. PER-APP NOTIFICATION COUNT
+  //    NotifListenerBridge → getNotificationCountPerApp()
+  //    Returns: List<Map> with {package, count}
+  // ─────────────────────────────────────────────
+  static Future<List<Map<String, dynamic>>> getNotificationCountPerApp() async {
+    try {
+      _log('PER_APP', 'Fetching per-app notification counts...');
 
-    await NotificationsListener.initialize();
+      final List<dynamic> result =
+          await _channel.invokeMethod('getNotificationCountPerApp');
 
-    // ── PEHLE EXISTING NOTIFICATIONS FETCH KARO ──
-    await fetchExistingNotifications();
+      final mapped = result
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
 
-    // ── PHIR LIVE EVENTS SUNO ──
-    NotificationsListener.receivePort?.listen((dynamic event) {
-      try {
-        _log('EVENT_RAW', '$event');
+      _log('PER_APP', 'Apps found = ${mapped.length}');
+      return mapped;
+    } catch (e) {
+      _error('PER_APP', 'getNotificationCountPerApp failed: $e');
+      return [];
+    }
+  }
 
-        String? pkg;
-        int? flag;
+  // ─────────────────────────────────────────────
+  // 3. SUSPICIOUS / SPAM APPS
+  //    NotifListenerBridge → getSuspiciousNotificationApps()
+  //    Returns: List<Map> with {package, count, risk}
+  // ─────────────────────────────────────────────
+  static Future<List<Map<String, dynamic>>> getSuspiciousNotificationApps() async {
+    try {
+      _log('SPAM', 'Fetching suspicious/spam apps...');
 
-        if (event is NotificationEvent) {
-          pkg  = event.packageName;
-          flag = event.flags;
-          _log('PARSE', 'NotificationEvent → pkg=$pkg flag=$flag');
-        } else if (event is Map) {
-          pkg  = event['packageName'] as String?;
-          flag = event['flag'] as int?;
-          _log('PARSE', 'Map Event → pkg=$pkg flag=$flag');
-        }
+      final List<dynamic> result =
+          await _channel.invokeMethod('getSuspiciousNotificationApps');
 
-        if (pkg == null || pkg.isEmpty) {
-          _warn('Empty package received');
-          return;
-        }
+      final mapped = result
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
 
-        final isRemoved = flag == 8;
-        _log('STATE', 'Package=$pkg | removed=$isRemoved');
-
-        if (isRemoved) {
-          if (_liveCounts.containsKey(pkg)) {
-            _liveCounts[pkg] = _liveCounts[pkg]! - 1;
-            _log('COUNT', 'Decreased $pkg → ${_liveCounts[pkg]}');
-            if (_liveCounts[pkg]! <= 0) {
-              _liveCounts.remove(pkg);
-              _log('COUNT', 'Removed $pkg (zero count)');
-            }
-          } else {
-            _warn('Remove event but pkg not found: $pkg');
-          }
-        } else {
-          _liveCounts[pkg] = (_liveCounts[pkg] ?? 0) + 1;
-          _log('COUNT', 'Increased $pkg → ${_liveCounts[pkg]}');
-        }
-
-        _log('MAP_STATE', _liveCounts.toString());
-      } catch (e, st) {
-        _error('Listener crash: $e');
-        debugPrint('$st');
+      _log('SPAM', 'Suspicious apps = ${mapped.length}');
+      for (final app in mapped) {
+        _log('SPAM',
+            '→ ${app['package']} | count=${app['count']} | risk=${app['risk']}');
       }
-    });
-
-    _isListening = true;
-    _log('INIT', 'Listener started successfully');
+      return mapped;
+    } catch (e) {
+      _error('SPAM', 'getSuspiciousNotificationApps failed: $e');
+      return [];
+    }
   }
 
   // ─────────────────────────────────────────────
-  // GET CURRENT ITEMS
+  // 4. CANCEL — specific app ki saari notifications hatao
+  //    NotifListenerBridge → cancelNotificationsForPackage(packageName)
   // ─────────────────────────────────────────────
-  static List<SocialStatItem> getCurrentItems() {
+  static Future<bool> cancelNotificationsForPackage(String packageName) async {
+    try {
+      _log('CANCEL', 'Cancelling notifications for: $packageName');
+
+      final bool result = await _channel.invokeMethod(
+        'cancelNotificationsForPackage',
+        {'packageName': packageName},
+      );
+
+      _log('CANCEL', 'Result for $packageName = $result');
+      return result;
+    } catch (e) {
+      _error('CANCEL', 'cancelNotificationsForPackage failed: $e');
+      return false;
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // 5. CANCEL ALL — saari notifications ek saath hatao
+  //    NotifListenerBridge → cancelAllNotifications()
+  // ─────────────────────────────────────────────
+  static Future<bool> cancelAllNotifications() async {
+    try {
+      _log('CANCEL_ALL', 'Cancelling all notifications...');
+
+      final bool result = await _channel.invokeMethod('cancelAllNotifications');
+
+      _log('CANCEL_ALL', 'Result = $result');
+      return result;
+    } catch (e) {
+      _error('CANCEL_ALL', 'cancelAllNotifications failed: $e');
+      return false;
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // 6. FULL SUMMARY — ek call mein sab kuch
+  //    NotifListenerBridge → getNotificationSummary()
+  //    Returns: {totalNotifications, totalApps, spamAppsCount, isListenerActive}
+  // ─────────────────────────────────────────────
+  static Future<NotificationSummary> getNotificationSummary() async {
+    try {
+      _log('SUMMARY', 'Fetching full notification summary...');
+
+      final Map<dynamic, dynamic> result =
+          await _channel.invokeMethod('getNotificationSummary');
+
+      final summary = NotificationSummary(
+        totalNotifications: result['totalNotifications'] as int? ?? 0,
+        totalApps:          result['totalApps']          as int? ?? 0,
+        spamAppsCount:      result['spamAppsCount']      as int? ?? 0,
+        isListenerActive:   result['isListenerActive']   as bool? ?? false,
+      );
+
+      _log('SUMMARY',
+          'total=${summary.totalNotifications} | apps=${summary.totalApps} '
+          '| spam=${summary.spamAppsCount} | active=${summary.isListenerActive}');
+
+      return summary;
+    } catch (e) {
+      _error('SUMMARY', 'getNotificationSummary failed: $e');
+      return NotificationSummary.empty();
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // GET CURRENT ITEMS — UI ke liye SocialStatItem list
+  //    getNotificationCountPerApp() use karke build karta hai
+  // ─────────────────────────────────────────────
+  static Future<List<SocialStatItem>> getCurrentItems() async {
     _log('SCAN', 'getCurrentItems called');
 
-    if (_liveCounts.isEmpty) {
-      _warn('Live map empty → returning zero items');
+    final perAppList = await getNotificationCountPerApp();
+
+    if (perAppList.isEmpty) {
+      _warn('SCAN', 'No notifications found → returning zero items');
       return zeroItems();
     }
 
     final resultMap = <String, Map<String, dynamic>>{};
-    _log('SCAN', 'Processing ${_liveCounts.length} packages');
 
-    for (final entry in _liveCounts.entries) {
-      final pkg   = entry.key;
-      final count = entry.value;
+    for (final entry in perAppList) {
+      final pkg   = entry['package'] as String? ?? '';
+      final count = entry['count']   as int?    ?? 0;
+
+      if (pkg.isEmpty) continue;
       _log('PROCESS', '$pkg → $count');
 
       if (_appMap.containsKey(pkg)) {
@@ -180,25 +218,25 @@ class NotificationScannerService {
         final label = info['label']!;
         resultMap[label] = {
           'label': label,
-          'count': (resultMap[label]?['count'] ?? 0) + count,
+          'count': (resultMap[label]?['count'] as int? ?? 0) + count,
           'icon':  info['icon']!,
         };
-        _log('MAP', 'Mapped known app → $label');
+        _log('MAP', 'Known app → $label ($count)');
       } else {
         resultMap['Others'] = {
           'label': 'Others',
-          'count': (resultMap['Others']?['count'] ?? 0) + count,
+          'count': (resultMap['Others']?['count'] as int? ?? 0) + count,
           'icon':  'others',
         };
-        _log('MAP', 'Mapped unknown → Others');
+        _log('MAP', 'Unknown → Others ($count)');
       }
     }
 
     final items = resultMap.entries.map((e) {
       return SocialStatItem(
-        label:        e.value['label'],
-        count:        e.value['count'],
-        svgAssetPath: _iconPath(e.value['icon']),
+        label:        e.value['label'] as String,
+        count:        e.value['count'] as int,
+        svgAssetPath: _iconPath(e.value['icon'] as String),
         isChecked:    true,
       );
     }).toList();
@@ -208,29 +246,29 @@ class NotificationScannerService {
   }
 
   // ─────────────────────────────────────────────
-  // CLEAR COUNTS
+  // CLEAR COUNTS — label ke according packages cancel karo
+  //    cancelNotificationsForPackage() use karta hai
   // ─────────────────────────────────────────────
-  static void clearCounts(List<String> labels) {
+  static Future<void> clearCounts(List<String> labels) async {
     _log('CLEAR', 'Requested labels = $labels');
 
-    final toRemove = <String>[];
+    final perAppList = await getNotificationCountPerApp();
 
-    for (final entry in _liveCounts.entries) {
-      final pkg = entry.key;
-      if (_appMap.containsKey(pkg)) {
-        final label = _appMap[pkg]!['label']!;
-        if (labels.contains(label)) toRemove.add(pkg);
-      } else if (labels.contains('Others')) {
-        toRemove.add(pkg);
+    for (final entry in perAppList) {
+      final pkg = entry['package'] as String? ?? '';
+      if (pkg.isEmpty) continue;
+
+      final targetLabel = _appMap.containsKey(pkg)
+          ? _appMap[pkg]!['label']!
+          : 'Others';
+
+      if (labels.contains(targetLabel)) {
+        _log('CLEAR', 'Cancelling $pkg (label: $targetLabel)');
+        await cancelNotificationsForPackage(pkg);
       }
     }
 
-    for (final pkg in toRemove) {
-      _liveCounts.remove(pkg);
-      _log('CLEAR', 'Removed $pkg');
-    }
-
-    _log('CLEAR', 'Remaining map = $_liveCounts');
+    _log('CLEAR', 'Done clearing for labels: $labels');
   }
 
   // ─────────────────────────────────────────────
@@ -246,4 +284,33 @@ class NotificationScannerService {
 
   static int totalCount(List<SocialStatItem> items) =>
       items.fold(0, (sum, e) => sum + e.count);
+}
+
+// ─────────────────────────────────────────────
+// MODEL — getNotificationSummary() ka response
+// ─────────────────────────────────────────────
+class NotificationSummary {
+  final int  totalNotifications;
+  final int  totalApps;
+  final int  spamAppsCount;
+  final bool isListenerActive;
+
+  const NotificationSummary({
+    required this.totalNotifications,
+    required this.totalApps,
+    required this.spamAppsCount,
+    required this.isListenerActive,
+  });
+
+  factory NotificationSummary.empty() => const NotificationSummary(
+        totalNotifications: 0,
+        totalApps:          0,
+        spamAppsCount:      0,
+        isListenerActive:   false,
+      );
+
+  @override
+  String toString() =>
+      'NotificationSummary(total=$totalNotifications, apps=$totalApps, '
+      'spam=$spamAppsCount, active=$isListenerActive)';
 }
