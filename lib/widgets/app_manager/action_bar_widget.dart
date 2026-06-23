@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
@@ -34,7 +35,7 @@ class ActionBarWidget extends StatelessWidget {
           ],
         ),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1.2,
         ),
       ),
@@ -60,7 +61,7 @@ class ActionBarWidget extends StatelessWidget {
                 Text(
                  AppText.share,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w500,
                   ),
@@ -77,7 +78,7 @@ class ActionBarWidget extends StatelessWidget {
               children: [
                 SvgPicture.asset(
                   AppIcons.roboticon,
-                  color: Colors.white,
+                  color: AppColors.white,
                   width: getWidth(24),
                   height: getHeight(24),
                 ),
@@ -87,7 +88,7 @@ class ActionBarWidget extends StatelessWidget {
                 Text(
                   AppText.clean,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w500,
                   ),
@@ -113,7 +114,7 @@ class ActionBarWidget extends StatelessWidget {
                 Text(
                   AppText.delete,
                   style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w500,
                   ),

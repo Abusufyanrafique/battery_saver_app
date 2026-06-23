@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
@@ -21,28 +22,18 @@ class CleanButtonWidget extends StatelessWidget {
         height: getHeight(60),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF55D0FF), // Left
-              Color(0xFF0E5AA7), // Right
-            ],
+          gradient:  LinearGradient(
+            colors: AppColors.buttonGradient,
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
-          // boxShadow: const [
-          //   BoxShadow(
-          //     color: Color(0xFF55D0FF),
-          //     blurRadius: 14,
-          //     offset: Offset(0, 5),
-          //   ),
-          // ],
         ),
         child: Center(
           child: Text(
             text,
             style: AppTextStyles.displayMedium.copyWith(
               fontWeight: FontWeight.w600,
-              fontSize: 16,
+              fontSize: getFont(16),
               color:Colors.white ,
             )
           ),

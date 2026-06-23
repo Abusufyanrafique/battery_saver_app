@@ -51,10 +51,10 @@ static const Color white = Colors.white;
     Color(0xFF13173A),
   ];
 
-  static const List<Color> buttonGradient = [
-    Color(0xFF55D0FF),
-    Color(0xFF0E5AA7),
-  ];
+  // static const List<Color> buttonGradient = [
+  //   Color(0xFF55D0FF),
+  //   Color(0xFF0E5AA7),
+  // ];
 
   static const List<Color> socialGradient = [
     Color(0xFF1B235C),
@@ -230,5 +230,37 @@ static const drawerGradientTop = Color(0xFF232C6D);
   static const selectedTileBottom = Color(0xFF13173A);
 
   static const selectedTileIconBg = Color(0xFF1B2153);
+  static const cleansuccesfullytextcolor =  Color(0xFF55D0FF);
+  static const List<Color> buttonGradient = [
+  Color(0xFF55D0FF), // Left
+  Color(0xFF0E5AA7), // Right
+];
+static const List<Color> drawerGradient = [
+  Color(0xFF232C6D),
+  Color(0xFF1B2153),
+  Color(0xFF13173A),
+];
+// widgets app boder colors=============================================================== 
+static const appWidgetBorderColor = Color(0xFF4103AC);
+static const appdividercolor = Color(0xFF373C62);
+static const junkcheckboxcolor =  Color(0xFF1C2A8F);
+static const junkcheckbox2 =  Color(0xFF0A1540);
+static const checkiconcolor = Color(0xFF55D0FF);
+static const phoneboostcheckboxcolor  =  Color(0xFF1C2A8F);
+
+static const chargingstatecolor =  Color(0xFF2FE55D);
+static const securityiscomplete =  Color(0xFF00FF09);
+static const securtiyincomplete =  Color(0xFF373C62);
+static const securitysidecolor = Color(0xFF2FE55D);
+// 4 colors===========================================
+// static const List<Color> drawerGradientColors = [
+//   Color(0xFF232C6D),
+//   Color(0xFF1B2153),
+//   Color(0xFF13173A),
+// ];
+static const errorcolor = Colors.redAccent;
+static const animatedboxcoloractive =  Color(0xFF232C6D);
+static const checkboxbodercolor =  Color(0xFF838283);
+static const appmanagerline = Color(0xFF373C62);
 }
 

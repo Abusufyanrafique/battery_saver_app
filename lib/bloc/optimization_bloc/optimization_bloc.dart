@@ -14,30 +14,27 @@ part 'optimization_state.dart';
 const _kTaskDurationMs = 1400;
 const _kTotalTasks = 5;
 
-/// Platform channel for real OS-level battery temperature.
-/// Backed by BatteryManager.EXTRA_TEMPERATURE on Android (see MainActivity.kt).
-/// Returns null on platforms/devices where this isn't available — the UI
-/// must hide the temperature row in that case rather than show a fake value.
 const _kDeviceInfoChannel = MethodChannel('device_info/battery');
+const _kAutoCoolChannel = MethodChannel('com.example.battery_saver_app/auto_cool');
+// ── NEW: CPU info channel for real temperature balancing ──
+const _kCpuChannel = MethodChannel('com.example.battery_saver_app/cpu_info');
 
 class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   Timer? _taskTimer;
   int _currentTaskIndex = 0;
   final Battery _battery = Battery();
 
-  /// Real battery % captured the moment the optimize session starts.
-  /// This is the ONLY valid "before" value — never derived/guessed.
   int? _sessionStartBatteryLevel;
 
-  /// Real free disk space (MB) captured the moment the optimize session
-  /// starts — the genuine "before" snapshot for the disk-space half of
-  /// the performance score.
   double? _sessionStartFreeDiskMB;
   double? _sessionStartTotalDiskMB;
 
   /// Real performance score computed from the two real readings above,
   /// at session start. This is the genuine "before" score — not fabricated.
   int? _sessionStartScore;
+
+  // ── NEW: stores real temperature read during balancing ──
+  double? _balancedTemperature;
 
   OptimizationBloc() : super(OptimizationState.initial(_kTotalTasks)) {
     on<StartOptimizationEvent>(_onStart);
@@ -62,7 +59,7 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     try {
       _sessionStartBatteryLevel = await _battery.batteryLevel;
     } catch (_) {
-      _sessionStartBatteryLevel = null; // unavailable — handled later, never guessed
+      _sessionStartBatteryLevel = null;
     }
 
     try {
@@ -148,6 +145,7 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
 
   void _beginTasks(Emitter<OptimizationState> emit) {
     _currentTaskIndex = 0;
+    _balancedTemperature = null; // reset before new session
     final statuses = List<TaskStatus>.filled(_kTotalTasks, TaskStatus.pending);
     statuses[0] = TaskStatus.inProgress;
 
@@ -188,6 +186,10 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
         isComplete: true,
         phase: OptimizationPhase.complete,
       ));
+
+      // ── Real tasks on completion ───────────────────────────────
+      _killBackgroundApps(); // Closing Background Apps + Optimizing System Resources
+      _balanceTemperature(); // ── NEW: Balancing Temperature → real CPU temp read
     } else {
       statuses[_currentTaskIndex] = TaskStatus.inProgress;
       emit(state.copyWith(
@@ -235,8 +237,6 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
       final cacheDir = await getTemporaryDirectory();
       final cacheBeforeBytes = await _dirSizeBytes(cacheDir);
 
-      // Real free disk space BEFORE clearing, so the disk delta below is
-      // a genuine measured difference, not an estimate.
       final diskSpace = DiskSpacePlus();
       final freeDiskBeforeMB = (await diskSpace.getFreeDiskSpace) ?? 0;
 
@@ -253,21 +253,22 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
       final diskFreedMB =
           (freeDiskAfterMB - freeDiskBeforeMB).clamp(0, double.maxFinite).toDouble();
 
-      // ── 4. Real temperature via platform channel. Null if unavailable —
-      //       we do NOT fall back to a guessed value. ──────────────────────
-      double? temperatureCelsius;
-      try {
-        final result = await _kDeviceInfoChannel
-            .invokeMethod<num>('getBatteryTemperature');
-        temperatureCelsius = result?.toDouble();
-      } on PlatformException {
-        temperatureCelsius = null;
-      } on MissingPluginException {
-        temperatureCelsius = null; // e.g. running on iOS or channel not wired up
+      // ── 4. Temperature — use _balancedTemperature if already read,
+      //       otherwise fallback to battery temp channel ────────────────────
+      double? temperatureCelsius = _balancedTemperature;
+      if (temperatureCelsius == null) {
+        try {
+          final result = await _kDeviceInfoChannel
+              .invokeMethod<num>('getBatteryTemperature');
+          temperatureCelsius = result?.toDouble();
+        } on PlatformException {
+          temperatureCelsius = null;
+        } on MissingPluginException {
+          temperatureCelsius = null;
+        }
       }
 
-      // ── 5. Performance score — built only from real, current readings.
-      //       No fabricated "before" baseline is subtracted. ───────────────
+      // ── 5. Performance score ─────────────────────────────────────────────
       final freePercentNow =
           (freeDiskAfterMB / totalDiskMB * 100).clamp(0.0, 100.0).toDouble();
       final performanceScore = _calcScore(
@@ -285,7 +286,7 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
         diskSpaceFreedText: _fmtMB(diskFreedMB),
         temperatureCelsius: temperatureCelsius,
         performanceScore: performanceScore,
-        scoreBefore: _sessionStartScore, // real, or null if no session started
+        scoreBefore: _sessionStartScore,
         scoreAfter: performanceScore,
       ));
     } catch (e) {
@@ -332,7 +333,6 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   }
 
   /// Score from two genuinely-measured current values only.
-  /// No fabricated baseline, no random variance.
   int _calcScore({
     required double batteryPct,
     required double freePct,
@@ -340,6 +340,38 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     final b = (batteryPct * 0.5).clamp(0.0, 50.0);
     final s = (freePct * 0.5).clamp(0.0, 50.0);
     return (b + s).round().clamp(0, 100);
+  }
+
+  /// Kills background/heavy apps via AutoCool channel.
+  Future<void> _killBackgroundApps() async {
+    try {
+      print('🧹 OptimizationBloc: Killing background apps...');
+      await _kAutoCoolChannel.invokeMethod('killHeavyApps');
+      print('✅ Background apps killed after optimization');
+    } on PlatformException catch (e) {
+      print('⚠️ killHeavyApps failed: ${e.message}');
+    } catch (e) {
+      print('⚠️ killHeavyApps unknown error: $e');
+    }
+  }
+
+  /// ── NEW ──
+  /// Reads real CPU temperature via cpu_info channel.
+  /// Result stored in [_balancedTemperature] — used in result screen.
+  Future<void> _balanceTemperature() async {
+    try {
+      print('🌡️ OptimizationBloc: Balancing temperature — reading CPU info...');
+      final dynamic raw = await _kCpuChannel.invokeMethod('getCpuInfo');
+      final Map<String, dynamic> cpuMap = Map<String, dynamic>.from(raw as Map);
+      _balancedTemperature = (cpuMap['temperature'] as num?)?.toDouble();
+      print('✅ Temperature balanced: $_balancedTemperature°C');
+    } on PlatformException catch (e) {
+      print('⚠️ balanceTemperature failed: ${e.message}');
+      _balancedTemperature = null;
+    } catch (e) {
+      print('⚠️ balanceTemperature unknown error: $e');
+      _balancedTemperature = null;
+    }
   }
 
   @override

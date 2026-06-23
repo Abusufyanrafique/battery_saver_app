@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/models/junk/junk_item.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -26,15 +27,11 @@ class JunkListWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1,
         ),
       ),
@@ -50,7 +47,7 @@ class JunkListWidget extends StatelessWidget {
                 ),
                 if (index < items.length - 1)
                   const Divider(
-                    color: Color(0xFF373C62),
+                    color: AppColors.appdividercolor,
                     height: 1,
                   ),
               ],
@@ -90,7 +87,7 @@ class JunkItemTile extends StatelessWidget {
           Text(
             item.size,
             style: TextStyle(
-              color: const Color(0xFFD9D9D9),
+              color: AppColors.allsmalltextcolor,
               fontSize: getFont(12),
               fontWeight: FontWeight.w400,
             ),
@@ -101,12 +98,15 @@ class JunkItemTile extends StatelessWidget {
             height: getHeight(22),
             decoration: BoxDecoration(
               color: item.isChecked
-                  ? const Color(0xFF1C2A8F)
-                  : const Color(0xFF0A1540),
+                  ? AppColors.junkcheckboxcolor
+                  : AppColors.junkcheckbox2,
               borderRadius: BorderRadius.circular(6),
             ),
             child: item.isChecked
-                ? const Icon(Icons.check, color: Color(0xFF55D0FF), size: 14)
+                ? const Icon(
+                  Icons.check, 
+                  color: AppColors.checkiconcolor,
+                   size: 14)
                 : null,
           ),
         ],
@@ -127,11 +127,11 @@ class _CheckCircle extends StatelessWidget {
       height: getHeight(20),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isChecked ? const Color(0xFF55D0FF) : Colors.transparent,
+        color: isChecked ? AppColors.checkiconcolor : Colors.transparent,
         border: isChecked ? null : Border.all(color: Colors.white38, width: 1.5),
       ),
       child: isChecked
-          ? const Icon(Icons.check, color: Colors.white, size: 14)
+          ? const Icon(Icons.check, color:AppColors.white, size: 14)
           : null,
     );
   }

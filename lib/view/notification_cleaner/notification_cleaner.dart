@@ -67,19 +67,7 @@ class _NotificationCleanerView extends StatelessWidget {
       backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.notificationCleaner),
       body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0F1633),
-              Color(0xFF0B122B),
-              Color(0xFF070C1F),
-            ],
-          ),
-        ),
+        
         child: SafeArea(
           child: BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
@@ -113,7 +101,7 @@ class _NotificationCleanerView extends StatelessWidget {
                             : '${state.totalCount}',
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: getFont(32),
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -134,13 +122,13 @@ class _NotificationCleanerView extends StatelessWidget {
                     Center(
                       child: Text(
                         state.status == NotificationStatus.cleaned
-                            ? 'Cleaned Successfully!'
+                            ? AppText.cleanSuccessfully
                             : AppText.foundinapps,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontSize: getFont(18),
                           color: state.status == NotificationStatus.cleaned
                               ? Colors.greenAccent
-                              : const Color(0xFF55D0FF),
+                              : AppColors.checkiconcolor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -193,9 +181,9 @@ class _NotificationCleanerView extends StatelessWidget {
                     /// ── CLEAN BUTTON
                     CleanButtonWidget(
                       text: state.status == NotificationStatus.cleaning
-                          ? 'Cleaning...'
+                          ? AppText.cleaningtext
                           : state.status == NotificationStatus.cleaned
-                              ? 'Done ✓'
+                              ? AppText.donejunktext
                               : AppText.cleanNow,
                       onPressed: state.status == NotificationStatus.loaded
                           ? () => context
@@ -240,17 +228,17 @@ class _PermissionCard extends StatelessWidget {
               ],
             ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4103AC)),
+        border: Border.all(color: AppColors.appWidgetBorderColor),
       ),
       child: Column(
         children: [
           const Icon(Icons.notifications_off,
-              color: Color(0xFF55D0FF), size: 40),
+              color: AppColors.checkiconcolor, size: 40),
            SizedBox(height: getHeight(12)),
            Text(
             AppText.notificationAccessRequired,
             style: TextStyle(
-              color: Colors.white,
+              color: AppColors.checkiconcolor,
               fontSize: getFont(16),
               fontWeight: FontWeight.w600,
             ),
@@ -265,7 +253,7 @@ class _PermissionCard extends StatelessWidget {
           ElevatedButton(
             onPressed: onTap,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF55D0FF),
+              backgroundColor: AppColors.checkiconcolor,
               foregroundColor: Colors.black,
             ),
             child: const Text(AppText.grantPermission),
@@ -293,11 +281,7 @@ class SocialStatsWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -311,7 +295,7 @@ class SocialStatsWidget extends StatelessWidget {
                 child: _SocialStatRow(item: item),
               ),
               if (index != items.length - 1)
-                const Divider(height: 1, color: Color(0xFF373C62)),
+                const Divider(height: 1, color: AppColors.divider),
             ],
           );
         }),
@@ -332,16 +316,16 @@ class _SocialStatRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          SvgPicture.asset(item.svgAssetPath, width: 20, height: 20),
-          const SizedBox(width: 14),
+          SvgPicture.asset(item.svgAssetPath, width: getWidth(20), height: getHeight(20)),
+           SizedBox(width: getWidth(14)),
           Expanded(child: Text(item.label,
-              style: const TextStyle(color: Colors.white))),
+              style: const TextStyle(color: AppColors.white))),
           Text('${item.count}',
               style: const TextStyle(color: Colors.white70)),
-          const SizedBox(width: 12),
+           SizedBox(width: getWidth(12)),
           Icon(
             item.isChecked ? Icons.check : Icons.circle_outlined,
-            color: const Color(0xFF55D0FF),
+            color: AppColors.checkiconcolor,
             size: 16,
           )
         ],

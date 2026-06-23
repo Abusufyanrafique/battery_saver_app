@@ -36,7 +36,7 @@ class AppManagerTabBar extends StatelessWidget {
         Container(
           height: 1,
           width: double.infinity,
-          color: Color(0xFF373C62),
+          color: AppColors.appmanagerline,
         ),
       ],
     );
@@ -73,13 +73,13 @@ class _TabItem extends StatelessWidget {
                     isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
-            const SizedBox(height: 6),
+             SizedBox(height: getHeight(6)),
             if (isSelected)
               Container(
                 height: getHeight(2),
                 width: getWidth(80),
                 decoration: BoxDecoration(
-                  color: Color(0xFF55D0FF),
+                  color: AppColors.checkiconcolor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

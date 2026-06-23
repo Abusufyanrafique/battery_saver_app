@@ -35,17 +35,7 @@ class _PhoneBoostView extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.phoneBoostGradientTop,
-              AppColors.phoneBoostGradientMid,
-              AppColors.phoneBoostGradientBottom,
-            ],
-          ),
-        ),
+       
         child: SafeArea(
           child: BlocBuilder<PhoneBoostBloc, PhoneBoostState>(
             builder: (context, state) {

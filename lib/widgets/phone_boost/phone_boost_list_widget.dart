@@ -45,7 +45,7 @@ class PhoneBoostListWidget extends StatelessWidget {
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4103AC), width: 1),
+        border: Border.all(color: AppColors.appWidgetBorderColor, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
@@ -57,8 +57,8 @@ class PhoneBoostListWidget extends StatelessWidget {
               children: [
                 PhoneBoostTile(app: apps[i]),
                 if (i != apps.length - 1)
-                  const Divider(
-                      color: Color(0xFF373C62), height: 1, thickness: 1),
+                   Divider(
+                      color:AppColors.divider, height: 1, thickness: 1),
               ],
             );
           }),
@@ -128,10 +128,10 @@ class PhoneBoostTile extends StatelessWidget {
             width: getWidth(24),
             height: getHeight(24),
             decoration: BoxDecoration(
-              color: const Color(0xFF1C2A8F),
+              color: AppColors.phoneboostcheckboxcolor,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: const Icon(Icons.check, size: 14, color: Color(0xFF55D0FF)),
+            child:  Icon(Icons.check, size: 14, color:AppColors.checkiconcolor),
           ),
         ],
       ),
@@ -160,9 +160,9 @@ class _LetterAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         name.isNotEmpty ? name[0].toUpperCase() : '?',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 12,
+        style:  TextStyle(
+          color: AppColors.white,
+          fontSize: getFont(12),
           fontWeight: FontWeight.bold,
         ),
       ),

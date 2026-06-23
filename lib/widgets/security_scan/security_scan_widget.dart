@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:flutter/material.dart';
@@ -32,14 +33,10 @@ class SecurityScanWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF4103AC), width: 1),
+        border: Border.all(color: AppColors.appWidgetBorderColor, width: 1),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -52,7 +49,7 @@ class SecurityScanWidget extends StatelessWidget {
                 SecurityScanTile(item: items[index]),
                 if (index != items.length - 1)
                   const Divider(
-                    color: Color(0xFF373C62),
+                    color: AppColors.divider,
                     height: 1,
                     thickness: 1,
                   ),
@@ -83,7 +80,7 @@ class SecurityScanTile extends StatelessWidget {
             isScanning: item.isScanning,
           ),
 
-          const SizedBox(width: 14),
+           SizedBox(width: getWidth(14)),
 
           // ── Title ───────────────────────────────────────────────────────
           Expanded(
@@ -92,7 +89,7 @@ class SecurityScanTile extends StatelessWidget {
               style: AppTextStyles.displayMedium.copyWith(
                 fontSize: getFont(14),
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color:AppColors.white,
               ),
             ),
           ),
@@ -123,7 +120,7 @@ class _LeftIndicator extends StatelessWidget {
         height: getHeight(20),
         child: const CircularProgressIndicator(
           strokeWidth: 2,
-          color: Color(0xFF00FF09),
+          color: AppColors.securitysidecolor,
         ),
       );
     }
@@ -134,12 +131,12 @@ class _LeftIndicator extends StatelessWidget {
       height: getHeight(20),
       decoration: BoxDecoration(
         color: isCompleted
-            ? const Color(0xFF00FF09)
-            : const Color(0xFF373C62), // grey when pending
+            ? AppColors.securityiscomplete
+            : AppColors.securtiyincomplete, // grey when pending
         shape: BoxShape.circle,
       ),
       child: isCompleted
-          ? const Icon(Icons.check, color: Colors.white, size: 12)
+          ? const Icon(Icons.check, color: AppColors.white, size: 12)
           : null,
     );
   }
@@ -160,7 +157,7 @@ class _RightIndicator extends StatelessWidget {
         height: getHeight(20),
         child: const CircularProgressIndicator(
           strokeWidth: 2,
-          color: Color(0xFF2FE55D),
+          color: AppColors.securitysidecolor,
         ),
       );
     }
@@ -171,12 +168,12 @@ class _RightIndicator extends StatelessWidget {
       height: getHeight(20),
       decoration: BoxDecoration(
         color: isCompleted
-            ? const Color(0xFF2FE55D)
-            : const Color(0xFF373C62), // grey when pending
+            ? AppColors.securityiscomplete
+            : AppColors.securtiyincomplete, // grey when pending
         borderRadius: BorderRadius.circular(6),
       ),
       child: isCompleted
-          ? const Icon(Icons.check, color: Colors.white, size: 12)
+          ? const Icon(Icons.check, color: AppColors.white, size: 12)
           : null,
     );
   }

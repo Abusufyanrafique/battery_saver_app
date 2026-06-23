@@ -1,5 +1,7 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -50,7 +52,7 @@ class BatteryModeListWidget extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1,
         ),
       ),
@@ -70,7 +72,7 @@ class BatteryModeListWidget extends StatelessWidget {
                 ),
                 if (index != items.length - 1)
                   const Divider(
-                    color:     Color(0xFF373C62),
+                    color:     AppColors.dividerColor,
                     height:    1,
                     thickness: 1,
                   ),
@@ -143,7 +145,7 @@ class BatteryModeTile extends StatelessWidget {
                     item.title,
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontSize:   getFont(14),
-                      color:      Colors.white,
+                      color:      AppColors.white,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -157,7 +159,7 @@ class BatteryModeTile extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'Active',
+                       AppText.active,
                         style: TextStyle(
                           color:      item.iconBgColor,
                           fontSize:   getFont(10),
@@ -173,10 +175,11 @@ class BatteryModeTile extends StatelessWidget {
             // ── Subtitle ─────────────────────────────────────────────────
             Text(
               item.subtitle,
-              style: TextStyle(
-                color:    const Color(0xFFD9D9D9),
+              style:AppTextStyles.bodyMedium.copyWith(
+                color:    AppColors.allsmalltextcolor,
                 fontSize: getFont(14),
               ),
+             
             ),
 
             SizedBox(width: getWidth(8)),
@@ -186,7 +189,7 @@ class BatteryModeTile extends StatelessWidget {
               Icons.chevron_right,
               color: isSelected
                   ? item.iconBgColor
-                  : const Color(0xFFD9D9D9),
+                  : AppColors.allsmalltextcolor,
               size: 20,
             ),
           ],

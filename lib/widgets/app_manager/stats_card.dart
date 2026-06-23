@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
@@ -24,8 +25,8 @@ class StatsCard extends StatelessWidget {
         ?  Colors.white 
         : Colors.white;
     final Color valueColor = isApkMode
-        ? const Color(0xFF55D0FF)   // orange value
-        : Colors.white;
+        ?  AppColors.checkiconcolor  // orange value
+        : AppColors.white;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
@@ -33,14 +34,10 @@ class StatsCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: AppColors.drawerGradient
         ),
         border: Border.all(
-          color: Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1,
         ),
         borderRadius: BorderRadius.circular(14),
@@ -54,7 +51,7 @@ class StatsCard extends StatelessWidget {
               width: getWidth(36),
               height: getHeight(36),
               colorFilter: const ColorFilter.mode(
-                Color(0xFF55D0FF),
+                AppColors.checkiconcolor,
                 BlendMode.srcIn,
               ),
             ),
@@ -72,7 +69,7 @@ class StatsCard extends StatelessWidget {
             child: Container(
               height: getHeight(50),
               width: getWidth(1),
-              color: const Color(0xFF373C62),
+              color: AppColors.divider,
             ),
           ),
           SizedBox(width: getWidth(20)),

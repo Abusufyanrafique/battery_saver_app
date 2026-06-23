@@ -7,16 +7,7 @@ class DrainSample {
   const DrainSample(this.level, this.time);
 }
 
-/// Tracks REAL battery drain over time and derives a genuine estimate
-/// of remaining battery life from observed behavior — never from a
-/// hardcoded formula or per-mode multiplier.
-///
-/// Why this is the only honest approach:
-/// - Every device drains differently (battery capacity, apps running,
-///   screen-on time, signal strength all vary).
-/// - A fixed "100% = N hours" assumption is wrong for most users.
-/// - The only number that means anything is one derived from THIS
-///   device's THIS session's actual observed drain.
+
 ///
 /// Trade-off: estimates are unavailable until enough real samples exist
 /// (see [minSamples] / [minElapsedMinutes]). The UI must show a

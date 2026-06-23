@@ -4,6 +4,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/utils/helper/battery_helpers.dart';
 import 'package:battery_saver_app/view/file_manager/file_manager_screen.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
@@ -37,7 +38,7 @@ class _BatterySaverBody extends StatelessWidget {
   List<BatteryModeItem> getModes(BatterySaverState state) {
     return [
       BatteryModeItem(
-        title: 'Power Saving Mode',
+        title: AppText.powerSavingMode,
         subtitle: remainingTimeFromLevel(
           state.batteryLevel,
           mode: BatteryMode.powerSaving,
@@ -47,7 +48,7 @@ class _BatterySaverBody extends StatelessWidget {
       ),
 
       BatteryModeItem(
-        title: 'Super Saving Mode',
+        title: AppText.superSavingMode,
         subtitle: remainingTimeFromLevel(
           state.batteryLevel,
            mode: BatteryMode.superSaving,
@@ -57,9 +58,9 @@ class _BatterySaverBody extends StatelessWidget {
       ),
 
       BatteryModeItem(
-        title: 'Custom Mode',
+        title: AppText.customMode,
         subtitle: state.isCharging
-            ? 'Charging'
+            ? AppText.chargingtext
             : remainingTimeFromLevel(
                 state.batteryLevel,
                 mode: BatteryMode.custom,
@@ -99,7 +100,7 @@ class _BatterySaverBody extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColors.allscreenBackgroundColor,
-        appBar: const CustomAppBar(title: 'Battery Saver'),
+        appBar:  CustomAppBar(title: AppText.batterySaverappbar),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -151,8 +152,8 @@ BlocBuilder<BatterySaverBloc, BatterySaverState>(
                     width: getWidth(42),
                     colorFilter: ColorFilter.mode(
                       state.isCharging
-                          ? const Color(0xFF2FE55D)
-                          : Colors.white,
+                          ? AppColors.chargingstatecolor
+                          : AppColors.white,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -171,15 +172,15 @@ BlocBuilder<BatterySaverBloc, BatterySaverState>(
                 ],
               ),
 
-              const SizedBox(height: 6),
+               SizedBox(height: getHeight(6)),
                 Text(
                     state.batteryLevel == 0
                         ? '...'
                         : '${state.batteryLevel}%',
-                    style: const TextStyle(
-                      fontSize: 20,
+                    style:  TextStyle(
+                      fontSize: getFont(20),
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   ),
               // Charging bolt / remaining time
@@ -191,9 +192,9 @@ BlocBuilder<BatterySaverBloc, BatterySaverState>(
               //   ),
 
               Text(
-                state.isCharging ? 'Charging' : state.remainingTime,
-                style: const TextStyle(
-                  fontSize: 10,
+                state.isCharging ? AppText.chargingtext : state.remainingTime,
+                style:  TextStyle(
+                  fontSize: getFont(10),
                   color: Colors.white70,
                 ),
               ),
@@ -253,7 +254,7 @@ BlocBuilder<BatterySaverBloc, BatterySaverState>(
                 BlocBuilder<BatterySaverBloc, BatterySaverState>(
                   builder: (context, state) {
                     return CleanButtonWidget(
-                      text: state.isApplying ? 'Applying...' : 'Apply',
+                      text: state.isApplying ? AppText.applying : AppText.apply,
                       onPressed: state.isApplying
                           ? null
                           : () => context
@@ -285,8 +286,8 @@ BlocBuilder<BatterySaverBloc, BatterySaverState>(
           backgroundColor: color,
           content: Row(
             children: [
-              Icon(icon, color: Colors.white),
-              const SizedBox(width: 8),
+              Icon(icon, color: AppColors.white),
+               SizedBox(width: getWidth(8)),
               Expanded(child: Text(message)),
             ],
           ),

@@ -45,121 +45,106 @@ class _CpuCoolerViewState extends State<_CpuCoolerView> {
       appBar: CustomAppBar(
         title: AppText.cooler,
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0F1633),
-              Color(0xFF0B122B),
-              Color(0xFF070C1F),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: BlocBuilder<CpuCoolerBloc, CpuCoolerState>(
-            builder: (context, state) {
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: getHeight(30)),
-
-                    // ───── CIRCULAR GAUGE ─────
-                    _CpuGauge(temperature: state.temperature),
-
-                    SizedBox(height: getHeight(40)),
-
-                    // ───── STATUS TEXT ─────
-                    Center(
-                      child: state.isCoolingDown
-                          ? Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                 SizedBox(
-                                  width: getWidth(14),
-                                  height: getHeight(14),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Color(0xFF55D0FF),
-                                  ),
+      body: SafeArea(
+        child: BlocBuilder<CpuCoolerBloc, CpuCoolerState>(
+          builder: (context, state) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: getHeight(30)),
+      
+                  // ───── CIRCULAR GAUGE ─────
+                  _CpuGauge(temperature: state.temperature),
+      
+                  SizedBox(height: getHeight(40)),
+      
+                  // ───── STATUS TEXT ─────
+                  Center(
+                    child: state.isCoolingDown
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                               SizedBox(
+                                width: getWidth(14),
+                                height: getHeight(14),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.checkiconcolor,
                                 ),
-                                 SizedBox(width: getWidth(8)),
-                                Text(
-                                  state.statusMessage,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: getFont(14),
-                                    color: const Color(0xFF55D0FF),
-                                  ),
-                                ),
-                              ],
-                            )
-                          : Text(
-                              state.statusMessage,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                fontWeight: FontWeight.w600,
-                                fontSize: getFont(14),
-                                color: state.status == CpuCoolerStatus.cooled
-                                    ? Colors.greenAccent
-                                    : const Color(0xFF55D0FF),
                               ),
+                               SizedBox(width: getWidth(8)),
+                              Text(
+                                state.statusMessage,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: getFont(14),
+                                  color: AppColors.checkiconcolor,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            state.statusMessage,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: getFont(14),
+                              color: state.status == CpuCoolerStatus.cooled
+                                  ? Colors.greenAccent
+                                  : AppColors.checkiconcolor,
                             ),
-                    ),
-
-                    SizedBox(height: getHeight(140)),
-
-                    // ───── CPU INFO WIDGET ─────
-                    CpuCoolerWidget(
-                      items: [
-                        CpuInfoItem(
-                        imagePath: AppImages.cpuusage,
-                        title: "CPU Usage",
-                        value: state.cpuUsage == 0.0
-                        ? '--'
-                       : '${state.cpuUsage.toStringAsFixed(1)}%',
-),
-                        CpuInfoItem(
-                          imagePath: AppImages.cpumangerimage,
-                          title: "Running Apps",
-                         
-                          value: state.runningApps == 0
-                              ? '--'
-                              : '${state.runningApps}',
-                        ),
-                        CpuInfoItem(
-                          imagePath: AppImages.temperature,
-                          title: "Temperature",
-                          value: state.temperature == 0.0
-                              ? '--'
-                              : '${state.temperature.toStringAsFixed(1)}°C',
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: getHeight(80)),
-
-                    // ───── BUTTON ─────
-                    CleanButtonWidget(
-                      text: state.isCoolingDown
-                          ? 'Cooling...'
-                          : AppText.coolDown,
-                      onPressed: state.isCoolingDown
-                          ? null
-                          : () => context
-                              .read<CpuCoolerBloc>()
-                              .add(const CpuCoolerCoolDownRequested()),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+                          ),
+                  ),
+      
+                  SizedBox(height: getHeight(140)),
+      
+                  // ───── CPU INFO WIDGET ─────
+                  CpuCoolerWidget(
+                    items: [
+                      CpuInfoItem(
+                      imagePath: AppImages.cpuusage,
+                      title: AppText.cPUUsage,
+                      value: state.cpuUsage == 0.0
+                      ? '--'
+                     : '${state.cpuUsage.toStringAsFixed(1)}%',
+      ),
+                      CpuInfoItem(
+                        imagePath: AppImages.cpumangerimage,
+                        title:AppText.runningApps,
+                       
+                        value: state.runningApps == 0
+                            ? '--'
+                            : '${state.runningApps}',
+                      ),
+                      CpuInfoItem(
+                        imagePath: AppImages.temperature,
+                        title: AppText.temperaturetext,
+                        value: state.temperature == 0.0
+                            ? '--'
+                            : '${state.temperature.toStringAsFixed(1)}°C',
+                      ),
+                    ],
+                  ),
+      
+                  SizedBox(height: getHeight(80)),
+      
+                  // ───── BUTTON ─────
+                  CleanButtonWidget(
+                    text: state.isCoolingDown
+                        ? AppText.cooling
+                        : AppText.coolDown,
+                    onPressed: state.isCoolingDown
+                        ? null
+                        : () => context
+                            .read<CpuCoolerBloc>()
+                            .add(const CpuCoolerCoolDownRequested()),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -201,13 +186,13 @@ class _CpuGauge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
-                "assets/images/phone_boost/whiteimage.png",
+                AppImages.whiteimage,
                 width: getHeight(200),
                 height: getHeight(200),
                 errorBuilder: (_, __, ___) => Icon(
                   Icons.memory,
                   size: getHeight(48),
-                  color: const Color(0xFF55D0FF),
+                  color: AppColors.checkiconcolor,
                 ),
               ),
               //  SizedBox(height:getHeight(6) ),
@@ -222,11 +207,11 @@ class _CpuGauge extends StatelessWidget {
                 ),
               ),
               Text(
-                'CPU Temperature',
-                style: TextStyle(
-                  fontSize: getFont(11),
-                  color: Colors.white54,
-                ),
+                AppText.cPUTemperature,
+                style: AppTextStyles.bodySmall.copyWith(
+                  fontSize: getFont(12),
+                  color: AppColors.allsmalltextcolor
+                )
               ),
             ],
           ),

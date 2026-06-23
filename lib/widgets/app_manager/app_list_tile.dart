@@ -2,6 +2,7 @@ import 'package:battery_saver_app/bloc/app_manager/app_manager_bloc.dart'; // â†
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class AppListTile extends StatelessWidget {
@@ -123,21 +124,24 @@ class AppListTile extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF55D0FF), width: 1.2),
+                      border: Border.all(color: AppColors.checkiconcolor, width: 1.2),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Install',
+                      AppText.install,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(12),
-                        color: const Color(0xFF55D0FF),
+                        color: AppColors.checkiconcolor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
                 ),
                 SizedBox(width: getWidth(4)),
-                const Icon(Icons.more_vert, color: Color(0xFFD9D9D9), size: 20),
+                const Icon(Icons.more_vert, 
+                color: AppColors.allsmalltextcolor, 
+                size: 20
+                ),
               ] else ...[
                 GestureDetector(
                   onTap: onToggle,
@@ -146,12 +150,12 @@ class AppListTile extends StatelessWidget {
                     width: getWidth(20),
                     height: getHeight(20),
                     decoration: BoxDecoration(
-                      color: _isSelected ? const Color(0xFF232C6D) : Colors.transparent,
-                      border: Border.all(color: const Color(0xFF838283), width: 1.5),
+                      color: _isSelected ? AppColors.animatedboxcoloractive : Colors.transparent,
+                      border: Border.all(color: AppColors.checkboxbodercolor, width: 1.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: _isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 14)
+                        ?  Icon(Icons.check, color: AppColors.white, size: 14)
                         : null,
                   ),
                 ),
@@ -163,7 +167,7 @@ class AppListTile extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(left: getWidth(60)),
             child: Divider(
-              color: const Color(0xFF373C62).withOpacity(0.6),
+              color: AppColors.divider,
               height: 1,
               thickness: 1,
             ),

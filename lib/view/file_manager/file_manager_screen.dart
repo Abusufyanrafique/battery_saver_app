@@ -4,6 +4,7 @@ import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/data/repositories/file_manager_repository.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -130,7 +131,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       Expanded(
         child: Center(
           child: Text(
-            'File Manager',
+            AppText.fileManager,
             style: AppTextStyles.bodyLarge.copyWith(
               fontSize: getFont(24),
               fontWeight: FontWeight.w700,
@@ -140,7 +141,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
       ),
       showMore
           ? _GlassBtn(icon: Icons.more_vert, onTap: () {})
-          : const SizedBox(width: 40),
+          :  SizedBox(width: getWidth(40)),
     ],
   );
 
@@ -157,11 +158,11 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             end: Alignment.bottomCenter,
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF4103AC), width: 1),
+          border: Border.all(color: AppColors.appWidgetBorderColor, width: 1),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: Color(0xFFD9D9D9)),
+            const Icon(Icons.search, color: AppColors.allsmalltextcolor),
             const SizedBox(width: 10),
             Expanded(
               child: TextField(
@@ -172,8 +173,8 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                     .add(FileManagerSearchEvent(q)),
                 decoration: const InputDecoration(
                   border: InputBorder.none,
-                  hintText: 'Search files...',
-                  hintStyle: TextStyle(color: Color(0xFFD9D9D9)),
+                  hintText: AppText.searchfiles,
+                  hintStyle: TextStyle(color: AppColors.allsmalltextcolor),
                 ),
               ),
             ),
@@ -191,16 +192,16 @@ class _FileManagerScreenState extends State<FileManagerScreen>
   Widget _loadingView() => Column(
     children: [
       Padding(padding: const EdgeInsets.all(24), child: _header(showMore: false)),
-      const Expanded(
+       Expanded(
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(color: Color(0xFF6C63FF)),
-              SizedBox(height: 16),
+              SizedBox(height: getHeight(12)),
               Text(
-                'Loading...',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+               AppText.loadingtext,
+                style: TextStyle(color: Colors.white70, fontSize: getFont(14)),
               ),
             ],
           ),
@@ -259,11 +260,11 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
-              const SizedBox(height: 12),
+               SizedBox(height: getHeight(12)),
               Text(message,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white60, fontSize: 14)),
-              const SizedBox(height: 20),
+               SizedBox(height: getHeight(20)),
               TextButton(
                 onPressed: () => context
                     .read<FileManagerBloc>()
@@ -311,7 +312,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                 children: [
                   _header(),
                   if (state.isRefreshing) ...[
-                    const SizedBox(height: 8),
+                     SizedBox(height: getHeight(8)),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: const LinearProgressIndicator(
@@ -321,17 +322,17 @@ class _FileManagerScreenState extends State<FileManagerScreen>
                       ),
                     ),
                   ],
-                  const SizedBox(height: 24),
+                   SizedBox(height: getHeight(24)),
                   _searchBar(context, state),
-                  const SizedBox(height: 24),
+                   SizedBox(height: getHeight(24)),
                   _categoryGrid(state),
-                  const SizedBox(height: 24),
+                   SizedBox(height:getHeight(24) ),
                   _StorageCard(storage: state.internalStorage),
                   if (state.sdCardStorage != null) ...[
-                    const SizedBox(height: 12),
+                     SizedBox(height: getHeight(12)),
                     _StorageCard(storage: state.sdCardStorage!),
                   ],
-                  const SizedBox(height: 32),
+                   SizedBox(height:getHeight(32) ),
                 ],
               ),
             ),
@@ -352,12 +353,12 @@ class _FileManagerScreenState extends State<FileManagerScreen>
               CircularProgressIndicator(color: Color(0xFF6C63FF)),
               SizedBox(height: 12),
               Text(
-                'Scanning files...',
+               AppText.scanningfiles,
                 style: TextStyle(color: Colors.white54, fontSize: 13),
               ),
               SizedBox(height: 4),
               Text(
-                'This may take a few seconds',
+               AppText.thismaytakeafewseconds,
                 style: TextStyle(color: Colors.white30, fontSize: 11),
               ),
             ],
@@ -371,7 +372,7 @@ class _FileManagerScreenState extends State<FileManagerScreen>
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Text(
-            'No categories found',
+            AppText.nocategoriesfound,
             style: TextStyle(color: Colors.white54),
           ),
         ),
@@ -408,14 +409,10 @@ class _CategoryCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4103AC), width: 1),
+        border: Border.all(color: AppColors.appWidgetBorderColor, width: 1),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -433,7 +430,7 @@ class _CategoryCard extends StatelessWidget {
             category.name,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(16),
-              color: Colors.white,
+              color: AppColors.white,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -441,7 +438,7 @@ class _CategoryCard extends StatelessWidget {
             category.size,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(13),
-              color: const Color(0xFFD9D9D9),
+              color: AppColors.allsmalltextcolor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -480,10 +477,10 @@ class _StorageCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+          colors:AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4103AC)),
+        border: Border.all(color: AppColors.appWidgetBorderColor),
       ),
       child: Row(
         children: [

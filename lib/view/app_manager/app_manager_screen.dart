@@ -46,7 +46,7 @@ class _AppManagerBody extends StatelessWidget {
             return Center(
               child: Text(
                 'Error: ${state.errorMessage}',
-                style: const TextStyle(color: Colors.redAccent),
+                style: const TextStyle(color: AppColors.errorcolor),
               ),
             );
           }

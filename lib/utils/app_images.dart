@@ -131,4 +131,5 @@ static const String onboardingimagethree = 'assets/images/onboarding/onboardingi
 static const String  temp =  "assets/images/home/temp.png";
 static const String menuhome = "assets/images/home/menuhome.png";
 static const String rooketimage = "assets/images/phone_boost/rooket.png";
+static const String whiteimage = "assets/images/phone_boost/whiteimage.png";
 } 

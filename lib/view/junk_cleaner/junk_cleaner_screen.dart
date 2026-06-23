@@ -33,20 +33,10 @@ class _JunkCleanerView extends StatelessWidget {
     SizeConfig().init(context);
 
     return Scaffold(
+        extendBodyBehindAppBar: false,
       backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.appBarTitle),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF050D2D),
-              Color(0xFF0A1540),
-              Color(0xFF050D2D),
-            ],
-          ),
-        ),
         child: SafeArea(
           child: BlocBuilder<JunkBloc, JunkState>(
             builder: (context, state) {
@@ -83,7 +73,7 @@ class _JunkCleanerView extends StatelessWidget {
                             style: AppTextStyles.displayMedium.copyWith(
                               fontSize: getFont(24),
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFFD9D9D9),
+                              color: AppColors.allsmalltextcolor
                             ),
                           ),
                         ],
@@ -92,13 +82,13 @@ class _JunkCleanerView extends StatelessWidget {
 
                     Text(
                       state.phase == ScanPhase.cleaned
-                          ? 'Cleaned Successfully!'
+                          ? AppText.cleanedSuccessfully
                           : AppText.junkFoundLabel,
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontSize: getFont(14),
                         color: state.phase == ScanPhase.cleaned
-                            ? const Color(0xFF55D0FF)
-                            : const Color(0xFFD9D9D9),
+                            ? AppColors.cleansuccesfullytextcolor
+                            : AppColors.allsmalltextcolor
                       ),
                     ),
 
@@ -132,9 +122,9 @@ class _JunkCleanerView extends StatelessWidget {
 
                     CleanButtonWidget(
                       text: state.phase == ScanPhase.cleaning
-                          ? 'Cleaning...'
+                          ? AppText.cleaning
                           : state.phase == ScanPhase.cleaned
-                              ? 'Done ✓'
+                              ?AppText.donejunktext
                               : AppText.cleanButtonText,
                       onPressed: state.phase == ScanPhase.done
                           ? () => context
