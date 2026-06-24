@@ -80,6 +80,9 @@ class MyApp extends StatelessWidget {
   BlocProvider<PowerBoostBloc>(
       create: (_) => PowerBoostBloc(),
     ),
+    BlocProvider(
+  create: (context) => BatteryStatusCubit()..startAutoRefresh(),
+),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

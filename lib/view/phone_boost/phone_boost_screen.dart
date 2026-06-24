@@ -100,7 +100,7 @@ class _PhoneBoostView extends StatelessWidget {
                             '$val',
                             style: AppTextStyles.bodySmall.copyWith(
                               fontSize: getFont(16),
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -216,45 +216,3 @@ class _BoostGauge extends StatelessWidget {
   }
 }
 
-class _ArcPainter extends CustomPainter {
-  final double value;
-  final Color color;
-  const _ArcPainter({required this.value, required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 8;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-
-    canvas.drawArc(
-      rect, -3.14159, 3.14159, false,
-      Paint()
-        ..color = Colors.white12
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8,
-    );
-
-    canvas.drawArc(
-      rect, -3.14159, 3.14159 * value, false,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 8
-        ..strokeCap = StrokeCap.round,
-    );
-
-    canvas.drawArc(
-      rect, -3.14159, 3.14159 * value, false,
-      Paint()
-        ..color = color.withOpacity(0.2)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 18
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(_ArcPainter old) =>
-      old.value != value || old.color != color;
-}
