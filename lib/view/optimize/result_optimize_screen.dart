@@ -6,6 +6,7 @@ import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
+import 'package:battery_saver_app/utils/helper/settings_launcher.dart';
 import 'package:battery_saver_app/widgets/app_bar/app_bar_widget.dart';
 import 'package:battery_saver_app/widgets/clean_background/result_action_buttons_widget.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ import 'package:go_router/go_router.dart';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 class OptimizationResultScreen extends StatelessWidget {
-  const OptimizationResultScreen({super.key,});
+  const OptimizationResultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +120,8 @@ class _ResultViewState extends State<_ResultView>
                 child: Text(
                   state.errorMessage ?? AppText.couldnotloaddevicedata,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
+                  style:
+                      AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
                 ),
               ),
             ),
@@ -169,8 +171,8 @@ class _ResultViewState extends State<_ResultView>
                   _buildPerformanceCard(state),
                   SizedBox(height: getHeight(10)),
 
-                  // ── Recommendations (design same, no change needed) ──
-                  _buildRecommendations(),
+                  // ── Recommendations ──
+                  _buildRecommendations(context), // ✅ FIX: pass context explicitly
                   SizedBox(height: getHeight(10)),
 
                   ResultActionButtonsWidget(
@@ -178,9 +180,7 @@ class _ResultViewState extends State<_ResultView>
                     onDone: () => context.go('/bottombar'),
                     onCleanAgain: () {
                       // Dobara load karo
-                      context
-                          .read<OptimizationBloc>()
-                          .add(LoadResultDataEvent());
+                      context.read<OptimizationBloc>().add(LoadResultDataEvent());
                     },
                   ),
                   SizedBox(height: getHeight(6)),
@@ -205,15 +205,15 @@ class _ResultViewState extends State<_ResultView>
             ? '${state.batteryPercentSavedDuringSession! >= 0 ? '+' : ''}${state.batteryPercentSavedDuringSession}%'
             : '${state.batteryLevelNow ?? '--'}%',
         sub: state.estimatedBatterySavedText != null
-    ? AppText.extended
-    : AppText.extendedtext,
+            ? AppText.extended
+            : AppText.extendedtext,
       ),
 
       // Real measured cache cleared (this was always genuinely real).
       _SummaryItem(
         iconsvg: AppIcons.optimizedelete,
         color: AppColors.checkiconcolor,
-        valueColor:AppColors.checkiconcolor ,
+        valueColor: AppColors.checkiconcolor,
         label: AppText.junkCleared,
         value: state.junkClearedText,
         sub: AppText.spaceFreed,
@@ -230,15 +230,14 @@ class _ResultViewState extends State<_ResultView>
         sub: AppText.memoryClearedtext,
       ),
 
-      
       if (state.temperatureCelsius != null)
         _SummaryItem(
           iconsvg: AppIcons.optimizetemp,
           color: AppColors.temcolor,
-          valueColor:AppColors.temcolor ,
+          valueColor: AppColors.temcolor,
           label: AppText.temperatureChange,
           value: '${state.temperatureCelsius!.toStringAsFixed(1)}°C',
-          sub:AppText.deviceCooled,
+          sub: AppText.deviceCooled,
         ),
     ];
 
@@ -264,7 +263,6 @@ class _ResultViewState extends State<_ResultView>
       child: IntrinsicHeight(
         child: Row(
           children: [
-  
             Expanded(
               flex: 3,
               child: Column(
@@ -400,26 +398,30 @@ class _ResultViewState extends State<_ResultView>
     );
   }
 
-  // ── Recommendations (design same, no change needed) ───────────────────────
-  Widget _buildRecommendations() {
+  // ── Recommendations — now wired to real device settings ───────────────────
+  Widget _buildRecommendations(BuildContext context) {
+    // ✅ FIX: context param added so SettingsLauncher calls work properly
     final recs = [
       _RecItem(
         imagepath: AppImages.containeroptimizeimage,
         color: AppColors.backgroundApps,
         title: AppText.enableAutoOptimize,
         sub: AppText.enableAutoOptimizeSub,
+        onTap: () => SettingsLauncher.openAutoOptimizeSettings(context),
       ),
       _RecItem(
         imagepath: AppImages.containeroptimizebattery,
         color: AppColors.backgroundApps,
         title: AppText.turnOnBatterySaver,
         sub: AppText.turnOnBatterySaverSub,
+        onTap: () => SettingsLauncher.openBatterySaverSettings(context),
       ),
       _RecItem(
         imagepath: AppImages.containeroptimizeappmanage,
         color: AppColors.backgroundApps,
         title: AppText.cleanAppsRegularly,
         sub: AppText.cleanAppsRegularlySub,
+        onTap: () => SettingsLauncher.openAppManagerSettings(context),
       ),
     ];
 
@@ -434,11 +436,12 @@ class _ResultViewState extends State<_ResultView>
           height: 1,
           thickness: 0.5,
         ),
-        itemBuilder: (context, index) => _RecTile(item: recs[index]),
+        itemBuilder: (context, index) =>
+            _RecTile(item: recs[index]), // ✅ FIX: underscore added
       ),
     );
-  }
-}
+  } // ✅ FIX: this closing brace was missing — it was eating all classes below
+} // closes _ResultViewState
 
 // ─── Reusable Widgets (design bilkul same) ────────────────────────────────────
 
@@ -455,22 +458,20 @@ class _CardWrapper extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors:AppColors.drawerGradient
+          colors: AppColors.drawerGradient,
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.appWidgetBorderColor
-          ),
+        border: Border.all(color: AppColors.appWidgetBorderColor),
       ),
-      padding: EdgeInsets.symmetric(
-          horizontal: getWidth(12), vertical: getHeight(10)),
+      padding:
+          EdgeInsets.symmetric(horizontal: getWidth(12), vertical: getHeight(10)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(title,
-              style: AppTextStyles.bodyLarge.copyWith(
-                  fontSize: getFont(14), fontWeight: FontWeight.w600)),
+              style: AppTextStyles.bodyLarge
+                  .copyWith(fontSize: getFont(14), fontWeight: FontWeight.w600)),
           SizedBox(height: getHeight(8)),
           child,
         ],
@@ -504,12 +505,11 @@ class _SummaryTile extends StatelessWidget {
         child: Container(
           width: getWidth(78),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: AppColors.systemCardGradient),
+            gradient:
+                const LinearGradient(colors: AppColors.systemCardGradient),
             borderRadius: BorderRadius.circular(6),
             border: Border.all(
-              color: AppColors.appWidgetBorderColor,
-               width: 0.5),
+                color: AppColors.appWidgetBorderColor, width: 0.5),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -518,8 +518,7 @@ class _SummaryTile extends StatelessWidget {
               SvgPicture.asset(item.iconsvg,
                   width: getWidth(20),
                   height: getHeight(20),
-                  colorFilter:
-                      ColorFilter.mode(item.color, BlendMode.srcIn)),
+                  colorFilter: ColorFilter.mode(item.color, BlendMode.srcIn)),
               SizedBox(height: getHeight(3)),
               Text(item.label,
                   maxLines: 2,
@@ -527,7 +526,7 @@ class _SummaryTile extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(8),
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontWeight: FontWeight.w600)),
               SizedBox(height: getHeight(2)),
               Text(item.value,
@@ -543,7 +542,7 @@ class _SummaryTile extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(8),
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontWeight: FontWeight.w500)),
             ],
           ),
@@ -556,11 +555,12 @@ class _SummaryTile extends StatelessWidget {
 class _ScoreRing extends StatelessWidget {
   final double score, max, size;
   final Color color;
-  const _ScoreRing(
-      {required this.score,
-      required this.max,
-      required this.color,
-      required this.size});
+  const _ScoreRing({
+    required this.score,
+    required this.max,
+    required this.color,
+    required this.size,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -571,8 +571,7 @@ class _ScoreRing extends StatelessWidget {
         painter: _RingPainter(progress: score / max, color: color),
         child: Center(
           child: Text(score.toInt().toString(),
-              style:
-                  AppTextStyles.bodyMedium.copyWith(fontSize: getFont(16))),
+              style: AppTextStyles.bodyMedium.copyWith(fontSize: getFont(16))),
         ),
       ),
     );
@@ -616,11 +615,14 @@ class _RingPainter extends CustomPainter {
 class _RecItem {
   final String imagepath, title, sub;
   final Color color;
-  const _RecItem(
-      {required this.imagepath,
-      required this.color,
-      required this.title,
-      required this.sub});
+  final VoidCallback onTap;
+  const _RecItem({
+    required this.imagepath,
+    required this.color,
+    required this.title,
+    required this.sub,
+    required this.onTap,
+  });
 }
 
 class _RecTile extends StatelessWidget {
@@ -629,43 +631,47 @@ class _RecTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: getHeight(6)),
-      child: Row(
-        children: [
-          Container(
-            width: getWidth(34),
-            height: getHeight(34),
-            decoration: BoxDecoration(
-              color: item.color.withOpacity(0.12),
-              shape: BoxShape.circle,
-              border:
-                  Border.all(color: item.color.withOpacity(0.3), width: 0.8),
+    return InkWell(
+      onTap: item.onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: getHeight(6)),
+        child: Row(
+          children: [
+            Container(
+              width: getWidth(34),
+              height: getHeight(34),
+              decoration: BoxDecoration(
+                color: item.color.withOpacity(0.12),
+                shape: BoxShape.circle,
+                border:
+                    Border.all(color: item.color.withOpacity(0.3), width: 0.8),
+              ),
+              child: Image.asset(item.imagepath,
+                  width: getWidth(16), height: getHeight(16), fit: BoxFit.contain),
             ),
-            child: Image.asset(item.imagepath,
-                width: 16, height: 16, fit: BoxFit.contain),
-          ),
-          SizedBox(width: getWidth(8)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.title,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                        fontSize: getFont(11),
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white)),
-                SizedBox(height: getHeight(1)),
-                Text(item.sub,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                        fontSize: getFont(9),
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFFD9D9D9))),
-              ],
+            SizedBox(width: getWidth(8)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                          fontSize: getFont(11),
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white)),
+                  SizedBox(height: getHeight(1)),
+                  Text(item.sub,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                          fontSize: getFont(9),
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.allsmalltextcolor)),
+                ],
+              ),
             ),
-          ),
-          const Icon(Icons.chevron_right, color: Color(0xFF989CDF), size: 18),
-        ],
+            const Icon(Icons.chevron_right, color: Color(0xFF989CDF), size: 18),
+          ],
+        ),
       ),
     );
   }

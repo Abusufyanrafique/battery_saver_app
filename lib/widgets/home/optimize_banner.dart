@@ -92,7 +92,9 @@ class OptimizeBanner extends StatelessWidget {
             Container(
               height: getHeight(24),
               width: getWidth(84),
+              
               decoration: BoxDecoration(
+                color: Color(0xFFFFFFFF).withOpacity(0.10),
                 border: Border.all(
                   color: AppColors.optimizeButtonBorder,
                   width: 1.2,
