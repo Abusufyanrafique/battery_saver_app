@@ -51,10 +51,6 @@ static const Color white = Colors.white;
     Color(0xFF13173A),
   ];
 
-  // static const List<Color> buttonGradient = [
-  //   Color(0xFF55D0FF),
-  //   Color(0xFF0E5AA7),
-  // ];
 
   static const List<Color> socialGradient = [
     Color(0xFF1B235C),
@@ -65,12 +61,6 @@ static const Color white = Colors.white;
    // ─── Onboarding Indicators ────
   static const Color indicatorActive = Color(0xFF55D0FF);
   static const Color indicatorInactive = Color(0xFFD9D9D9);
-
-  // ─── Button Gradient ──────────
-  // static const List<Color> buttonGradient = [
-  //   Color(0xFF55D0FF),
-  //   Color(0xFF0E5AA7),
-  // ];
   static const List<Color> batteryCardGradient = [
     Color(0xFFFF0EBA),
     Color(0xFF5C0EE3),
@@ -252,15 +242,99 @@ static const chargingstatecolor =  Color(0xFF2FE55D);
 static const securityiscomplete =  Color(0xFF00FF09);
 static const securtiyincomplete =  Color(0xFF373C62);
 static const securitysidecolor = Color(0xFF2FE55D);
-// 4 colors===========================================
-// static const List<Color> drawerGradientColors = [
-//   Color(0xFF232C6D),
-//   Color(0xFF1B2153),
-//   Color(0xFF13173A),
-// ];
+
 static const errorcolor = Colors.redAccent;
 static const animatedboxcoloractive =  Color(0xFF232C6D);
 static const checkboxbodercolor =  Color(0xFF838283);
 static const appmanagerline = Color(0xFF373C62);
+static  const List<Color> gradientlevelColors = [
+  Color(0xFFFF19BD),
+  Color(0xFF7F1DE7),
+  Color(0xFF55D0FF),
+  Color(0xFF55D0FF),
+  Color(0xFF7F1DE7),
+  Color(0xFFA24BFF),
+];
+static const boltcolor=  Color(0xFFFE39C6);
+static const heartcolor =  Color(0xFFE53935);
+static const linecolors =  Color(0xFF4103AC);
+static const performancecolor =  Color(0xFF00BCD4);
+static const List<Color>  batteryusagecontainer =    [
+    Color(0xFF070D34),
+    Color(0xFF1A1A3C),
+    Color(0xCC5C0EE3),
+  ];
+
+  // data usage colors===================================
+  static const List<Color> systemUsageGradient = [
+    Color(0xFF3440A0),
+    Color(0xFF232C6D),
+    Color(0xFF1B2153),
+    Color(0xFF13173A),
+  ];
+
+  // ───── Card Gradient ─────
+  static const List<Color> systemCardGradient = [
+    Color(0xFF1B235C),
+    Color(0xFF1B2153),
+    Color(0xFF13173A),
+  ];
+
+  // ───── Borders ─────
+  static const Color systemBorder = Color(0xFF4103AC);
+
+  // ───── Icon Colors ─────
+  static const Color cpuColor = Color(0xFF9A3CFF);
+  static const Color tempColor = Color(0xFFE53935);
+  static const Color ramColor = Color(0xFF1E88E5);
+  static const Color cycleColor = Color(0xFFE040FB);
+  // ==============================================
+  static const pink =  Color(0xFFFE39C6);
+  static const redcolor =  Color(0xFFF02767);
+  static const optimizecontainercolor =  Color(0xFF1A1F4E);
+  static const optimizecontainercolor2 =  Color(0xFF232C6D);
+  static const optimizeramcolor =  Color(0xFF9A3CFF);
+  static const batterycolor =  Color(0xFF00FF09);
+  static const temcolor =  Color(0xFFED6D09);
+  static const powerboostcolorcheckbox =  Color(0xFF3DDC84);
+  static const powerboostdividercolor = Color(0xFF838283);
+  static const powerboostcontainercolor =  Color(0xFF232C6D);
+  static const checkboxcolor =  Color(0xFFEDC009);
+  static const dividercolor = Color(0xFF838283);
+  static const summarybatterycolor =  Color(0xFFFF2D9B);
+  static const summarychagercolor =  Color(0xFF00BFFF);
+  static const summaryleavecolor =  Color(0xFF00E676);
+  static const summarydraincolor =  Color(0xFFD32F7A);
+  static const List<Color> profileGradientColors = [
+  Color(0xFF232C6D),
+  Color(0xFF1B2153),
+  Color(0xFF6913FD),
+];
+static const manageplancolor =  Color(0xFF9A3CFF);
+static const List<Color> profilehearderGradientColors = [
+  Color(0xFFFE39C6),
+  Color(0xFF9A3CFF),
+  Color(0xFF55D0FF),
+];
+static const List<Color> purpletextGradientColors = [
+  Color(0xFFB39DDB),
+  Color(0xFF7B5CFF),
+];
+static const List<Color> pinkBlueGradientColors = [
+  Color(0xFFFE39C6),
+  Color(0xFF55D0FF),
+];
+static const signoutbuttoncolor =  [
+            Color(0xFF1B2153),
+            Color(0xFF13173A),
+          ];
+static const signoutbutton =  Color(0xFFAD2020);
+static const List<Color> rainbowGradientColors = [
+  Color(0xFF2979FF),
+  Color(0xFF3DDC84),
+  Color(0xFFFFEB3B),
+  Color(0xFFFF9800),
+  Color(0xFFFF1744),
+];
 }
 

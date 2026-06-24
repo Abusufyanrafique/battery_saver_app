@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
@@ -16,15 +17,22 @@ class SystemOptimizeWidget extends StatelessWidget {
       builder: (context, state) {
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20, 
+            vertical: 8,
+            ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+              colors: AppColors.drawerGradient
+             
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF4103AC), width: 1),
+            border: Border.all(
+              color: AppColors.appWidgetBorderColor, 
+              width: 1
+              ),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -90,8 +98,10 @@ class _OptimizeRow extends StatelessWidget {
                 height: getHeight(40),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF232C6D),
-                  border: Border.all(color: const Color(0xFF4103AC), width: 1.5),
+                  color: AppColors.powerboostcontainercolor,
+                  border: Border.all(
+                    color: AppColors.appWidgetBorderColor,
+                     width: 1.5),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -115,7 +125,7 @@ class _OptimizeRow extends StatelessWidget {
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(12),
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -124,7 +134,7 @@ class _OptimizeRow extends StatelessWidget {
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(10),
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFFD9D9D9),
+                        color: AppColors.allsmalltextcolor,
                       ),
                     ),
                   ],
@@ -140,10 +150,10 @@ class _OptimizeRow extends StatelessWidget {
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(10),
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF55D0FF),
+                        color: AppColors.allsmalltextcolor,
                       ),
                     ),
-                    const SizedBox(width: 8),
+                     SizedBox(width: getWidth(8)),
                   ],
                   const _GreenCheckIcon(),
                 ],
@@ -152,7 +162,10 @@ class _OptimizeRow extends StatelessWidget {
           ),
         ),
         if (!isLast)
-          const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
+          const Divider(
+            color: AppColors.powerboostdividercolor,
+             thickness: 1,
+            height: 1),
       ],
     );
   }
@@ -168,10 +181,12 @@ class _GreenCheckIcon extends StatelessWidget {
       height: getHeight(16),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFF3DDC84), width: 1),
+        border: Border.all(
+          color: AppColors.powerboostcolorcheckbox,
+           width: 1),
       ),
       child: const Center(
-        child: Icon(Icons.check, size: 10, color: Color(0xFF3DDC84)),
+        child: Icon(Icons.check, size: 10, color:AppColors.powerboostcolorcheckbox),
       ),
     );
   }

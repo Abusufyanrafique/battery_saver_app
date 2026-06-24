@@ -1,7 +1,9 @@
-import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart'; 
+import 'package:battery_saver_app/bloc/power_boost/power_boost_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart'; 
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -28,22 +30,34 @@ class ResultPowerBoostWidget extends StatelessWidget {
     return BlocBuilder<PowerBoostBloc, PowerBoostState>(
       builder: (context, state) {
         final steps = [
-          (BoostStep.clearRam, AppIcons.clearram, 'Clear RAM'),
-          (BoostStep.optimizeCpu, AppIcons.optimizecup, 'Optimize CPU'),
-          (BoostStep.closeApps, AppIcons.closebackgroundapps, 'Close Background Apps'),
+          (
+            BoostStep.clearRam,
+             AppIcons.clearram, AppText.clearRAM,
+             ),
+          (BoostStep.optimizeCpu,
+           AppIcons.optimizecup, AppText.optimizeCPUtext),
+          (
+            BoostStep.closeApps, 
+            AppIcons.closebackgroundapps,
+             AppText.closeBackgroundAppstext),
         ];
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20, 
+            vertical: 8
+            ),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+              colors: AppColors.drawerGradient
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3A3FCC), width: 1.2),
+            border: Border.all(
+              color: AppColors.appWidgetBorderColor, 
+              width: 1.2),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -94,7 +108,9 @@ class _StatusRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF232C6D),
-                  border: Border.all(color: const Color(0xFF4103AC), width: 1.5),
+                  border: Border.all(
+                    color: AppColors.appWidgetBorderColor,
+                     width: 1.5),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -114,7 +130,7 @@ class _StatusRow extends StatelessWidget {
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(14),
-                    color: Colors.white,
+                    color: AppColors.white,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -127,10 +143,10 @@ class _StatusRow extends StatelessWidget {
                     style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(12),
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF55D0FF),
+                      color: AppColors.checkiconcolor,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                   SizedBox(width: getWidth(10)),
                   _StatusIcon(status: status),
                 ],
               ),
@@ -180,9 +196,14 @@ class _StatusIconState extends State<_StatusIcon>
           height: getHeight(16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFEDC009), width: 2),
+            border: Border.all(
+              color: AppColors.checkboxcolor, 
+              width: 2),
           ),
-          child: const Icon(Icons.check, size: 10, color: Color(0xFFFFCC00)),
+          child: const Icon(
+            Icons.check,
+             size: 10,
+             color: Color(0xFFFFCC00)),
         );
       case StepStatus.inProgress:
         return SizedBox(

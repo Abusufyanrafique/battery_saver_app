@@ -69,18 +69,14 @@ class OptimizationWidget extends StatelessWidget {
     return BlocBuilder<OptimizationBloc, OptimizationState>(
       builder: (context, state) {
         return Container(
-          height: getHeight(375),
+          height: getHeight(365),
           width: double.infinity,
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF232C6D),
-                Color(0xFF1B2153),
-                Color(0xFF13173A),
-              ],
+              colors:AppColors.systemUsageGradient
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.border, width: 1),
@@ -95,7 +91,7 @@ class OptimizationWidget extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: getHeight(10)),
+              
               Expanded(
                 child: ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
@@ -135,8 +131,8 @@ class _TaskTile extends StatelessWidget {
       case TaskStatus.completed:
       case TaskStatus.done:
         return Container(
-          width: 16,
-          height: 16,
+          width: getWidth(16),
+          height: getHeight(16),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.completed, width: 1.5),
@@ -155,13 +151,13 @@ class _TaskTile extends StatelessWidget {
         );
 
       case TaskStatus.pending:
-        return const Row(
+        return  Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             _DotIndicator(),
-            SizedBox(width: 3),
+            SizedBox(width: getWidth(3)),
             _DotIndicator(),
-            SizedBox(width: 3),
+            SizedBox(width: getWidth(3)),
             _DotIndicator(),
           ],
         );
@@ -175,13 +171,13 @@ class _TaskTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: getWidth(40),
-            height: getHeight(40),
+            width: getWidth(38),
+            height: getHeight(38),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: meta.isSpecial
-                  ? const Color(0xFF1A1F4E)
-                  : const Color(0xFF232C6D),
+                  ? AppColors.optimizecontainercolor
+                  : AppColors.optimizecontainercolor2,
               border: Border.all(color: AppColors.border),
             ),
             child: Padding(
@@ -202,7 +198,7 @@ class _TaskTile extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 2),
+                 SizedBox(height: getHeight(2)),
                 Text(
                   meta.subtitle,
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -228,8 +224,8 @@ class _DotIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 5,
-      height: 5,
+      width: getWidth(5),
+      height: getHeight(5),
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(

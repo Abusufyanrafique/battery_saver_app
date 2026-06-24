@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/battery_saver_bloc_home/battery_saver_bloc.dart';
+import 'package:battery_saver_app/bloc/optimization_bloc/optimization_bloc.dart';
 import 'package:battery_saver_app/view/app_manager/app_manager_screen.dart';
 import 'package:battery_saver_app/view/auth/login_screen.dart';
 import 'package:battery_saver_app/view/auth/sign_up_screen.dart';
@@ -156,15 +157,23 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const NotificationCleanerScreen(),
     ),
 
+    // ── Optimization Shell — bloc dono screens mein share hoga ──
+ShellRoute(
+  builder: (context, state, child) => BlocProvider(
+    create: (_) => OptimizationBloc(),
+    child: child,
+  ),
+  routes: [
     GoRoute(
       path: AppRoutes.optimizeScreen,
       builder: (context, state) => const OptimizeScreen(),
     ),
-
     GoRoute(
-      path: AppRoutes.optimizationResultScreen,
+      path: '/OptimizationResultScreen',
       builder: (context, state) => const OptimizationResultScreen(),
     ),
+  ],
+),
 
     GoRoute(
       path: AppRoutes.appManagerScreen,

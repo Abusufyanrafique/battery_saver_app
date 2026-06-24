@@ -1,5 +1,6 @@
 // battery_summary_widget.dart
 
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
@@ -49,25 +50,25 @@ class BatterySummaryWidget extends StatelessWidget {
     final List<BatterySummaryItem> items = [
       BatterySummaryItem(
        svgicon: AppIcons.profilebatteryicon,
-        iconColor: const Color(0xFFFF2D9B),
+        iconColor: AppColors.summarybatterycolor,
         value: batteryLife,
         label: AppText.abatteryLife,
       ),
       BatterySummaryItem(
         svgicon:AppIcons.profilechargeicon ,
-        iconColor: const Color(0xFF00BFFF),
+        iconColor: AppColors.summarychagercolor,
         value: '$chargingCycles',
         label: AppText.chargingCyclesprofiletext,
       ),
       BatterySummaryItem(
        svgicon:AppIcons.profileffici ,
-        iconColor: const Color(0xFF00E676),
+        iconColor: AppColors.summaryleavecolor,
         value: '$efficiency%',
         label:AppText.efficiency,
       ),
       BatterySummaryItem(
         svgicon: AppIcons.profiledrainicon,
-        iconColor: const Color(0xFFD32F7A),
+        iconColor: AppColors.summarydraincolor,
         value: '${batteryDrain > 0 ? '+' : ''}$batteryDrain%',
         label: AppText.batteryDrain,
       ),
@@ -85,15 +86,11 @@ class BatterySummaryWidget extends StatelessWidget {
            gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: AppColors.drawerGradient
         ),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: const Color(0xFF4103AC),
+            color: AppColors.appWidgetBorderColor,
             width: 1.2,
           ),
         ),
@@ -106,7 +103,7 @@ class BatterySummaryWidget extends StatelessWidget {
               style: AppTextStyles.bodyLarge.copyWith(
                 fontSize: getFont(12),
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
 
@@ -128,7 +125,7 @@ class BatterySummaryWidget extends StatelessWidget {
                         margin: EdgeInsets.symmetric(horizontal: getWidth(8)),
                         width: 2,
                         height: getHeight(50),
-                        color: Color(0xFF4103AC),
+                        color: AppColors.appWidgetBorderColor,
                       ),
                   ],
                 );
@@ -184,7 +181,7 @@ class _SummaryItem extends StatelessWidget {
           style: AppTextStyles.bodyLarge.copyWith(
             fontSize: getFont(16),
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppColors.white,
           ),
         ),
 

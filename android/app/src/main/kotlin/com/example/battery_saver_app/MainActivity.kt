@@ -47,6 +47,8 @@ class MainActivity : FlutterActivity() {
     private val SCAN_CHANNEL = "com.example.battery_saver_app/security_scan"
     private val BATTERY_CHANNEL_INFO = "battery_info"
     private val BATTERY_OPTIMIZER_CHANNEL = "battery_optimizer"
+    private val PER_CHANNEL = "com.example.battery_saver_app/battery_health"
+    private val MEMORY_INFO_CHANNEL = "com.example.battery_saver_app/memory_info"
  
 private val batteryHelper by lazy { BatteryHelper(this) }
 private val brightnessHelper by lazy { BrightnessHelper(this) }
@@ -54,7 +56,8 @@ private val powerSaverHelper by lazy { PowerSaverHelper(this) }
 private val autoSyncHelper by lazy { AutoSyncHelper() }
 private val notificationHelper by lazy { NotificationHelper(this) }
 private val backgroundAppsHelper by lazy { BackgroundAppsHelper(this) }
-
+private lateinit var batteryHealthHelper: BatteryHealthHelper
+private val appStatsHelper by lazy { AppStatsHelper() }
     private val storageManager = StorageManager()
 
     private val junkScanner by lazy { JunkScanner(this) }
@@ -78,6 +81,44 @@ private val backgroundAppsHelper by lazy { BackgroundAppsHelper(this) }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+         batteryHealthHelper = BatteryHealthHelper(applicationContext)
+       //======================  memory info ======================
+       MethodChannel(
+    flutterEngine.dartExecutor.binaryMessenger,
+    MEMORY_INFO_CHANNEL
+).setMethodCallHandler { call, result ->
+    when (call.method) {
+        "getMemoryInfos" -> {
+            try {
+                val info = getMemoryInfos()
+                result.success(info)
+            } catch (e: Exception) {
+                result.error(
+                    "UNAVAILABLE",
+                    "Memory info not available: ${e.message}",
+                    null
+                )
+            }
+        }
+
+        else -> result.notImplemented()
+    }
+}
+//==========================memory info===================================
+       //=========================== PER_CHANNEL============================
+           MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            PER_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getBatteryHealth" -> {
+                    result.success(
+                        batteryHealthHelper.getBatteryHealthData()
+                    )
+                }
+                else -> result.notImplemented()
+            }
+        }
    //============================     battery saver ======================
     MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -159,16 +200,23 @@ private val backgroundAppsHelper by lazy { BackgroundAppsHelper(this) }
         }
     }
          //============AutoCoolService
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, COOL_CHANNEL).setMethodCallHandler { call, result ->
+       MethodChannel(flutterEngine.dartExecutor.binaryMessenger, COOL_CHANNEL).setMethodCallHandler { call, result ->
     when (call.method) {
         "startAutoCool" -> {
-            val intent = Intent(this, AutoCoolService::class.java)
-            startForegroundService(intent)
+            startForegroundService(Intent(this, AutoCoolService::class.java))
             result.success(true)
         }
         "stopAutoCool" -> {
             stopService(Intent(this, AutoCoolService::class.java))
             result.success(true)
+        }
+        "killHeavyApps" -> {                    // ← yeh case add karna hai
+            try {
+                killBackgroundApps()             // MainActivity mein already maujood function
+                result.success(true)
+            } catch (e: Exception) {
+                result.error("KILL_ERROR", e.message, null)
+            }
         }
         else -> result.notImplemented()
     }
@@ -780,6 +828,22 @@ MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SCAN_CHANNEL)
                 }
             }
     }
+   //========================== memory info================================
+
+    private fun getMemoryInfos(): Map<String, Any> {
+    val activityManager =
+        getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+
+    val memInfo = ActivityManager.MemoryInfo()
+    activityManager.getMemoryInfo(memInfo)
+
+    return mapOf(
+        "availMem" to memInfo.availMem,
+        "totalMem" to memInfo.totalMem,
+        "lowMemory" to memInfo.lowMemory
+    )
+}
+//========================== memory info================================
     //   ===========getBatteryTemperature==================
 
 private fun readRealBatteryTemperature(): Double? {

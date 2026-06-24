@@ -36,7 +36,7 @@ class CleanBanner extends StatelessWidget {
                     AppText.cleanBackgroundApps,
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontSize: getFont(14),
-                      color: AppColors.cleanBannerTitle,
+                      color: AppColors.cleanBannerBorder,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

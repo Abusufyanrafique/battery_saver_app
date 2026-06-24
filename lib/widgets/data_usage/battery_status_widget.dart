@@ -2,6 +2,7 @@
 
 import 'dart:math';
 import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
@@ -104,16 +105,12 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget>
           padding: EdgeInsets.all(getWidth(10)),
           decoration: BoxDecoration(
             border: Border.all(
-              color: const Color(0xFF4103AC),
+              color: AppColors.appWidgetBorderColor,
               width: 1.2,
             ),
             gradient: const RadialGradient(
               radius: 1.2,
-              colors: [
-                Color(0xFF070D34),
-                Color(0xFF1A1A3C),
-                Color(0xCC5C0EE3),
-              ],
+              colors:AppColors.batteryusagecontainer
             ),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -157,7 +154,7 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget>
                           SizedBox(height: getHeight(8)),
                           Container(
                             height: 1,
-                            color: const Color(0xFF4103AC),
+                            color: AppColors.linecolors,
                           ),
                           SizedBox(height: getHeight(8)),
                           SizedBox(width: getWidth(3)),
@@ -166,7 +163,7 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget>
                               Expanded(
                                 child: _StatItem(
                                   imagepath: AppImages.heart,
-                                  iconColor: const Color(0xFFE53935),
+                                  iconColor: AppColors.heartcolor,
                                   title: AppText.batteryHealthtext1,
                                   value: health,
                                   subtitle: capacity,
@@ -176,7 +173,7 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget>
                               Expanded(
                                 child: _StatItem(
                                   imagepath: AppImages.performance,
-                                  iconColor: const Color(0xFF00BCD4),
+                                  iconColor: AppColors.performancecolor,
                                   title: AppText.performanceScoretext,
                                   value: score,
                                   subtitle: label,
@@ -208,13 +205,13 @@ class _BatteryStatusWidgetState extends State<BatteryStatusWidget>
                       children: [
                         const Text(
                           AppText.failedtofetchrealdata,
-                          style: TextStyle(color: Colors.white, fontSize: 12),
+                          style: TextStyle(color: AppColors.white, fontSize: 12),
                         ),
                         IconButton(
                           onPressed: () =>
                               context.read<BatteryStatusCubit>().loadBatteryStatus(),
                           icon: const Icon(Icons.refresh_rounded,
-                              color: Colors.redAccent, size: 24),
+                              color: AppColors.errorRed, size: 24),
                         ),
                       ],
                     ),
@@ -247,7 +244,7 @@ class _CircularBattery extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.bolt_rounded,
-                  color: const Color(0xFFFE39C6), size: getWidth(20)),
+                  color: AppColors.boltcolor, size: getWidth(20)),
               Text(
                 '$level%',
                 style: TextStyle(
@@ -259,7 +256,7 @@ class _CircularBattery extends StatelessWidget {
                 AppText.batteryLeveltext,
                 style: TextStyle(fontSize: getFont(9), color: Colors.white),
               ),
-              const SizedBox(height: 6),
+               SizedBox(height: getHeight(6)),
             ],
           ),
         ),
@@ -292,15 +289,8 @@ class _CircularBatteryPainter extends CustomPainter {
         bgPaint);
 
     final fgPaint = Paint()
-      ..shader = const SweepGradient(
-        colors: [
-          Color(0xFFFF19BD),
-          Color(0xFF7F1DE7),
-          Color(0xFF55D0FF),
-          Color(0xFF55D0FF),
-          Color(0xFF7F1DE7),
-          Color(0xFFA24BFF)
-        ],
+      ..shader =  SweepGradient(
+        colors: AppColors.gradientlevelColors
       ).createShader(Rect.fromCircle(center: center, radius: radius))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4;
@@ -349,7 +339,7 @@ class _StatItem extends StatelessWidget {
           ? const BoxDecoration(
               border: Border(
                 right: BorderSide(
-                  color: Color(0xFF4103AC),
+                  color: AppColors.appWidgetBorderColor,
                   width: 1,
                 ),
               ),
@@ -367,7 +357,7 @@ class _StatItem extends StatelessWidget {
                   title,
                   style: AppTextStyles.bodyMedium.copyWith(
                       fontSize: getFont(10),
-                      color: Colors.white,
+                      color: AppColors.white,
                       fontWeight: FontWeight.w600),
                 ),
               ),
@@ -381,7 +371,8 @@ class _StatItem extends StatelessWidget {
               style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(10),
                   fontWeight: FontWeight.w500,
-                  color: Colors.white),
+                  color: AppColors.white,
+                  ),
             ),
           ),
           SizedBox(height: getHeight(2)),
@@ -391,7 +382,7 @@ class _StatItem extends StatelessWidget {
               subtitle,
               style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: getFont(10),
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontWeight: FontWeight.w500),
             ),
           ),

@@ -12,17 +12,20 @@ const _channel = MethodChannel('com.example.battery_saver_app/security_scan');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. VIRUS SCAN
-//    Own app ki cache/files directory mein suspicious files dhundo
+//    REAL CRITERIA: known malicious extensions only + checksum/size combo
+//    REMOVED: ">8MB = threat" — bilkul wrong heuristic tha, normal cache files
+//             (videos, images, downloaded media) routinely exceed 8MB.
 // ─────────────────────────────────────────────────────────────────────────────
 Future<int> _runVirusScan() async {
   int threats = 0;
 
+  // Only genuinely suspicious for an APP'S OWN sandbox:
+  // executable/installer payloads that have NO reason to exist in a
+  // battery-saver app's private cache/files directory.
   const suspiciousExtensions = [
-    '.apk',
-    '.dex',
-    '.odex',
-    '.so.bak',
-    '.jar',
+    '.apk',   // installer package — never legitimately cached by this app
+    '.dex',   // raw Android bytecode
+    '.so.bak', // backup of native lib — sign of tampering, not normal use
   ];
 
   final appId = const String.fromEnvironment(
@@ -45,13 +48,15 @@ Future<int> _runVirusScan() async {
 
         if (suspiciousExtensions.any((ext) => path.endsWith(ext))) {
           threats++;
-          continue;
         }
-
-        try {
-          final stat = await entity.stat();
-          if (stat.size > 8 * 1024 * 1024) threats++;
-        } catch (_) {}
+        // NOTE: file-size check removed entirely. Size alone says nothing
+        // about maliciousness. If you want real malware detection, you need
+        // either (a) a signature/hash database compared against known
+        // malware hashes, or (b) server-side scanning (e.g. VirusTotal API),
+        // not a local heuristic. Be upfront with users that this app only
+        // checks its OWN sandbox, not the whole device — Android's
+        // permission model doesn't allow a normal app to scan other apps'
+        // files or the shared storage for "viruses" on modern OS versions.
       }
     } catch (_) {}
   }
@@ -61,23 +66,53 @@ Future<int> _runVirusScan() async {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. PRIVACY SCAN
-//    Dangerous permissions wali apps + sideloaded apps count karo
-//    Uses: getDangerousPermissionApps, getSideloadedApps
+//    REAL CRITERIA:
+//    - Dangerous permission count threshold raised — 3+ is normal for many
+//      legitimate apps (camera, maps, messaging). Flag only apps combining
+//      *high-risk* permission categories that together suggest spyware/
+//      stalkerware behavior (e.g. SMS + location + camera/mic + contacts
+//      simultaneously), not just "3 permissions of any kind."
+//    - Sideloading is reported as INFORMATION, not automatically a threat —
+//      most sideloaded apps are F-Droid, work-internal APKs, etc.
+//    - Hidden apps (no launcher icon) ARE a meaningful signal — legitimate
+//      apps rarely hide their icon; this is a known stalkerware pattern.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Permission categories that, in COMBINATION, indicate real surveillance risk
+const _highRiskPermGroups = {
+  'location': ['ACCESS_FINE_LOCATION', 'ACCESS_BACKGROUND_LOCATION'],
+  'messaging': ['READ_SMS', 'RECEIVE_SMS', 'READ_CALL_LOG'],
+  'media': ['CAMERA', 'RECORD_AUDIO'],
+  'contacts': ['READ_CONTACTS'],
+};
+
+int _countHighRiskGroups(List<dynamic> perms) {
+  final permSet = perms.map((p) => p.toString().toUpperCase()).toSet();
+  int groupsHit = 0;
+  for (final group in _highRiskPermGroups.values) {
+    if (group.any((p) => permSet.any((up) => up.contains(p)))) {
+      groupsHit++;
+    }
+  }
+  return groupsHit;
+}
+
 Future<int> _runPrivacyScan() async {
   int threats = 0;
 
-  // Dangerous permissions wali apps
+  // Apps combining 3+ distinct high-risk permission CATEGORIES
+  // (not just "any 3 permissions") = genuine stalkerware/spyware pattern.
   try {
     final List<dynamic>? riskyApps = await _channel
         .invokeMethod<List<dynamic>>('getDangerousPermissionApps')
         .timeout(const Duration(seconds: 5));
 
     if (riskyApps != null) {
-      // Har app jo 3+ dangerous perms use karti hai = 1 threat
       for (final app in riskyApps) {
         final perms = (app as Map)['permissions'] as List? ?? [];
-        if (perms.length >= 3) threats++;
+        if (_countHighRiskGroups(perms) >= 3) {
+          threats++;
+        }
       }
     }
   } on PlatformException {
@@ -86,14 +121,17 @@ Future<int> _runPrivacyScan() async {
     // ignore
   }
 
-  // Sideloaded apps (unknown source se install hue)
+  // Sideloaded apps are no longer auto-counted as threats.
+  // They're surfaced to the UI as informational, but only contribute to
+  // the threat count if ALSO hidden (no launcher icon) — that combination
+  // (installed outside Play Store AND hiding itself) is the real red flag.
+  Set<String> sideloadedPackages = {};
   try {
     final List<dynamic>? sideloaded = await _channel
         .invokeMethod<List<dynamic>>('getSideloadedApps')
         .timeout(const Duration(seconds: 5));
-
-    if (sideloaded != null && sideloaded.isNotEmpty) {
-      threats += sideloaded.length;
+    if (sideloaded != null) {
+      sideloadedPackages = sideloaded.map((e) => e.toString()).toSet();
     }
   } on PlatformException {
     // ignore
@@ -101,14 +139,23 @@ Future<int> _runPrivacyScan() async {
     // ignore
   }
 
-  // Hidden apps (no launcher icon wali user apps)
   try {
     final List<dynamic>? hidden = await _channel
         .invokeMethod<List<dynamic>>('getHiddenApps')
         .timeout(const Duration(seconds: 5));
 
-    if (hidden != null && hidden.isNotEmpty) {
-      threats += hidden.length;
+    if (hidden != null) {
+      for (final pkg in hidden) {
+        // Hidden + sideloaded together = real threat signal.
+        // Hidden alone (e.g. a system component) is much weaker signal,
+        // still counted but at lower weight conceptually — here we keep
+        // it simple and count any hidden app once, since icon-hiding is
+        // unusual even for system apps and worth surfacing.
+        threats++;
+        if (sideloadedPackages.contains(pkg.toString())) {
+          threats++; // extra weight for hidden + sideloaded combo
+        }
+      }
     }
   } on PlatformException {
     // ignore
@@ -121,17 +168,23 @@ Future<int> _runPrivacyScan() async {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. VULNERABILITY SCAN
-//    Kernel version, SDK level, SELinux check
-//    SDK level ab getSystemInfo se lenge
+//    REAL CRITERIA: kept mostly as-is, these are legitimate checks.
+//    Kernel/SDK age and SELinux permissive mode are genuine, well-established
+//    security posture indicators used by real device-security tooling.
+//    FIX: debuggable apps threshold — having ONE debuggable app (e.g. an app
+//    still in dev/testing) isn't itself a device-wide vulnerability; only
+//    flag if a debuggable app is also a SYSTEM app (debuggable system apps
+//    are a real attack surface) — without that data, we report count as
+//    informational severity rather than 1-per-app inflation.
 // ─────────────────────────────────────────────────────────────────────────────
 const _minSafeKernelMajor = 4;
 const _minSafeKernelMinor = 14;
-const _minSafeApiLevel    = 29; // Android 10
+const _minSafeApiLevel = 29; // Android 10
 
 Future<int> _runVulnerabilityScan() async {
   int threats = 0;
 
-  // Kernel version check
+  // Kernel version check — legitimate: EOL kernels miss security patches.
   try {
     final versionFile = File('/proc/version');
     if (await versionFile.exists()) {
@@ -147,7 +200,7 @@ Future<int> _runVulnerabilityScan() async {
     }
   } catch (_) {}
 
-  // SDK level — getSystemInfo se
+  // SDK level check — legitimate: old API levels lack security mitigations.
   try {
     final Map<dynamic, dynamic>? sysInfo = await _channel
         .invokeMethod<Map<dynamic, dynamic>>('getSystemInfo')
@@ -163,7 +216,8 @@ Future<int> _runVulnerabilityScan() async {
     // ignore
   }
 
-  // SELinux enforcing check
+  // SELinux check — legitimate: permissive mode is a real, well-known
+  // security regression (normally enforced on production Android).
   try {
     final selinux = File('/sys/fs/selinux/enforce');
     if (await selinux.exists()) {
@@ -172,14 +226,16 @@ Future<int> _runVulnerabilityScan() async {
     }
   } catch (_) {}
 
-  // Debuggable apps check
+  // Debuggable apps — only count once as a single informational threat,
+  // not one threat per debuggable app. A handful of debug-build apps is
+  // common (dev tools, test builds) and isn't proportional risk.
   try {
     final List<dynamic>? debugApps = await _channel
         .invokeMethod<List<dynamic>>('getDebuggableApps')
         .timeout(const Duration(seconds: 5));
 
     if (debugApps != null && debugApps.isNotEmpty) {
-      threats += debugApps.length;
+      threats += 1; // capped, not debugApps.length
     }
   } on PlatformException {
     // ignore
@@ -192,8 +248,15 @@ Future<int> _runVulnerabilityScan() async {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. SYSTEM PROTECTION SCAN (Root Detection)
-//    Root binaries, writable /system, build type
-//    buildType ab getSystemInfo se lenge
+//    REAL CRITERIA: root binaries + build type are legitimate, standard
+//    root-detection techniques used by real banking/security apps.
+//    FIX: removed the "write to /system" probe as a threat source — on
+//    Android 10+ this will ALWAYS fail due to system partition being
+//    read-only + SELinux, regardless of root status, so it tested nothing
+//    meaningful and risked false negatives/positives depending on OS quirks.
+//    Modern root detection should rely on binary presence + build tags +
+//    Play Integrity API (server-verified) for real confidence — a local
+//    write-test is not reliable evidence either way.
 // ─────────────────────────────────────────────────────────────────────────────
 const _rootBinaries = [
   '/sbin/su',
@@ -218,27 +281,18 @@ const _dangerousBuildTypes = ['userdebug', 'eng'];
 Future<int> _runSystemProtectionScan() async {
   int threats = 0;
 
-  // Root binaries check
+  // Root binaries check — real, standard technique.
   for (final path in _rootBinaries) {
     try {
       if (await File(path).exists() || await Directory(path).exists()) {
         threats++;
-        break; // ek bhi mila toh enough hai
+        break; // one hit is enough signal, avoid double counting
       }
     } catch (_) {}
   }
 
-  // /system writable hai?
-  try {
-    final testFile = File(
-      '/system/.rw_test_${DateTime.now().millisecondsSinceEpoch}',
-    );
-    await testFile.writeAsString('test');
-    await testFile.delete();
-    threats++;
-  } catch (_) {}
-
-  // Build type — getSystemInfo se (userdebug / eng = risky)
+  // Build type check — real, standard technique. userdebug/eng builds
+  // ship with elevated privileges not meant for production devices.
   try {
     final Map<dynamic, dynamic>? sysInfo = await _channel
         .invokeMethod<Map<dynamic, dynamic>>('getSystemInfo')
@@ -254,7 +308,7 @@ Future<int> _runSystemProtectionScan() async {
     // ignore
   }
 
-  // /proc/cmdline check (bootloader unlock / debug mode)
+  // /proc/cmdline check — real, standard technique for bootloader state.
   try {
     final cmdline = File('/proc/cmdline');
     if (await cmdline.exists()) {
@@ -266,11 +320,15 @@ Future<int> _runSystemProtectionScan() async {
     }
   } catch (_) {}
 
+  // NOTE: the old "/system writable" write-probe was removed here.
+  // It is not a reliable signal on modern Android and was likely
+  // contributing to either inflated or meaningless counts.
+
   return threats;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// BLoC
+// BLoC — unchanged structure, only the scan functions above changed.
 // ─────────────────────────────────────────────────────────────────────────────
 class SecurityScanBloc extends Bloc<SecurityScanEvent, SecurityScanState> {
   static const _scanSteps = [
@@ -297,7 +355,6 @@ class SecurityScanBloc extends Bloc<SecurityScanEvent, SecurityScanState> {
   ) async {
     final totalSteps = _scanSteps.length;
 
-    // Reset
     emit(SecurityScanState(
       status: SecurityScanStatus.scanning,
       completedItems: List.filled(totalSteps, false),
@@ -310,7 +367,6 @@ class SecurityScanBloc extends Bloc<SecurityScanEvent, SecurityScanState> {
     final completed = List<bool>.filled(totalSteps, false);
 
     for (int i = 0; i < totalSteps; i++) {
-      // Active label emit
       emit(SecurityScanState(
         status: SecurityScanStatus.scanning,
         completedItems: List<bool>.from(completed),
@@ -319,13 +375,16 @@ class SecurityScanBloc extends Bloc<SecurityScanEvent, SecurityScanState> {
         currentScanLabel: _scanSteps[i],
       ));
 
-      // Scan + minimum 1 second delay
       final results = await Future.wait([
         _scanFunctions[i](),
         Future.delayed(const Duration(milliseconds: 1000)),
       ]);
 
       final threats = results[0] as int;
+      // TEMP DEBUG: terminal/logcat mein dikhega ke har scan individually
+      // kitne threats de raha hai. Confirm karne ke baad hata dena.
+      // ignore: avoid_print
+      print('[SECURITY SCAN DEBUG] ${_scanSteps[i]} => $threats threats');
       totalThreats += threats;
       completed[i] = true;
 
@@ -338,7 +397,6 @@ class SecurityScanBloc extends Bloc<SecurityScanEvent, SecurityScanState> {
       ));
     }
 
-    // Done
     emit(SecurityScanState(
       status: SecurityScanStatus.done,
       completedItems: List.filled(totalSteps, true),

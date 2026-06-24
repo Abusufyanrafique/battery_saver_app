@@ -34,7 +34,7 @@ class QuickWidgetCard extends StatelessWidget {
             // ── Icon + optional percentage badge ──
             _IconWithBadge(item: item),
 
-            const SizedBox(height: 8),
+             SizedBox(height: getHeight(8)),
 
             Text(
               item.label,

@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -8,6 +9,7 @@ import 'package:battery_saver_app/widgets/data_usage/battery_usage_graph_widget.
 import 'package:battery_saver_app/widgets/data_usage/optimization_suggestions_widget.dart';
 import 'package:battery_saver_app/widgets/data_usage/system_usage_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DataUsageScreen extends StatelessWidget {
   const DataUsageScreen({super.key});
@@ -74,16 +76,15 @@ class DataUsageScreen extends StatelessWidget {
            SizedBox(height: getHeight(6),),
            SystemUsageWidget(),
            SizedBox(height: getHeight(6),),
-            OptimizationSuggestionsWidget(
-             title: AppText.closebackgroundapps,
-             subtitle: AppText.appsarerunninginbackground,
-             onViewAll: () {
-              Navigator.pushNamed(context, '/OptimizationScreen');
-            },
-            onOptimize: () {
-              // optimize logic here
-            },
-          ),
+           OptimizationSuggestionsWidget(
+  backgroundAppsCount: 6, // ya cubit se real count
+  onOptimize: () async {
+    return await context.read<BatteryStatusCubit>().closeBackgroundAppsAndGetCount();
+  },
+  onViewAll: () {
+    // navigate to full list
+  },
+)
             ],
           ),
         ),

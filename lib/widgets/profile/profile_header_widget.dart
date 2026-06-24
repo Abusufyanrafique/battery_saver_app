@@ -1,5 +1,6 @@
 // profile_header_widget.dart
 
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
@@ -98,11 +99,7 @@ class _AvatarSection extends StatelessWidget {
               gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFFE39C6),
-                  Color(0xFF9A3CFF),
-                  Color(0xFF55D0FF),
-                ],
+                colors:AppColors.profilehearderGradientColors
               ),
             ),
             padding: const EdgeInsets.all(2.5),
@@ -116,15 +113,12 @@ class _AvatarSection extends StatelessWidget {
                   shaderCallback: (bounds) => const LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFFB39DDB),
-                      Color(0xFF7B5CFF),
-                    ],
+                    colors:AppColors.purpletextGradientColors
                   ).createShader(bounds),
                   child: Icon(
                     Icons.person_rounded,
                     size: getWidth(38),
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
               ),
@@ -191,7 +185,7 @@ class _UserInfoSection extends StatelessWidget {
           style: AppTextStyles.bodyLarge.copyWith(
             fontSize: getFont(20),
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppColors.white,
           ),
         ),
 
@@ -210,11 +204,7 @@ class _UserInfoSection extends StatelessWidget {
               SizedBox(width: getWidth(4)),
              ShaderMask(
   shaderCallback: (bounds) => const LinearGradient(
-    colors: [
-      
-      Color(0xFFFE39C6),
-      Color(0xFF55D0FF),
-    ],
+    colors:AppColors.pinkBlueGradientColors
   ).createShader(
     Rect.fromLTWH(0, 0, bounds.width, bounds.height),
   ),
@@ -223,7 +213,7 @@ class _UserInfoSection extends StatelessWidget {
     style: AppTextStyles.bodyMedium.copyWith(
       fontSize: getFont(13),
       fontWeight: FontWeight.w600,
-      color: Colors.white, 
+      color: AppColors.white, 
     ),
   ),
 )
@@ -259,7 +249,7 @@ class _UserInfoSection extends StatelessWidget {
               style: AppTextStyles.bodyMedium.copyWith(
                 fontSize: getFont(10),
                 fontWeight: FontWeight.w400,
-                color: Color(0xFFD9D9D9),
+                color: AppColors.allsmalltextcolor,
               ),
             ),
           ],

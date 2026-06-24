@@ -24,43 +24,30 @@ class OptimizationState {
 
   // ── Result screen — ONLY real, measured values ──────────────────────────
   final ResultLoadStatus resultStatus;
-
-  /// Real battery % at the moment the user pressed "Optimize".
-  /// Null until a session has actually started.
   final int? batteryLevelAtSessionStart;
-
-  /// Real battery % right now (when result is shown).
   final int? batteryLevelNow;
-
-  /// Real measured cache size removed, in MB. Always >= 0.
   final double junkClearedMB;
   final String junkClearedText;
 
-  /// Real measured free-disk-space delta caused by the cache clear, in MB.
-  /// Can be 0 if nothing was cleared.
   final double diskSpaceFreedMB;
   final String diskSpaceFreedText;
-
-  /// Real battery temperature in Celsius, read from the OS via a platform
-  /// channel (BatteryManager.EXTRA_TEMPERATURE on Android). Null if the
-  /// platform channel is unavailable (e.g. iOS, or call failed) — in that
-  /// case the UI must hide the temperature row rather than invent a value.
   final double? temperatureCelsius;
 
   /// Real performance score derived only from real inputs
   /// (current battery % and current free-disk %). No fabricated baseline.
   final int? performanceScore;
 
-  /// Real "before" score — captured at the moment the optimize session
-  /// started, from real battery % and real free-disk % at that time.
-  /// Null if the user reached the result screen without starting a
-  /// session (no genuine "before" snapshot exists in that case).
   final int? scoreBefore;
 
   /// Real "after" score — same calculation, using current readings.
   /// Identical to [performanceScore]; kept as a separate field so the
   /// UI can show a clean before/after pair without re-deriving it.
   final int? scoreAfter;
+
+  final double? ramFreedMB;
+  final String ramFreedText;
+
+  final String? estimatedBatterySavedText;
 
   OptimizationState({
     required this.taskStatuses,
@@ -80,6 +67,9 @@ class OptimizationState {
     this.performanceScore,
     this.scoreBefore,
     this.scoreAfter,
+    this.ramFreedMB,
+    this.ramFreedText = '',
+    this.estimatedBatterySavedText,
   });
 
   factory OptimizationState.initial(int totalTasks) {
@@ -110,6 +100,9 @@ class OptimizationState {
     int? performanceScore,
     int? scoreBefore,
     int? scoreAfter,
+    double? ramFreedMB,
+    String? ramFreedText,
+    String? estimatedBatterySavedText,
   }) {
     return OptimizationState(
       taskStatuses: taskStatuses ?? this.taskStatuses,
@@ -130,6 +123,10 @@ class OptimizationState {
       performanceScore: performanceScore ?? this.performanceScore,
       scoreBefore: scoreBefore ?? this.scoreBefore,
       scoreAfter: scoreAfter ?? this.scoreAfter,
+      ramFreedMB: ramFreedMB ?? this.ramFreedMB,
+      ramFreedText: ramFreedText ?? this.ramFreedText,
+
+      estimatedBatterySavedText: estimatedBatterySavedText,
     );
   }
 
@@ -142,10 +139,6 @@ class OptimizationState {
     return batteryLevelNow! - batteryLevelAtSessionStart!;
   }
 
-  /// Honest status label based only on the real current charge level.
-  /// This does NOT claim to measure battery "health" (wear/degradation) —
-  /// no such API exists. It only reflects whether the current charge is
-  /// in a comfortable range.
   bool get isChargeLevelHealthy =>
       batteryLevelNow != null && batteryLevelNow! > 20;
 }

@@ -31,14 +31,10 @@ class PremiumBannerWidget extends StatelessWidget {
             gradient: const LinearGradient(
     begin: Alignment.centerLeft,
     end: Alignment.centerRight,
-    colors: [
-      Color(0xFF232C6D), // dark left
-      Color(0xFF1B2153), // mid blend
-      Color(0xFF6913FD), // blue right
-    ],
+    colors: AppColors.profileGradientColors,
   ),
           border: Border.all(
-            color: const Color(0xFF4103AC),
+            color: AppColors.appWidgetBorderColor,
             width: 1.2,
           ),
         ),
@@ -111,7 +107,7 @@ class PremiumBannerWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(24),
                   color: Color(0xFFD9D9D9).withOpacity(0.10),
                   border: Border.all(
-                    color: const Color(0xFF9A3CFF),
+                    color: AppColors.manageplancolor,
                     width: 1.5,
                   ),
                 ),
@@ -123,14 +119,14 @@ class PremiumBannerWidget extends StatelessWidget {
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontSize: getFont(10),
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     ),
                     SizedBox(width: getWidth(4)),
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: getWidth(11),
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   ],
                 ),

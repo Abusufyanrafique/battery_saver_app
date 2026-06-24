@@ -1,5 +1,6 @@
 // account_settings_widget.dart
 
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
@@ -95,15 +96,11 @@ class AccountSettingsWidget extends StatelessWidget {
            gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient,
         ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF4103AC),
+            color: AppColors.appWidgetBorderColor,
             width: 1.2,
           ),
         ),
@@ -116,7 +113,7 @@ class AccountSettingsWidget extends StatelessWidget {
               style: AppTextStyles.bodyLarge.copyWith(
                 fontSize: getFont(12),
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppColors.white,
               ),
             ),
 
@@ -136,7 +133,7 @@ class AccountSettingsWidget extends StatelessWidget {
     _SettingsRow(item: item),
     if (!isLast)
       Divider(
-        color: Color(0xFF838283),
+        color: AppColors.dividercolor,
         height: 1,
         thickness: 1,
          indent: 33,
@@ -180,7 +177,7 @@ class _SettingsRow extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: Color(0xFF1B2153),
                 border: Border.all(
-                  color: const Color(0xFF4103AC),
+                  color: AppColors.appWidgetBorderColor,
                   width: 1,
                 ),
               ),
@@ -202,7 +199,7 @@ class _SettingsRow extends StatelessWidget {
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: getFont(12),
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
               ),
             ),
@@ -224,7 +221,7 @@ class _SettingsRow extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: getWidth(12),
-              color: Colors.white,
+              color: AppColors.white,
             ),
           ],
         ),

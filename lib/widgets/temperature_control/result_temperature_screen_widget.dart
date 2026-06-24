@@ -1,6 +1,7 @@
 // result_temperature_screen_widget.dart
 
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
@@ -54,14 +55,10 @@ class ScanResultWidget extends StatelessWidget {
                 gradient: const LinearGradient(
                   begin: Alignment.topCenter,
                   end:   Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF232C6D),
-                    Color(0xFF1B2153),
-                    Color(0xFF13173A),
-                  ],
+                  colors: AppColors.drawerGradient
                 ),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF4103AC), width: 1.2),
+                border: Border.all(color: AppColors.appWidgetBorderColor, width: 1.2),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -148,7 +145,7 @@ class _TemperatureResultCardState extends State<_TemperatureResultCard>
               colors: [Color(0xFF1B2153), Color(0xFF13173A)],
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF3DDC84), width: 1.2),
+            border: Border.all(color: AppColors.powerboostcolorcheckbox, width: 1.2),
           ),
           child: Row(
             children: [
@@ -159,11 +156,11 @@ class _TemperatureResultCardState extends State<_TemperatureResultCard>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF232C6D),
-                  border: Border.all(color: const Color(0xFF3DDC84), width: 1.5),
+                  border: Border.all(color: AppColors.powerboostcolorcheckbox, width: 1.5),
                 ),
                 child: const Icon(
                   Icons.check_circle_outline_rounded,
-                  color: Color(0xFF3DDC84),
+                  color: AppColors.powerboostcolorcheckbox,
                   size: 20,
                 ),
               ),

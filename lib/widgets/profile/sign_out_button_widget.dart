@@ -1,5 +1,6 @@
 // sign_out_button_widget.dart
 
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -27,14 +28,11 @@ class SignOutButtonWidget extends StatelessWidget {
              gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.signoutbuttoncolor
         ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: const Color(0xFF4103AC),
+              color: AppColors.appWidgetBorderColor,
               width: 1.2,
             ),
           ),
@@ -52,7 +50,7 @@ class SignOutButtonWidget extends StatelessWidget {
                 style: AppTextStyles.bodyLarge.copyWith(
                   fontSize: getFont(16),
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFAD2020),
+                  color: AppColors.signoutbutton,
                 ),
               ),
             ],

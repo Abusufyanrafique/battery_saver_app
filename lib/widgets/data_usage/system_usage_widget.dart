@@ -69,28 +69,28 @@ class _SystemUsageBody extends StatelessWidget {
         final List<SystemUsageItem> items = [
           SystemUsageItem(
             imagepath:      AppImages.datausagecpu,
-            iconColor:      const Color(0xFF9A3CFF),
+            iconColor:      AppColors.cpuCooler,
             label:          AppText.cpuUsage,
             value:          cpuVal,
             chartImagePath: AppImages.graph1,
           ),
           SystemUsageItem(
             imagepath:      AppImages.datausagetemp,
-            iconColor:      const Color(0xFFE53935),
+            iconColor:      AppColors.tempColor,
             label:          AppText.temperature,
             value:          tempVal,
             chartImagePath: AppImages.graph2,
           ),
           SystemUsageItem(
             imagepath:      AppImages.datausageram,
-            iconColor:      const Color(0xFF1E88E5),
+            iconColor:      AppColors.ramColor,
             label:          AppText.ramUsage,
             value:          ramVal,
             chartImagePath: AppImages.graph3,
           ),
           SystemUsageItem(
             imagepath:      AppImages.time,
-            iconColor:      const Color(0xFFE040FB),
+            iconColor:     AppColors.cycleColor,
             label:          AppText.chargeCycles,
             value:          cyclesVal,
             chartImagePath: AppImages.graph4,
@@ -107,15 +107,10 @@ class _SystemUsageBody extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end:   Alignment.bottomCenter,
-              colors: [
-                Color(0xFF3440A0),
-                Color(0xFF232C6D),
-                Color(0xFF1B2153),
-                Color(0xFF13173A),
-              ],
+              colors: AppColors.systemUsageGradient
             ),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF4103AC), width: 1),
+            border: Border.all(color:AppColors.systemBorder, width: 1),
           ),
           child: Stack(
             children: [
@@ -132,7 +127,7 @@ class _SystemUsageBody extends StatelessWidget {
                       style: AppTextStyles.bodyLarge.copyWith(
                         fontSize:   getFont(12),
                         fontWeight: FontWeight.w600,
-                        color:      Colors.white,
+                        color:      AppColors.white,
                       ),
                     ),
                     SizedBox(height: getHeight(4)),

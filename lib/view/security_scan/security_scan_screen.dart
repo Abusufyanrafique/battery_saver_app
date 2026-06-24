@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/security_scan/security_scan_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -57,21 +58,13 @@ class _SecurityScanViewState extends State<_SecurityScanView>
     SizeConfig().init(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F1633),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: CustomAppBar(title: AppText.securityScan),
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF0F1633),
-              Color(0xFF0B122B),
-              Color(0xFF070C1F),
-            ],
-          ),
+         
         ),
         child: SafeArea(
           child: BlocBuilder<SecurityScanBloc, SecurityScanState>(
@@ -85,24 +78,24 @@ class _SecurityScanViewState extends State<_SecurityScanView>
                     // ───── SHIELD IMAGE (pulse when scanning) ─────
                     _buildShieldImage(state),
 
-                    const SizedBox(height: 20),
+                     SizedBox(height: getHeight(20)),
 
                     // ───── PROGRESS / PERCENTAGE ─────
                     _buildProgressText(state),
 
-                    const SizedBox(height: 6),
+                     SizedBox(height: getHeight(6)),
 
                     // ───── SAFE / SCANNING label ─────
                     Text(
-                      state.isScanning ? 'Scanning...' : AppText.safe,
+                      state.isScanning ? AppText.scanningtext: AppText.safe,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(14),
-                        color: const Color(0xFFD9D9D9),
+                        color:AppColors.allsmalltextcolor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                     SizedBox(height: getHeight(4)),
 
                     // ───── THREAT STATUS ─────
                     _buildThreatStatus(state),
@@ -113,26 +106,26 @@ class _SecurityScanViewState extends State<_SecurityScanView>
                     SecurityScanWidget(
                       items: [
                         SecurityScanItem(
-                          title: "Virus Scan",
+                          title: AppText.virusScan,
                           isCompleted: state.completedItems[0],
                           isScanning: state.isScanning && !state.completedItems[0],
                         ),
                         SecurityScanItem(
-                          title: "Privacy Scan",
+                          title: AppText.privacyScan,
                           isCompleted: state.completedItems[1],
                           isScanning: state.isScanning &&
                               state.completedItems[0] &&
                               !state.completedItems[1],
                         ),
                         SecurityScanItem(
-                          title: "Vulnerability Scan",
+                          title: AppText.vulnerabilityScan,
                           isCompleted: state.completedItems[2],
                           isScanning: state.isScanning &&
                               state.completedItems[1] &&
                               !state.completedItems[2],
                         ),
                         SecurityScanItem(
-                          title: "System Protection",
+                          title: AppText.systemProtection,
                           isCompleted: state.completedItems[3],
                           isScanning: state.isScanning &&
                               state.completedItems[2] &&
@@ -145,7 +138,7 @@ class _SecurityScanViewState extends State<_SecurityScanView>
 
                     // ───── BUTTON ─────
                     CleanButtonWidget(
-                      text: state.isScanning ? 'Scanning...' : AppText.scanAgain,
+                      text: state.isScanning ? AppText.scanningtext : AppText.scanAgain,
                       onPressed: state.isScanning
                           ? null
                           : () => context
@@ -212,7 +205,7 @@ class _SecurityScanViewState extends State<_SecurityScanView>
       state.isDone ? '${state.progress}%' : '0%',
       style: AppTextStyles.bodySmall.copyWith(
         fontSize: getFont(30),
-        color: Colors.white,
+        color: AppColors.white,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -221,10 +214,10 @@ class _SecurityScanViewState extends State<_SecurityScanView>
   Widget _buildThreatStatus(SecurityScanState state) {
     if (state.isScanning) {
       return Text(
-        'Please wait...',
+        AppText.pleasewaittext,
         style: AppTextStyles.bodySmall.copyWith(
           fontSize: getFont(16),
-          color: const Color(0xFF55D0FF),
+          color:AppColors.checkiconcolor,
           fontWeight: FontWeight.w600,
         ),
       );
@@ -234,7 +227,7 @@ class _SecurityScanViewState extends State<_SecurityScanView>
         '${state.threatsFound} threat${state.threatsFound > 1 ? 's' : ''} found!',
         style: AppTextStyles.bodySmall.copyWith(
           fontSize: getFont(16),
-          color: Colors.redAccent,
+          color: AppColors.errorRed,
           fontWeight: FontWeight.w600,
         ),
       );

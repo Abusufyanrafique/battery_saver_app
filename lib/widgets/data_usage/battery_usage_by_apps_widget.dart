@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,16 +28,11 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF3440A0),
-                Color(0xFF232C6D),
-                Color(0xFF1B2153),
-                Color(0xFF13173A),
-              ],
+              colors: AppColors.systemUsageGradient
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Color(0xFF4103AC),
+              color: AppColors.systemBorder,
               width: 1
             )
           ),
@@ -50,7 +46,7 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                     AppText.batteryUsagebyApps,
                     style: AppTextStyles.bodyLarge.copyWith(
                       fontSize: getFont(12),
-                      color: Colors.white,
+                      color: AppColors.white,
                     ),
                   ),
                   GestureDetector(
@@ -59,7 +55,7 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                       AppText.viewAll,
                       style: AppTextStyles.bodyMedium.copyWith(
                         fontSize: getFont(11),
-                        color: const Color(0xFF9A3CFF),
+                        color: AppColors.cpuColor,
                       ),
                     ),
                   ),
@@ -82,9 +78,9 @@ class BatteryUsageByAppsWidget extends StatelessWidget {
                       return Center(
                         child: Text(
                           state.message,
-                          style: const TextStyle(
+                          style:  TextStyle(
                             color: Colors.white70,
-                             fontSize: 11,
+                             fontSize: getFont(11),
                              ),
                           textAlign: TextAlign.center,
                         ),
@@ -151,13 +147,13 @@ class _AppUsageRow extends StatelessWidget {
                     item.appName,
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(8),
-                      color: Color(0xFFD9D9D9)
+                      color: AppColors.allsmalltextcolor,
                     )
                   ),
                   Text(
                     item.usageTime,   // "2h 30m" — real screen time
                     style:  TextStyle(
-                      color: Color(0xFFD9D9D9),
+                      color: AppColors.allsmalltextcolor,
                       fontSize: getFont(10),
                     ),
                   ),
@@ -207,21 +203,21 @@ class _AppUsageRow extends StatelessWidget {
     );
   }
 }
-Color _appColor(String packageName) {
-  switch (packageName) {
-    case 'com.instagram.android':
-      return const Color(0xFFFE39C6); // Pink
+// Color _appColor(String packageName) {
+//   switch (packageName) {
+//     case 'com.instagram.android':
+//       return AppColors.pink; // Pink
 
-    case 'com.google.android.youtube':
-      return const Color(0xFFF02767); // Red
+//     case 'com.google.android.youtube':
+//       return AppColors.redcolor; // Red
 
-    case 'com.whatsapp':
-      return const Color(0xFF9A3CFF); // Green
+//     case 'com.whatsapp':
+//       return const Color(0xFF9A3CFF); // Green
 
-    case 'com.facebook.katana':
-      return const Color(0xFF39DDFE); // Blue
+//     case 'com.facebook.katana':
+//       return const Color(0xFF39DDFE); // Blue
 
-    default:
-      return const Color(0xFF39DDFE); // Cyan
-  }
-}
+//     default:
+//       return const Color(0xFF39DDFE); // Cyan
+//   }
+// }

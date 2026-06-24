@@ -18,6 +18,8 @@ const _kDeviceInfoChannel = MethodChannel('device_info/battery');
 const _kAutoCoolChannel = MethodChannel('com.example.battery_saver_app/auto_cool');
 // ── NEW: CPU info channel for real temperature balancing ──
 const _kCpuChannel = MethodChannel('com.example.battery_saver_app/cpu_info');
+// ── NEW: Memory info channel — real RAM via native ActivityManager.MemoryInfo ──
+const _kMemoryChannel = MethodChannel('com.example.battery_saver_app/memory_info');
 
 class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   Timer? _taskTimer;
@@ -32,6 +34,15 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   /// Real performance score computed from the two real readings above,
   /// at session start. This is the genuine "before" score — not fabricated.
   int? _sessionStartScore;
+
+  // ── NEW: RAM Freed tracking — real availMem (bytes) from ActivityManager ──
+  int? _sessionStartAvailMemBytes;
+
+  // ── NEW: Estimated Battery Saved tracking — real current draw (µA) ──
+  // and remaining battery capacity (mAh), both read from native side.
+  int? _sessionStartCurrentNowMicroA; // current draw BEFORE killing apps
+  int? _afterCurrentNowMicroA; // current draw AFTER killing apps
+  double? _batteryCapacityMAh; // remaining capacity, for the hours estimate
 
   // ── NEW: stores real temperature read during balancing ──
   double? _balancedTemperature;
@@ -69,6 +80,42 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     } catch (_) {
       _sessionStartFreeDiskMB = null;
       _sessionStartTotalDiskMB = null;
+    }
+
+    // ── NEW: real RAM baseline (availMem in bytes) — needed for RAM Freed.
+    try {
+      final dynamic raw = await _kMemoryChannel.invokeMethod('getMemoryInfo');
+      final Map<String, dynamic> memMap = Map<String, dynamic>.from(raw as Map);
+      _sessionStartAvailMemBytes = (memMap['availMem'] as num?)?.toInt();
+    } on PlatformException {
+      _sessionStartAvailMemBytes = null;
+    } on MissingPluginException {
+      _sessionStartAvailMemBytes = null;
+    } catch (_) {
+      _sessionStartAvailMemBytes = null;
+    }
+
+    try {
+      final dynamic raw =
+          await _kDeviceInfoChannel.invokeMethod('getBatteryPowerInfo');
+      final Map<String, dynamic> powerMap =
+          Map<String, dynamic>.from(raw as Map);
+      _sessionStartCurrentNowMicroA =
+          (powerMap['currentNowMicroA'] as num?)?.toInt();
+      final chargeCounterMicroAh =
+          (powerMap['chargeCounterMicroAh'] as num?)?.toDouble();
+      _batteryCapacityMAh = chargeCounterMicroAh != null
+          ? chargeCounterMicroAh / 1000.0
+          : null;
+    } on PlatformException {
+      _sessionStartCurrentNowMicroA = null;
+      _batteryCapacityMAh = null;
+    } on MissingPluginException {
+      _sessionStartCurrentNowMicroA = null;
+      _batteryCapacityMAh = null;
+    } catch (_) {
+      _sessionStartCurrentNowMicroA = null;
+      _batteryCapacityMAh = null;
     }
 
     // Real "before" score — only computed if both real readings succeeded.
@@ -146,6 +193,7 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
   void _beginTasks(Emitter<OptimizationState> emit) {
     _currentTaskIndex = 0;
     _balancedTemperature = null; // reset before new session
+    _afterCurrentNowMicroA = null; // reset before new session
     final statuses = List<TaskStatus>.filled(_kTotalTasks, TaskStatus.pending);
     statuses[0] = TaskStatus.inProgress;
 
@@ -165,40 +213,42 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     );
   }
 
-  void _onTaskCompleted(
-    _TaskCompletedEvent event,
-    Emitter<OptimizationState> emit,
-  ) {
-    if (!state.isRunning) return;
+  Future<void> _onTaskCompleted(
+  _TaskCompletedEvent event,
+  Emitter<OptimizationState> emit,
+) async {                          // ← async bana do
+  if (!state.isRunning) return;
 
-    final statuses = List<TaskStatus>.from(state.taskStatuses);
-    statuses[event.index] = TaskStatus.completed;
-    _currentTaskIndex++;
+  final statuses = List<TaskStatus>.from(state.taskStatuses);
+  statuses[event.index] = TaskStatus.completed;
+  _currentTaskIndex++;
 
-    final progress = _currentTaskIndex / _kTotalTasks;
+  final progress = _currentTaskIndex / _kTotalTasks;
 
-    if (_currentTaskIndex >= _kTotalTasks) {
-      _taskTimer?.cancel();
-      emit(state.copyWith(
-        taskStatuses: statuses,
-        progress: 1.0,
-        isRunning: false,
-        isComplete: true,
-        phase: OptimizationPhase.complete,
-      ));
+  if (_currentTaskIndex >= _kTotalTasks) {
+    _taskTimer?.cancel();
 
-      // ── Real tasks on completion ───────────────────────────────
-      _killBackgroundApps(); // Closing Background Apps + Optimizing System Resources
-      _balanceTemperature(); // ── NEW: Balancing Temperature → real CPU temp read
-    } else {
-      statuses[_currentTaskIndex] = TaskStatus.inProgress;
-      emit(state.copyWith(
-        taskStatuses: statuses,
-        progress: progress,
-        phase: OptimizationPhase.running,
-      ));
-    }
+    // ── Pehle real tasks await karo ──
+    _killBackgroundApps();          // fire-and-forget ok (RAM clear)
+    _checkTemperature();            // fire-and-forget ok (temp)
+    await _readCurrentDrawAfter();  // ← AWAIT — zaruri hai battery hours ke liye
+
+    emit(state.copyWith(
+      taskStatuses: statuses,
+      progress: 1.0,
+      isRunning: false,
+      isComplete: true,
+      phase: OptimizationPhase.complete,
+    ));
+  } else {
+    statuses[_currentTaskIndex] = TaskStatus.inProgress;
+    emit(state.copyWith(
+      taskStatuses: statuses,
+      progress: progress,
+      phase: OptimizationPhase.running,
+    ));
   }
+}
 
   void _onStop(
     StopOptimizationEvent event,
@@ -227,13 +277,18 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     LoadResultDataEvent event,
     Emitter<OptimizationState> emit,
   ) async {
+    print('🔍 _sessionStartCurrentNowMicroA: $_sessionStartCurrentNowMicroA');
+  print('🔍 _afterCurrentNowMicroA: $_afterCurrentNowMicroA');
+  print('🔍 _batteryCapacityMAh: $_batteryCapacityMAh');
+  print('🔍 _sessionStartAvailMemBytes: $_sessionStartAvailMemBytes');
+  print('🔍 _sessionStartBatteryLevel: $_sessionStartBatteryLevel');
+  print('🔍 _balancedTemperature: $_balancedTemperature');
     emit(state.copyWith(resultStatus: ResultLoadStatus.loading));
 
     try {
       // ── 1. Battery % now — real, direct OS read ──────────────────────────
       final batteryNow = await _battery.batteryLevel;
 
-      // ── 2. Cache: measure real size, delete it, measure real size again ──
       final cacheDir = await getTemporaryDirectory();
       final cacheBeforeBytes = await _dirSizeBytes(cacheDir);
 
@@ -268,6 +323,50 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
         }
       }
 
+
+      double? ramFreedMB;
+      try {
+        final dynamic raw = await _kMemoryChannel.invokeMethod('getMemoryInfo');
+        final Map<String, dynamic> memMap =
+            Map<String, dynamic>.from(raw as Map);
+        final availMemAfterBytes = (memMap['availMem'] as num?)?.toInt();
+        if (_sessionStartAvailMemBytes != null && availMemAfterBytes != null) {
+          final freedBytes = availMemAfterBytes - _sessionStartAvailMemBytes!;
+    
+          ramFreedMB = freedBytes > 0 ? freedBytes / (1024 * 1024) : 0.0;
+        }
+      } on PlatformException {
+        ramFreedMB = null;
+      } on MissingPluginException {
+        ramFreedMB = null;
+      } catch (_) {
+        ramFreedMB = null;
+      }
+
+  
+      String? estimatedBatterySavedText;
+      if (_sessionStartCurrentNowMicroA != null &&
+          _afterCurrentNowMicroA != null &&
+          _batteryCapacityMAh != null &&
+          _batteryCapacityMAh! > 0) {
+        final beforeMicroA = _sessionStartCurrentNowMicroA!.abs();
+        final afterMicroA = _afterCurrentNowMicroA!.abs();
+        final drawReductionMicroA = beforeMicroA - afterMicroA;
+
+        if (drawReductionMicroA > 0 && afterMicroA > 0) {
+          final beforeMA = beforeMicroA / 1000.0;
+          final afterMA = afterMicroA / 1000.0;
+          final hoursBefore = _batteryCapacityMAh! / beforeMA;
+          final hoursAfter = _batteryCapacityMAh! / afterMA;
+          final extraHours = (hoursAfter - hoursBefore).clamp(0.0, 24.0);
+          if (extraHours > 0.01) {
+            final h = extraHours.floor();
+            final m = ((extraHours - h) * 60).round();
+            estimatedBatterySavedText = m > 0 ? '+${h}h ${m}m' : '+${h}h';
+          }
+        }
+      }
+
       // ── 5. Performance score ─────────────────────────────────────────────
       final freePercentNow =
           (freeDiskAfterMB / totalDiskMB * 100).clamp(0.0, 100.0).toDouble();
@@ -288,6 +387,12 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
         performanceScore: performanceScore,
         scoreBefore: _sessionStartScore,
         scoreAfter: performanceScore,
+        // ── NEW: real RAM Freed (MB) ──
+        ramFreedMB: ramFreedMB,
+        ramFreedText: ramFreedMB != null ? _fmtMB(ramFreedMB) : 'N/A',
+        // ── NEW: honestly-labeled estimate, null if we couldn't compute it
+        // from real readings (no fallback fake number is ever shown) ──
+        estimatedBatterySavedText: estimatedBatterySavedText,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -332,7 +437,14 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     return '${mb.toStringAsFixed(0)} MB';
   }
 
-  /// Score from two genuinely-measured current values only.
+  /// Score from two genuinely-measured current values only:
+  ///   50% weight → current battery percentage
+  ///   50% weight → current free disk space percentage
+  /// This is a SIMPLE, TRANSPARENT formula — not an invented "performance
+  /// score" with hidden weights. Because before/after are usually only
+  /// seconds apart, the real-life jump (e.g. 72 → 92) will often be much
+  /// smaller than that. Show whatever the real numbers produce — do not
+  /// scale or boost the delta to look more impressive.
   int _calcScore({
     required double batteryPct,
     required double freePct,
@@ -340,6 +452,25 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     final b = (batteryPct * 0.5).clamp(0.0, 50.0);
     final s = (freePct * 0.5).clamp(0.0, 50.0);
     return (b + s).round().clamp(0, 100);
+  }
+
+  /// Reads real current draw (µA) AFTER background apps were killed.
+  /// Used together with the session-start reading to calculate
+  /// "Estimated Battery Saved" — see comments in _onLoadResult.
+  Future<void> _readCurrentDrawAfter() async {
+    try {
+      final dynamic raw =
+          await _kDeviceInfoChannel.invokeMethod('getBatteryPowerInfo');
+      final Map<String, dynamic> powerMap =
+          Map<String, dynamic>.from(raw as Map);
+      _afterCurrentNowMicroA = (powerMap['currentNowMicroA'] as num?)?.toInt();
+    } on PlatformException catch (e) {
+      print('⚠️ readCurrentDrawAfter failed: ${e.message}');
+      _afterCurrentNowMicroA = null;
+    } catch (e) {
+      print('⚠️ readCurrentDrawAfter unknown error: $e');
+      _afterCurrentNowMicroA = null;
+    }
   }
 
   /// Kills background/heavy apps via AutoCool channel.
@@ -355,21 +486,22 @@ class OptimizationBloc extends Bloc<OptimizationEvent, OptimizationState> {
     }
   }
 
-  /// ── NEW ──
   /// Reads real CPU temperature via cpu_info channel.
+  /// Renamed from "_balanceTemperature" — the app only READS temperature,
+  /// it does not and cannot control/balance it. Label kept honest.
   /// Result stored in [_balancedTemperature] — used in result screen.
-  Future<void> _balanceTemperature() async {
+  Future<void> _checkTemperature() async {
     try {
-      print('🌡️ OptimizationBloc: Balancing temperature — reading CPU info...');
+      print('🌡️ OptimizationBloc: Checking device temperature — reading CPU info...');
       final dynamic raw = await _kCpuChannel.invokeMethod('getCpuInfo');
       final Map<String, dynamic> cpuMap = Map<String, dynamic>.from(raw as Map);
       _balancedTemperature = (cpuMap['temperature'] as num?)?.toDouble();
-      print('✅ Temperature balanced: $_balancedTemperature°C');
+      print('✅ Temperature read: $_balancedTemperature°C');
     } on PlatformException catch (e) {
-      print('⚠️ balanceTemperature failed: ${e.message}');
+      print('⚠️ checkTemperature failed: ${e.message}');
       _balancedTemperature = null;
     } catch (e) {
-      print('⚠️ balanceTemperature unknown error: $e');
+      print('⚠️ checkTemperature unknown error: $e');
       _balancedTemperature = null;
     }
   }

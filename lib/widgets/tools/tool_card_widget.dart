@@ -1,5 +1,6 @@
 // tool_card_widget.dart
 
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/models/tools/tool_item.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -58,7 +59,7 @@ class ToolCardWidget extends StatelessWidget {
               ),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Color(0xFF4103AC),
+                color: AppColors.appWidgetBorderColor,
                 width: 1.2,
               ),
             ),
@@ -97,7 +98,7 @@ class ToolCardWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: Color(0xFFD9D9D9),
+                      color: AppColors.allsmalltextcolor,
                       fontSize: getFont(9),
                       fontWeight: FontWeight.w500,
                     ),

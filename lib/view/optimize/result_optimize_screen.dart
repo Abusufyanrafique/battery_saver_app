@@ -15,15 +15,12 @@ import 'package:go_router/go_router.dart';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 class OptimizationResultScreen extends StatelessWidget {
-  const OptimizationResultScreen({super.key});
+  const OptimizationResultScreen({super.key,});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => OptimizationBloc()
-        ..add(LoadResultDataEvent()), // screen open
-      child: const _ResultView(),
-    );
+    context.read<OptimizationBloc>().add(LoadResultDataEvent());
+    return const _ResultView();
   }
 }
 
@@ -120,9 +117,9 @@ class _ResultViewState extends State<_ResultView>
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  state.errorMessage ?? 'Could not load device data.',
+                  state.errorMessage ?? AppText.couldnotloaddevicedata,
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
+                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
                 ),
               ),
             ),
@@ -140,7 +137,7 @@ class _ResultViewState extends State<_ResultView>
                   // ── Top image + text (design same) ──
                   Image(
                     image: AssetImage(AppImages.optimizationComplete),
-                    height: getHeight(160),
+                    height: getHeight(150),
                     fit: BoxFit.contain,
                   ),
                   SizedBox(height: getHeight(4)),
@@ -150,7 +147,7 @@ class _ResultViewState extends State<_ResultView>
                     style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF55D0FF),
+                      color: AppColors.checkiconcolor,
                     ),
                   ),
                   SizedBox(height: getHeight(2)),
@@ -199,27 +196,24 @@ class _ResultViewState extends State<_ResultView>
   // ── Summary Card — REAL values only ──────────────────────────────────────
   Widget _buildSummaryCard(OptimizationState state) {
     final items = <_SummaryItem>[
-      // Battery saved — only shown with a real number if a session baseline
-      // exists. Otherwise shows the current charge level honestly instead
-      // of inventing a "saved" figure.
       _SummaryItem(
         iconsvg: AppIcons.optimizebattery,
-        color: const Color(0xFF00FF09),
-        valueColor: const Color(0xFF00FF09),
+        color: AppColors.batterycolor,
+        valueColor: AppColors.batterycolor,
         label: AppText.batterySaved,
         value: state.batteryPercentSavedDuringSession != null
             ? '${state.batteryPercentSavedDuringSession! >= 0 ? '+' : ''}${state.batteryPercentSavedDuringSession}%'
             : '${state.batteryLevelNow ?? '--'}%',
-        sub: state.batteryPercentSavedDuringSession != null
-            ? AppText.extended
-            : 'Current charge',
+        sub: state.estimatedBatterySavedText != null
+    ? AppText.extended
+    : AppText.extendedtext,
       ),
 
       // Real measured cache cleared (this was always genuinely real).
       _SummaryItem(
         iconsvg: AppIcons.optimizedelete,
-        color: const Color(0xFF55D0FF),
-        valueColor: const Color(0xFF55D0FF),
+        color: AppColors.checkiconcolor,
+        valueColor:AppColors.checkiconcolor ,
         label: AppText.junkCleared,
         value: state.junkClearedText,
         sub: AppText.spaceFreed,
@@ -229,24 +223,22 @@ class _ResultViewState extends State<_ResultView>
       // space recovered by the cache clear — genuinely verifiable.
       _SummaryItem(
         iconsvg: AppIcons.optimizeram,
-        color: const Color(0xFF9A3CFF),
-        valueColor: const Color(0xFF9A3CFF),
-        label: 'Disk Space Freed',
+        color: AppColors.optimizeramcolor,
+        valueColor: AppColors.optimizeramcolor,
+        label: AppText.ramFreedtext,
         value: state.diskSpaceFreedText,
-        sub: 'Storage recovered',
+        sub: AppText.memoryClearedtext,
       ),
 
-      // Only included if a real temperature reading was available from
-      // the platform channel. If null, this tile is simply not built —
-      // never replaced with a guessed value.
+      
       if (state.temperatureCelsius != null)
         _SummaryItem(
           iconsvg: AppIcons.optimizetemp,
-          color: const Color(0xFFED6D09),
-          valueColor: const Color(0xFFED6D09),
+          color: AppColors.temcolor,
+          valueColor:AppColors.temcolor ,
           label: AppText.temperatureChange,
           value: '${state.temperatureCelsius!.toStringAsFixed(1)}°C',
-          sub: 'Current reading',
+          sub:AppText.deviceCooled,
         ),
     ];
 
@@ -272,10 +264,7 @@ class _ResultViewState extends State<_ResultView>
       child: IntrinsicHeight(
         child: Row(
           children: [
-            // Left: Performance Score — real before/after comparison.
-            // "Before" was measured the moment the user pressed Optimize;
-            // "After" is measured right now. If no session was started,
-            // before falls back to 0 (animation handles this gracefully).
+  
             Expanded(
               flex: 3,
               child: Column(
@@ -286,7 +275,7 @@ class _ResultViewState extends State<_ResultView>
                     child: Text(
                       AppText.performanceScore,
                       style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white,
+                        color: AppColors.white,
                         fontWeight: FontWeight.w500,
                         fontSize: getFont(10),
                       ),
@@ -325,7 +314,7 @@ class _ResultViewState extends State<_ResultView>
                         padding: EdgeInsets.only(top: getHeight(18)),
                         child: const Icon(
                           Icons.arrow_forward,
-                          color: Colors.white,
+                          color: AppColors.white,
                           size: 12,
                         ),
                       ),
@@ -336,7 +325,7 @@ class _ResultViewState extends State<_ResultView>
                           Text(
                             AppText.after,
                             style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.white,
+                              color: AppColors.white,
                               fontWeight: FontWeight.w500,
                               fontSize: getFont(10),
                             ),
@@ -376,7 +365,7 @@ class _ResultViewState extends State<_ResultView>
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
-                    'Charge Level',
+                    AppText.chargeLevel,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w500,
@@ -396,8 +385,8 @@ class _ResultViewState extends State<_ResultView>
                         : '--',
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: state.isChargeLevelHealthy
-                          ? const Color(0xFF00FF09)
-                          : const Color(0xFFED6D09),
+                          ? AppColors.batterycolor
+                          : AppColors.temcolor,
                       fontSize: getFont(10),
                       fontWeight: FontWeight.w600,
                     ),
@@ -466,10 +455,12 @@ class _CardWrapper extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFF232C6D), Color(0xFF1B2153), Color(0xFF13173A)],
+          colors:AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF4103AC)),
+        border: Border.all(
+          color: AppColors.appWidgetBorderColor
+          ),
       ),
       padding: EdgeInsets.symmetric(
           horizontal: getWidth(12), vertical: getHeight(10)),
@@ -513,13 +504,12 @@ class _SummaryTile extends StatelessWidget {
         child: Container(
           width: getWidth(78),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(colors: [
-              Color(0xFF1B235C),
-              Color(0xFF1B2153),
-              Color(0xFF13173A),
-            ]),
+            gradient: const LinearGradient(
+              colors: AppColors.systemCardGradient),
             borderRadius: BorderRadius.circular(6),
-            border: Border.all(color: const Color(0xFF4103AC), width: 0.5),
+            border: Border.all(
+              color: AppColors.appWidgetBorderColor,
+               width: 0.5),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

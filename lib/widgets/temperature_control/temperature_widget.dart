@@ -1,6 +1,7 @@
 // temperature_widget.dart
 
 import 'package:battery_saver_app/bloc/temperature/temperature_bloc.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_text.dart';
@@ -23,11 +24,7 @@ class TemperatureWidget extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF232C6D),
-                Color(0xFF1B2153),
-                Color(0xFF13173A),
-              ],
+              colors:AppColors.drawerGradient
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFF3A3FCC), width: 1.2),
@@ -51,11 +48,11 @@ class TemperatureWidget extends StatelessWidget {
                             style: AppTextStyles.bodySmall.copyWith(
                               fontSize:   getFont(14),
                               fontWeight: FontWeight.w600,
-                              color:      Colors.white,
+                              color:     AppColors.white,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                         SizedBox(height: getHeight(10)),
 
                         // Real temperature value
                         Text(
@@ -63,10 +60,10 @@ class TemperatureWidget extends StatelessWidget {
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontSize:   getFont(22),
                             fontWeight: FontWeight.w700,
-                            color:      Colors.white,
+                            color:      AppColors.white,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                         SizedBox(height: getHeight(2)),
 
                         // Cool / Normal / Hot label
                         Text(
@@ -77,42 +74,68 @@ class TemperatureWidget extends StatelessWidget {
                             color:      state.tempLabelColor,
                           ),
                         ),
-                        const SizedBox(height: 10),
+                         SizedBox(height: getHeight(10)),
 
                         _GradientSlider(value: state.tempValue),
-                        const SizedBox(height: 4),
+                         SizedBox(height:getHeight(4) ),
 
-                        const Row(
+                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Cool',   style: TextStyle(fontSize: 9, color: Color(0xFF00FF09), fontWeight: FontWeight.w500)),
-                            Text('Normal', style: TextStyle(fontSize: 9, color: Color(0xFF55D0FF), fontWeight: FontWeight.w500)),
-                            Text('Hot',    style: TextStyle(fontSize: 9, color: Color(0xFFFF23C1), fontWeight: FontWeight.w500)),
+                            Text(AppText.cool, 
+                              style:AppTextStyles.bodySmall.copyWith(
+                                fontSize: getFont(9),
+                               color: Color(0xFF00FF09),
+                               fontWeight: FontWeight.w500,
+                              )
+                            
+                                  ),
+                            Text(
+                              AppText.normal, 
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontSize: getFont(9),
+                               color: Color(0xFF55D0FF),
+                               fontWeight: FontWeight.w500,
+                              )
+                             
+                                 ),
+                            Text(
+                              AppText.hot,   
+                               style:AppTextStyles.bodySmall.copyWith(
+                                fontSize: getFont(9),
+                                color: Color(0xFFFF23C1), 
+                               fontWeight: FontWeight.w500,
+                              )
+                                
+                                ),
                           ],
                         ),
                       ],
                     ),
 
-                    const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
+                    const Divider(
+                      color: Color(0xFF838283), 
+                      thickness: 1, 
+                      height: 1),
 
                     // ─── TOGGLE ROWS ───────────────────────
                     Column(
                       children: [
                         _ToggleRow(
                           icon:     Icons.ac_unit,
-                          title:    'Auto Cool',
-                          subtitle: 'Automatically reduce\ntemperature',
+                          title:    AppText.autoCool,
+                          subtitle: AppText.automaticallyreducetemperature,
                           value:    state.autoCool,
                           onChanged: (val) => context
                               .read<TemperatureBloc>()
                               .add(TemperatureAutoCoolToggled(val)),
                         ),
-                        const Divider(color: Color(0xFF838283), thickness: 1, height: 1),
-                        const SizedBox(height: 8),
+                        const Divider(color: AppColors.dividercolor, thickness: 1, height: 1),
+                         SizedBox(height: getHeight(8)),
                         _ToggleRow(
                           icon:     Icons.developer_board_outlined,
-                          title:    'CPU Cooler',
-                          subtitle: 'Reduce CPU usage\nto cool down',
+                          title:   AppText.cPUCooler,
+                          subtitle: AppText.usagetocoolow,
                           value:    state.cpuCooler,
                           onChanged: (val) => context
                               .read<TemperatureBloc>()
@@ -164,13 +187,7 @@ class _GradientSlider extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF2979FF),
-                      Color(0xFF3DDC84),
-                      Color(0xFFFFEB3B),
-                      Color(0xFFFF9800),
-                      Color(0xFFFF1744),
-                    ],
+                    colors:AppColors.rainbowGradientColors
                   ),
                 ),
               ),
@@ -181,7 +198,7 @@ class _GradientSlider extends StatelessWidget {
                   height: getHeight(10),
                   decoration: BoxDecoration(
                     shape:  BoxShape.circle,
-                    color:  const Color(0xFF3DDC84),
+                    color:  AppColors.powerboostcolorcheckbox,
                     boxShadow: [
                       BoxShadow(
                         color:       const Color(0xFF3DDC84).withOpacity(0.4),
@@ -229,11 +246,11 @@ class _ToggleRow extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF232C6D),
-              border: Border.all(color: const Color(0xFF4103AC), width: 1.2),
+              border: Border.all(color: AppColors.appWidgetBorderColor, width: 1.2),
             ),
             child: Icon(icon, size: 16, color: const Color(0xFF989CDF)),
           ),
-          const SizedBox(width: 10),
+           SizedBox(width: getWidth(10)),
           Expanded(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -244,10 +261,10 @@ class _ToggleRow extends StatelessWidget {
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize:   getFont(11),
                     fontWeight: FontWeight.w600,
-                    color:      Colors.white,
+                    color:      AppColors.white,
                   ),
                 ),
-                const SizedBox(height: 2),
+                 SizedBox(height: getWidth(2)),
                 Text(
                   subtitle,
                   maxLines: 2,
@@ -255,7 +272,7 @@ class _ToggleRow extends StatelessWidget {
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize:   getFont(9),
                     fontWeight: FontWeight.w500,
-                    color:      const Color(0xFFD9D9D9),
+                    color:     AppColors.allsmalltextcolor,
                     height:     1.2,
                   ),
                 ),

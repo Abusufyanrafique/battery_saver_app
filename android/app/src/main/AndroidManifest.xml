@@ -58,7 +58,7 @@
         </activity>
 <!-- android/app/src/main/AndroidManifest.xml -->
 <!-- application tag ke andar add karo -->
-<service
+<!-- <service
     android:name="im.zoe.labs.flutter_notification_listener.NotificationsHandlerService"
     android:label="Notification Listener Service"
     android:exported="true"
@@ -66,7 +66,7 @@
     <intent-filter>
         <action android:name="android.service.notification.NotificationListenerService" />
     </intent-filter>
-</service>
+</service> -->
 <!-- YEH NAI SERVICE ADD KARO NEECHE -->
 <service
     android:name=".NotifListenerBridge"

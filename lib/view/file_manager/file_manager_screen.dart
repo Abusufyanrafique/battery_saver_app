@@ -153,17 +153,22 @@ class _FileManagerScreenState extends State<FileManagerScreen>
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF232C6D), Color(0xFF13173A)],
+            colors: [
+              Color(0xFF232C6D), Color(0xFF13173A)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.appWidgetBorderColor, width: 1),
+          border: Border.all(
+            color: AppColors.appWidgetBorderColor,
+             width: 1),
         ),
         child: Row(
           children: [
-            const Icon(Icons.search, color: AppColors.allsmalltextcolor),
-            const SizedBox(width: 10),
+            const Icon(
+              Icons.search, 
+              color: AppColors.allsmalltextcolor),
+             SizedBox(width: getWidth(10)),
             Expanded(
               child: TextField(
                 controller: _searchController,
@@ -181,7 +186,11 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             if (state.searchQuery.isNotEmpty)
               Text(
                 '${state.filteredCategories.length}',
-                style: const TextStyle(color: Color(0xFF6C63FF), fontSize: 13),
+                style:
+                  TextStyle(
+                  color: Color(0xFF6C63FF), 
+                  fontSize: getFont(13),
+                  ),
               ),
           ],
         ),
@@ -201,7 +210,11 @@ class _FileManagerScreenState extends State<FileManagerScreen>
               SizedBox(height: getHeight(12)),
               Text(
                AppText.loadingtext,
-                style: TextStyle(color: Colors.white70, fontSize: getFont(14)),
+                style: 
+                TextStyle(
+                  color: Colors.white70, 
+                  fontSize: getFont(14),
+                  ),
               ),
             ],
           ),
@@ -222,21 +235,26 @@ class _FileManagerScreenState extends State<FileManagerScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.folder_off, color: Colors.white38, size: 64),
-                const SizedBox(height: 16),
+                const Icon(
+                  Icons.folder_off, 
+                  color: Colors.white38, 
+                  size: 64),
+                 SizedBox(height: getHeight(16)),
                 Text(message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white70, fontSize: 15)),
-                const SizedBox(height: 24),
+                    style: const TextStyle(
+                      color: Colors.white70, 
+                      fontSize: 15)),
+                 SizedBox(height: getHeight(24)),
                 ElevatedButton.icon(
                   onPressed: () => context
                       .read<FileManagerBloc>()
                       .add(const FileManagerRetryEvent()),
                   icon: const Icon(Icons.security),
-                  label: const Text('Grant Permission'),
+                  label: const Text(AppText.grantPermissiontext),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6C63FF),
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.white,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -253,23 +271,30 @@ class _FileManagerScreenState extends State<FileManagerScreen>
 
   Widget _errorView(BuildContext context, String message) => Column(
     children: [
-      Padding(padding: const EdgeInsets.all(24), child: _header(showMore: false)),
+      Padding(
+        padding: const EdgeInsets.all(24), 
+        child: _header(showMore: false)),
       Expanded(
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, color: Colors.redAccent, size: 56),
+              const Icon(
+                Icons.error_outline, 
+                color: AppColors.errorRed, 
+                size: 56),
                SizedBox(height: getHeight(12)),
               Text(message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white60, fontSize: 14)),
+                  style: const TextStyle(
+                    color: Colors.white60, 
+                    fontSize: 14)),
                SizedBox(height: getHeight(20)),
               TextButton(
                 onPressed: () => context
                     .read<FileManagerBloc>()
                     .add(const FileManagerRetryEvent()),
-                child: const Text('Retry',
+                child: const Text(AppText.retrytext,
                     style: TextStyle(color: Color(0xFF6C63FF))),
               ),
             ],

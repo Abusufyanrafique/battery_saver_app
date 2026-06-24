@@ -15,6 +15,14 @@ class BatteryStatusData extends Equatable {
   final int remainingMinutes;
   final int screenOnTime;
   final String screenTimeFormatted;
+  final String healthStatus;
+  final int healthCode;
+  final int capacityPercent;
+  final int chargeCounterUah;
+  final int currentNowUa;
+  final double temperatureCelsius;
+  final int voltageMv;
+  final String technology;
 
   const BatteryStatusData({
     required this.level,
@@ -22,6 +30,14 @@ class BatteryStatusData extends Equatable {
     required this.remainingMinutes,
     required this.screenOnTime,
     required this.screenTimeFormatted,
+    required this.healthStatus,
+    required this.healthCode,
+    required this.capacityPercent,
+    required this.chargeCounterUah,
+    required this.currentNowUa,
+    required this.temperatureCelsius,
+    required this.voltageMv,
+    required this.technology,
   });
 
   factory BatteryStatusData.fromMap(Map<String, dynamic> map) {
@@ -31,12 +47,7 @@ class BatteryStatusData extends Equatable {
     if (totalSeconds > 0) {
       final hours = totalSeconds ~/ 3600;
       final minutes = (totalSeconds % 3600) ~/ 60;
-
-      if (hours > 0) {
-        formattedTime = '${hours}h ${minutes}m';
-      } else {
-        formattedTime = '${minutes}m';
-      }
+      formattedTime = hours > 0 ? '${hours}h ${minutes}m' : '${minutes}m';
     }
 
     return BatteryStatusData(
@@ -45,12 +56,33 @@ class BatteryStatusData extends Equatable {
       remainingMinutes: map['remainingMinutes'] as int? ?? -1,
       screenOnTime: totalSeconds,
       screenTimeFormatted: formattedTime,
+      healthStatus: map['healthStatus'] as String? ?? 'Unknown',
+      healthCode: map['healthCode'] as int? ?? -1,
+      capacityPercent: map['capacityPercent'] as int? ?? -1,
+      chargeCounterUah: map['chargeCounterUah'] as int? ?? -1,
+      currentNowUa: map['currentNowUa'] as int? ?? -1,
+      temperatureCelsius: (map['temperatureCelsius'] as num?)?.toDouble() ?? -1.0,
+      voltageMv: map['voltageMv'] as int? ?? -1,
+      technology: map['technology'] as String? ?? 'Unknown',
     );
   }
 
   @override
-  List<Object?> get props =>
-      [level, status, remainingMinutes, screenOnTime, screenTimeFormatted];
+  List<Object?> get props => [
+        level,
+        status,
+        remainingMinutes,
+        screenOnTime,
+        screenTimeFormatted,
+        healthStatus,
+        healthCode,
+        capacityPercent,
+        chargeCounterUah,
+        currentNowUa,
+        temperatureCelsius,
+        voltageMv,
+        technology,
+      ];
 }
 
 /// ─────────────────────────────────────────────
@@ -91,7 +123,7 @@ class BatteryStatusError extends BatteryStatusState {
 }
 
 /// ─────────────────────────────────────────────
-/// CUBIT (AUTO REFRESH ADDED)
+/// CUBIT
 /// ─────────────────────────────────────────────
 
 class BatteryStatusCubit extends Cubit<BatteryStatusState> {
@@ -99,35 +131,30 @@ class BatteryStatusCubit extends Cubit<BatteryStatusState> {
       MethodChannel('com.example.battery_saver_app/battery_status');
   static const _appStatsChannel =
       MethodChannel('com.example.battery_saver_app/app_stats');
+  static const _batteryHealthChannel =
+      MethodChannel('com.example.battery_saver_app/battery_health');
 
   Timer? _refreshTimer;
 
   BatteryStatusCubit() : super(const BatteryStatusInitial());
 
-  /// Periodic auto-refresh start karta hai (default har 10 seconds).
-  /// Screen open rehte hue bhi data fresh rakhne ke liye.
   void startAutoRefresh({Duration interval = const Duration(seconds: 10)}) {
     _refreshTimer?.cancel();
-    loadBatteryStatus(); // pehli call immediately
+    loadBatteryStatus();
     _refreshTimer = Timer.periodic(interval, (_) => loadBatteryStatus());
   }
 
-  /// Jab app background mein jaye to timer band kar dein (battery saving).
   void stopAutoRefresh() {
     _refreshTimer?.cancel();
     _refreshTimer = null;
   }
 
   Future<void> loadBatteryStatus() async {
-    // Agar pehle se data loaded hai to loading state mat dikhao —
-    // isse UI flicker/blink nahi karegi har refresh par.
     if (state is! BatteryStatusLoaded) {
       emit(const BatteryStatusLoading());
     }
 
     try {
-      print("🚀 Fetching Battery and Screen On Time Data...");
-
       final rawBattery = await _batteryChannel.invokeMethod('getBatteryStatus');
       final batteryMap = Map<String, dynamic>.from(rawBattery);
 
@@ -140,26 +167,41 @@ class BatteryStatusCubit extends Cubit<BatteryStatusState> {
       });
       final statsMap = Map<String, dynamic>.from(rawStats);
 
+      Map<String, dynamic> healthMap = {};
+      try {
+        final rawHealth = await _batteryHealthChannel.invokeMethod('getBatteryHealth');
+        healthMap = Map<String, dynamic>.from(rawHealth);
+      } on PlatformException catch (e) {
+        print("⚠️ Battery health fetch failed (non-fatal): ${e.message}");
+      }
+
       final combinedMap = <String, dynamic>{}
         ..addAll(batteryMap)
-        ..addAll(statsMap);
-
-      print("📊 Combined Parsed Map Data:");
-      combinedMap.forEach((key, value) {
-        if (key != 'apps') print("➡ $key = $value");
-      });
+        ..addAll(statsMap)
+        ..addAll(healthMap);
 
       final data = BatteryStatusData.fromMap(combinedMap);
-
-      print("✅ Battery + Screen Time Data Ready. Formatted SOT: ${data.screenTimeFormatted}");
-
       emit(BatteryStatusLoaded(data: data));
     } on PlatformException catch (e) {
-      print("❌ Platform Exception: ${e.message}");
       emit(BatteryStatusError(message: e.message ?? 'Platform error'));
     } catch (e) {
-      print("❌ Unknown Error: $e");
       emit(BatteryStatusError(message: e.toString()));
+    }
+  }
+
+  /// Background mein chal rahe (cached/idle) apps close karta hai
+  /// aur real closed-count return karta hai.
+  Future<int> closeBackgroundAppsAndGetCount() async {
+    try {
+      final result = await _appStatsChannel.invokeMethod('closeBackgroundApps');
+      final map = Map<String, dynamic>.from(result);
+      return map['closedCount'] as int? ?? 0;
+    } on PlatformException catch (e) {
+      print("❌ Close apps failed: ${e.message}");
+      return 0;
+    } catch (e) {
+      print("❌ Unknown error while closing apps: $e");
+      return 0;
     }
   }
 
