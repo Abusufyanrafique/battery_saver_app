@@ -336,5 +336,16 @@ static const List<Color> rainbowGradientColors = [
   Color(0xFFFF9800),
   Color(0xFFFF1744),
 ];
+ static const storagecomparsioncrircle =  Color(0xFF00E676);
+ final List<Color> socialColors = [
+  const Color(0xFF6C63FF),
+  const Color(0xFFE1306C),
+  const Color(0xFF1877F2),
+  const Color(0xFF25D366),
+  const Color(0xFFFF6B35),
+  const Color(0xFF0099CC),
+  const Color(0xFFAA00FF),
+  const Color(0xFFFF5722),
+];
 }
 

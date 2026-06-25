@@ -49,6 +49,7 @@ class MainActivity : FlutterActivity() {
     private val BATTERY_OPTIMIZER_CHANNEL = "battery_optimizer"
     private val PER_CHANNEL = "com.example.battery_saver_app/battery_health"
     private val MEMORY_INFO_CHANNEL = "com.example.battery_saver_app/memory_info"
+    private lateinit var deviceManager: DeviceManager
  
 private val batteryHelper by lazy { BatteryHelper(this) }
 private val brightnessHelper by lazy { BrightnessHelper(this) }
@@ -82,6 +83,30 @@ private val appStatsHelper by lazy { AppStatsHelper() }
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
          batteryHealthHelper = BatteryHealthHelper(applicationContext)
+          deviceManager = DeviceManager(this)
+     //================    clean background======================
+      MethodChannel(
+        flutterEngine.dartExecutor.binaryMessenger,
+        CHANNEL
+    ).setMethodCallHandler { call, result ->
+
+        when (call.method) {
+
+            "getRunningApps" ->
+                result.success(deviceManager.getRunningAppsWithRealCache())
+
+            "getRamInfo" ->
+                result.success(deviceManager.getRealRamInfo())
+
+            "clearOwnCache" ->
+                result.success(deviceManager.clearOwnAppCache())
+
+            "hasUsageStatsPermission" ->
+                result.success(deviceManager.hasUsageAccessPermission())
+
+            else -> result.notImplemented()
+        }
+    }
        //======================  memory info ======================
        MethodChannel(
     flutterEngine.dartExecutor.binaryMessenger,

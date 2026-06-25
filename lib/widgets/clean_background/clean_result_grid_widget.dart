@@ -3,6 +3,7 @@ import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -103,30 +104,30 @@ class CleanResultGridWidget extends StatelessWidget {
     final items = [
       CleanResultItem(
         iconPath: AppIcons.files,
-        title: 'Junk Removed',
+        title: AppText.junkRemoved,
         value: junkValue,
-        subtitle: 'Space Freed',
+        subtitle: AppText.spaceFreed,
         valueColor: const Color(0xFFFE39C6),
       ),
       CleanResultItem(
         iconPath: AppIcons.appsClosed,
-        title: 'Apps Closed',
+        title: AppText.appsclosed,
         value: appsValue,
-        subtitle: 'Background',
+        subtitle: AppText.background,
         valueColor: const Color(0xFFEDB309),
       ),
       CleanResultItem(
         iconPath: AppIcons.cacheCleared,
-        title: 'Cache Cleared',
+        title: AppText.cacheCleared,
         value: cacheValue,
-        subtitle: 'Cache',
-        valueColor: const Color(0xFF55D0FF),
+        subtitle: AppText.cache,
+        valueColor: AppColors.checkiconcolor,
       ),
       CleanResultItem(
         iconPath: AppIcons.files2,
-        title: 'Residual Files Removed',
+        title: AppText.residualFilesRemoved,
         value: residualValue,
-        subtitle: 'Files',
+        subtitle:AppText.filestext,
         valueColor: const Color(0xFF9A3CFF),
       ),
     ];
@@ -167,15 +168,11 @@ class _CleanResultCard extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1,
         ),
       ),

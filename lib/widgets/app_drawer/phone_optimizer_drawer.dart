@@ -130,7 +130,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
       ),
   ];
     return Drawer(
-      width: getWidth(240),
+      width: getWidth(270),
 
       //  BACKGROUND GRADIENT ADDED
       child: Container(
@@ -138,11 +138,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF232C6D),
-              Color(0xFF1B2153),
-              Color(0xFF13173A),
-            ],
+            colors:AppColors.drawerGradient
           ),
         ),
 
@@ -215,11 +211,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF232C6D),
-                    Color(0xFF1B2153),
-                    Color(0xFF13173A),
-                  ],
+                  colors: AppColors.drawerGradient,
                 ),
               ),
               child: Container(
@@ -228,11 +220,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
   decoration: const BoxDecoration(
     shape: BoxShape.circle,
     gradient: LinearGradient(
-      colors: [
-        Color(0xFF232C6D),
-        Color(0xFF1B2153),
-        Color(0xFF13173A),
-      ],
+      colors: AppColors.drawerGradient
     ),
   ),
   

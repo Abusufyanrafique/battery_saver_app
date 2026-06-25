@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 
@@ -29,12 +30,12 @@ class ResultActionButtonsWidget extends StatelessWidget {
               children: [
                 Icon(
                   Icons.bar_chart_rounded,
-                  color: const Color(0xFF55D0FF),
+                  color: AppColors.checkiconcolor,
                   size: getWidth(20),
                 ),
                 SizedBox(width: getWidth(6)),
                 Text(
-                  'View Details',
+                  AppText.viewDetailstext,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(13),
                     fontWeight: FontWeight.w600,
@@ -78,7 +79,7 @@ class ResultActionButtonsWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Done',
+          AppText.done,
           style: AppTextStyles.bodyMedium.copyWith(
             fontSize: getFont(12),
             fontWeight: FontWeight.w700,
@@ -86,7 +87,7 @@ class ResultActionButtonsWidget extends StatelessWidget {
           ),
         ),
         Text(
-          'Back to Home',
+          AppText.backtoHome,
           style: AppTextStyles.bodyMedium.copyWith(
             fontSize: getFont(10),
             fontWeight: FontWeight.w500,
@@ -117,7 +118,7 @@ class ResultActionButtonsWidget extends StatelessWidget {
                 ),
                 SizedBox(width: getWidth(6)),
                 Text(
-                  'Clean Again',
+                 AppText.cleanAgain,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w500,

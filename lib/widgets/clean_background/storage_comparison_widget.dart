@@ -2,6 +2,7 @@ import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bl
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -74,15 +75,11 @@ class StorageComparisonWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient,
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1.5,
         ),
       ),
@@ -92,7 +89,7 @@ class StorageComparisonWidget extends StatelessWidget {
         children: [
           // ── Title ───────────────────────────────────────────────────────────
           Text(
-            'Storage Comparison',
+            AppText.storageComparison,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(16),
               fontWeight: FontWeight.w600,
@@ -109,7 +106,7 @@ class StorageComparisonWidget extends StatelessWidget {
               // BEFORE
               Expanded(
                 child: _StorageColumn(
-                  label: 'Before Cleaning',
+                  label: AppText.beforeCleaning,
                   valueGB: beforeGB,
                   totalGB: totalGB,
                   valueColor: AppColors.textwhitecolor,
@@ -127,10 +124,10 @@ class StorageComparisonWidget extends StatelessWidget {
                   children: [
                     // Left pipe
                     Container(
-                      width: 2,
-                      height: 58,
+                      width: getWidth(2),
+                      height: getHeight(58),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF838283),
+                        color:AppColors.dividercolor,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -144,7 +141,7 @@ class StorageComparisonWidget extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: const Color(0xFF4103AC),
+                          color: AppColors.appWidgetBorderColor,
                           width: 1.5,
                         ),
                       ),
@@ -159,10 +156,10 @@ class StorageComparisonWidget extends StatelessWidget {
 
                     // Right pipe
                     Container(
-                      width: 2,
-                      height: 58,
+                      width: getWidth(1),
+                      height: getHeight(58),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF838283),
+                        color: AppColors.dividercolor,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -173,12 +170,12 @@ class StorageComparisonWidget extends StatelessWidget {
               // AFTER
               Expanded(
                 child: _StorageColumn(
-                  label: 'After Cleaning',
+                  label: AppText.afterCleaning,
                   valueGB: afterGB,
                   totalGB: totalGB,
-                  valueColor: const Color(0xFF00E676),
-                  usedColor: const Color(0xFF00E676),
-                  barColor: const Color(0xFF00E676),
+                  valueColor: AppColors.storagecomparsioncrircle,
+                  usedColor: AppColors.storagecomparsioncrircle,
+                  barColor: AppColors.storagecomparsioncrircle,
                 ),
               ),
             ],
@@ -240,7 +237,7 @@ class _StorageColumn extends StatelessWidget {
           SizedBox(height: getHeight(2)),
 
           Text(
-            'used',
+            AppText.usedtext,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(8),
               color: usedColor,

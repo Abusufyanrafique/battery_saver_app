@@ -2,6 +2,7 @@ import 'package:battery_saver_app/bloc/clean_background_bloc/clean_background_bl
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class AppsRunningInBackgroundWidget extends StatelessWidget {
@@ -29,11 +30,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -51,7 +48,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Apps Running in Background',
+                AppText.appsRunninginBackground,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: getFont(16),
                   fontWeight: FontWeight.w600,
@@ -61,7 +58,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
               GestureDetector(
                 onTap: onToggleAll,
                 child: Text(
-                  allSelected ? 'Deselect All' : 'Select All',
+                  allSelected ? AppText.deselectAll : AppText.selectAll,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontSize: getFont(12),
                     fontWeight: FontWeight.w600,
@@ -94,7 +91,7 @@ class AppsRunningInBackgroundWidget extends StatelessWidget {
                     Padding(
                       padding: EdgeInsets.only(left: getWidth(34)),
                       child: const Divider(
-                        color: Color(0xFF838283),
+                        color: AppColors.dividercolor,
                         height: 1,
                         thickness: 0.5,
                       ),
@@ -128,7 +125,7 @@ class _AppTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: [
-            // ✅ Real icon ya fallback letter
+            //  Real icon ya fallback letter
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: app.iconBytes != null && app.iconBytes!.isNotEmpty

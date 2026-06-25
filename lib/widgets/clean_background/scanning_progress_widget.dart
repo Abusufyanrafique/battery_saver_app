@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 class ScanningProgressWidget extends StatelessWidget {
@@ -24,15 +25,11 @@ class ScanningProgressWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1,
         ),
       ),
@@ -42,7 +39,7 @@ class ScanningProgressWidget extends StatelessWidget {
         children: [
           // Title
           Text(
-            'Scanning Progress',
+            AppText.scanningProgress,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(16),
               fontWeight: FontWeight.w600,

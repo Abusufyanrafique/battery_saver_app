@@ -1,6 +1,7 @@
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
@@ -65,15 +66,11 @@ class PerformanceBoostWidget extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors: AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1.5,
         ),
       ),
@@ -82,7 +79,7 @@ class PerformanceBoostWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Performance Boost',
+            AppText.performanceBoost,
             style: AppTextStyles.bodyMedium.copyWith(
               fontSize: getFont(16),
               fontWeight: FontWeight.w600,
@@ -97,32 +94,32 @@ class PerformanceBoostWidget extends StatelessWidget {
             children: [
               _BoostItem(
                 icon: Icons.rocket_launch_rounded,
-                iconColor: const Color(0xFF00E676),
-                arcColor: const Color(0xFF00E676),
-                title: 'Speed Improved',
+                iconColor: AppColors.storagecomparsioncrircle,
+                arcColor: AppColors.storagecomparsioncrircle,
+                title: AppText.speedImproved,
                 value: speedValue,
-                valueColor: const Color(0xFF00E676),
-                subtitle: 'Performance Boost',
+                valueColor: AppColors.storagecomparsioncrircle,
+                subtitle: AppText.performanceBoosttext,
                 arcRatio: speedRatio,
               ),
               _BoostItem(
                 icon: Icons.memory_rounded,
-                iconColor: const Color(0xFF55D0FF),
-                arcColor: const Color(0xFF55D0FF),
-                title: 'RAM Freed',
+                iconColor: AppColors.checkiconcolor,
+                arcColor: AppColors.checkiconcolor,
+                title: AppText.ramFreed,
                 value: ramValue,
-                valueColor: const Color(0xFF55D0FF),
-                subtitle: 'Memory Boost',
+                valueColor: AppColors.checkiconcolor,
+                subtitle: AppText.memoryBoost,
                 arcRatio: ramRatio,
               ),
               _BoostItem(
                 icon: Icons.battery_charging_full_rounded,
                 iconColor: const Color(0xFF9A3CFF),
                 arcColor: const Color(0xFF9A3CFF),
-                title: 'Battery Saved',
+                title:AppText.batterySaved,
                 value: batteryValue,
                 valueColor: const Color(0xFF9A3CFF),
-                subtitle: 'Extra Battery Life',
+                subtitle: AppText.extraBatteryLife,
                 arcRatio: batteryRatio,
               ),
             ],
