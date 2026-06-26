@@ -78,13 +78,13 @@ class DataUsageScreen extends StatelessWidget {
            SystemUsageWidget(),
            SizedBox(height: getHeight(6),),
            OptimizationSuggestionsWidget(
-  backgroundAppsCount: 6, // ya cubit se real count
-  onOptimize: () async {
-    return await context.read<BatteryStatusCubit>().closeBackgroundAppsAndGetCount();
-  },
-  onViewAll: () {
-    // navigate to full list
-  },
+           backgroundAppsCount: 6, // ya cubit se real count
+           onOptimize: () async {
+           return await context.read<BatteryStatusCubit>().closeBackgroundAppsAndGetCount();
+               },
+         onViewAll: () {
+         // navigate to full list
+         },
 )
             ],
           ),

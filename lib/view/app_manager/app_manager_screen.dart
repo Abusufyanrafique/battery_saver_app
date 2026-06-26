@@ -37,7 +37,7 @@ class _AppManagerBody extends StatelessWidget {
           // ── Loading ───────────────────────────────────────────
           if (state.status == AppManagerStatus.loading) {
             return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF55D0FF)),
+              child: CircularProgressIndicator(color: AppColors.checkiconcolor),
             );
           }
 
@@ -78,16 +78,15 @@ class _AppManagerBody extends StatelessWidget {
 
                 // ── App List ──────────────────────────────────
                 Expanded(
-                  child: AppListContainer(
-                    apps: state.isApkMode
-                        ? state.apkFiles     // ApkFileModel list
-                        : state.installedApps, // RealAppModel list
-                    onToggle: (i) => context
-                        .read<AppManagerBloc>()
-                        .add(AppManagerToggleApp(i)),
-                    isApkMode: state.isApkMode,
-                  ),
-                ),
+  child: AppListContainer(
+    apps: state.isApkMode ? state.apkFiles : state.installedApps,
+    onToggle: (i) => context.read<AppManagerBloc>().add(AppManagerToggleApp(i)),
+    isApkMode: state.isApkMode,
+    onInstall: state.isApkMode
+        ? (path) => context.read<AppManagerBloc>().add(AppManagerInstallApk(path))
+        : null,
+  ),
+),
 
                 SizedBox(height: getHeight(12)),
 

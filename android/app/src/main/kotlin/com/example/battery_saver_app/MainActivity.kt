@@ -659,35 +659,124 @@ MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SCAN_CHANNEL)
         }
 
         // ======== APP SIZE CHANNEL ===========
-        MethodChannel(
-            flutterEngine.dartExecutor.binaryMessenger,
-            "com.example.battery_saver_app/app_size"
-        ).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "getInstalledAppSizes" -> {
-                    Thread {
+      MethodChannel(
+    flutterEngine.dartExecutor.binaryMessenger,
+    "com.example.battery_saver_app/app_size"
+).setMethodCallHandler { call, result ->
+    when (call.method) {
+        "getInstalledAppSizes" -> {
+            Thread {
+                try {
+                    val packageNames = call.argument<List<String>>("packageNames") ?: emptyList()
+                    val sizeMap      = mutableMapOf<String, Double>()
+                    for (pkg in packageNames) {
                         try {
-                            val packageNames = call.argument<List<String>>("packageNames") ?: emptyList()
-                            val sizeMap      = mutableMapOf<String, Double>()
-                            for (pkg in packageNames) {
-                                try {
-                                    val ai      = packageManager.getApplicationInfo(pkg, 0)
-                                    val apkFile = java.io.File(ai.sourceDir)
-                                    sizeMap[pkg] = apkFile.length() / (1024.0 * 1024.0)
-                                } catch (_: Exception) {
-                                    sizeMap[pkg] = 0.0
-                                }
-                            }
-                            runOnUiThread { result.success(sizeMap) }
-                        } catch (e: Exception) {
-                            runOnUiThread { result.error("SIZE_ERROR", e.message, null) }
+                            val ai      = packageManager.getApplicationInfo(pkg, 0)
+                            val apkFile = java.io.File(ai.sourceDir)
+                            sizeMap[pkg] = apkFile.length() / (1024.0 * 1024.0)
+                        } catch (_: Exception) {
+                            sizeMap[pkg] = 0.0
                         }
-                    }.start()
+                    }
+                    runOnUiThread { result.success(sizeMap) }
+                } catch (e: Exception) {
+                    runOnUiThread { result.error("SIZE_ERROR", e.message, null) }
                 }
-                else -> result.notImplemented()
+            }.start()
+        }
+
+        "scanApkFiles" -> {
+            Thread {
+                try {
+                    val apkList = mutableListOf<Map<String, Any>>()
+
+                    val collection = android.provider.MediaStore.Files.getContentUri("external")
+
+                    val projection = arrayOf(
+                        android.provider.MediaStore.Files.FileColumns._ID,
+                        android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME,
+                        android.provider.MediaStore.Files.FileColumns.DATA,
+                        android.provider.MediaStore.Files.FileColumns.SIZE,
+                        android.provider.MediaStore.Files.FileColumns.MIME_TYPE
+                    )
+
+                    val selection = "${android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME} LIKE ?"
+                    val selectionArgs = arrayOf("%.apk")
+
+                    val cursor = contentResolver.query(
+                        collection,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null
+                    )
+
+                    cursor?.use { c ->
+                        val nameCol = c.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME)
+                        val dataCol = c.getColumnIndex(android.provider.MediaStore.Files.FileColumns.DATA)
+                        val sizeCol = c.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns.SIZE)
+                        val idCol   = c.getColumnIndexOrThrow(android.provider.MediaStore.Files.FileColumns._ID)
+
+                        while (c.moveToNext()) {
+                            try {
+                                val name = c.getString(nameCol) ?: continue
+                                if (!name.lowercase().endsWith(".apk")) continue
+
+                                var path = if (dataCol >= 0) c.getString(dataCol) else null
+                                val sizeBytes = c.getLong(sizeCol)
+
+                                if (path.isNullOrEmpty()) {
+                                    val id = c.getLong(idCol)
+                                    path = android.content.ContentUris.withAppendedId(collection, id).toString()
+                                }
+
+                                if (sizeBytes <= 0) continue
+
+                                val map = mutableMapOf<String, Any>()
+                                map["name"] = name
+                                map["path"] = path
+                                map["sizeMB"] = sizeBytes / (1024.0 * 1024.0)
+                                apkList.add(map)
+                            } catch (_: Exception) {
+                                continue
+                            }
+                        }
+                    }
+
+                    runOnUiThread { result.success(apkList) }
+                } catch (e: Exception) {
+                    runOnUiThread { result.error("APK_SCAN_ERROR", e.message, null) }
+                }
+            }.start()
+        }
+
+        "installApk" -> {
+            try {
+                val path = call.argument<String>("path") ?: run {
+                    result.error("INVALID_PATH", "Path is null", null)
+                    return@setMethodCallHandler
+                }
+                val file = java.io.File(path)
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    "${packageName}.fileprovider",
+                    file
+                )
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                    setDataAndType(uri, "application/vnd.android.package-archive")
+                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+                result.success(true)
+            } catch (e: Exception) {
+                result.error("INSTALL_ERROR", e.message, null)
             }
         }
 
+        else -> result.notImplemented()
+    }
+}
         // ======== SECURITY SCAN CHANNEL ===========
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,

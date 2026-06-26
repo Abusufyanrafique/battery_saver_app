@@ -10,11 +10,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppUsageItem extends Equatable {
   final String appName;
-  final String usageTime;      // "2h 30m" ya "45m" ya "30s"
-  final int percentage;        // poore din ke total se
+  final String usageTime;      
+  final int percentage;       
   final Color percentageColor;
   final String svgIcon;
-  final double batteryPercent; // estimated battery %
+  final double batteryPercent;
   final VoidCallback? onTap;
 
   const AppUsageItem({
@@ -153,8 +153,8 @@ class BatteryUsageHomeBloc
       );
 
       // ─── DEBUG: Native se kya aa raha hai dekho ───
-      print('🔍 RAW TYPE: ${rawResult.runtimeType}');
-      print('🔍 RAW DATA: $rawResult');
+      print('🔍============= RAW TYPE============: ${rawResult.runtimeType}');
+      print('🔍============ RAW DATA:============= $rawResult');
       // ──────────────────────────────────────────────
 
       // 3. Map ya List — dono cases handle karo

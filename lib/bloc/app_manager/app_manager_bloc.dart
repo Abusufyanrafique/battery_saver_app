@@ -23,7 +23,7 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
     on<AppManagerTabChanged>(_onTabChanged);
     on<AppManagerToggleApp>(_onToggle);
     on<AppManagerUninstallSelected>(_onUninstall);
-    on<AppManagerInstallApk>(_onInstallApk); // ✅ NEW
+    on<AppManagerInstallApk>(_onInstallApk);
   }
 
   Future<int> _getAndroidSdk() async {
@@ -103,7 +103,8 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
       realApps.sort((a, b) => b.sizeMB.compareTo(a.sizeMB));
 
       final apkFiles = await _scanApkFiles();
-
+      debugPrint("=========== APK COUNT ===========");
+      debugPrint("APK Files: ${apkFiles.length}");
       emit(state.copyWith(
         status: AppManagerStatus.success,
         installedApps: realApps,
@@ -118,41 +119,48 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
     }
   }
 
+  /// Calls the native Android side, which uses MediaStore to find .apk
+  /// files — the same mechanism file manager apps use. This is necessary
+  /// because a plain Dart `Directory.listSync()` walk can miss files that
+  /// Android's Scoped Storage (Android 10+) hides from direct filesystem
+  /// access even when MANAGE_EXTERNAL_STORAGE is granted.
   Future<List<ApkFileModel>> _scanApkFiles() async {
-    final List<ApkFileModel> result = [];
+    try {
+      final result = await _appSizeChannel.invokeMethod<List<dynamic>>(
+        'scanApkFiles',
+      );
 
-    final safeDirs = [
-      '/storage/emulated/0/Download',
-      '/storage/emulated/0/Downloads',
-      '/storage/emulated/0/Documents',
-      '/storage/emulated/0/WhatsApp/Media',
-    ];
-
-    for (final path in safeDirs) {
-      final dir = Directory(path);
-      if (!dir.existsSync()) continue;
-      try {
-        final entities = dir.listSync(recursive: false, followLinks: false);
-        for (final entity in entities) {
-          if (entity is File && entity.path.endsWith('.apk')) {
-            try {
-              final sizeMB = entity.lengthSync() / (1024 * 1024);
-              final name = entity.uri.pathSegments.last
-                  .replaceAll('.apk', '')
-                  .replaceAll('_', ' ');
-              result.add(ApkFileModel(
-                name: name,
-                path: entity.path,
-                sizeMB: sizeMB,
-              ));
-            } catch (_) {}
-          }
-        }
-      } catch (_) {
-        continue;
+      if (result == null) {
+        debugPrint('=== [APK scan] native returned null');
+        
+        return [];
       }
+
+      final apkFiles = <ApkFileModel>[];
+      for (final item in result) {
+        try {
+          final map = item as Map;
+          final name = (map['name'] as String?) ?? 'Unknown.apk';
+          final path = (map['path'] as String?) ?? '';
+          final sizeMB = (map['sizeMB'] as num?)?.toDouble() ?? 0.0;
+
+          apkFiles.add(ApkFileModel(
+            name: name.replaceAll(RegExp(r'\.apk$', caseSensitive: false), ''),
+            path: path,
+            sizeMB: sizeMB,
+          ));
+        } catch (e) {
+          debugPrint('=== [APK scan] error parsing entry: $e');
+          continue;
+        }
+      }
+
+      debugPrint('=== [APK scan] total found: ${apkFiles.length}');
+      return apkFiles;
+    } catch (e) {
+      debugPrint('=== [APK scan] native call failed: $e');
+      return [];
     }
-    return result;
   }
 
   void _onTabChanged(
@@ -201,35 +209,32 @@ class AppManagerBloc extends Bloc<AppManagerEvent, AppManagerState> {
     add(const AppManagerLoadApps());
   }
 
-  // NEW: Install APK handler
-  Future<void> _onInstallApk(
-    AppManagerInstallApk event,
-    Emitter<AppManagerState> emit,
-  ) async {
-    try {
-      // Android 8+ ke liye install permission check
-      if (Platform.isAndroid) {
-        final sdkInt = await _getAndroidSdk();
-        if (sdkInt >= 26) {
-          if (!await Permission.requestInstallPackages.isGranted) {
-            final status = await Permission.requestInstallPackages.request();
-            if (!status.isGranted) {
-              debugPrint('=== Install permission denied');
-              return;
-            }
+  // Install APK handler
+ Future<void> _onInstallApk(
+  AppManagerInstallApk event,
+  Emitter<AppManagerState> emit,
+) async {
+  try {
+    if (Platform.isAndroid) {
+      final sdkInt = await _getAndroidSdk();
+      if (sdkInt >= 26) {
+        if (!await Permission.requestInstallPackages.isGranted) {
+          final status = await Permission.requestInstallPackages.request();
+          if (!status.isGranted) {
+            debugPrint('=== Install permission denied');
+            return;
           }
         }
       }
-
-      final intent = AndroidIntent(
-        action: 'android.intent.action.VIEW',
-        data: Uri.file(event.apkPath).toString(),
-        type: 'application/vnd.android.package-archive',
-        flags: [Flag.FLAG_ACTIVITY_NEW_TASK],
-      );
-      await intent.launch();
-    } catch (e) {
-      debugPrint('=== Install APK error: $e');
     }
+
+    // ← Sirf yeh hona chahiye, AndroidIntent bilkul nahi
+    await _appSizeChannel.invokeMethod('installApk', {
+      'path': event.apkPath,
+    });
+
+  } catch (e) {
+    debugPrint('=== Install APK error: $e');
   }
+}
 }

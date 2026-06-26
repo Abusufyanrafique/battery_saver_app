@@ -1,4 +1,4 @@
-import 'package:battery_saver_app/bloc/app_manager/app_manager_bloc.dart'; // ← sirf yeh
+import 'package:battery_saver_app/bloc/app_manager/app_manager_bloc.dart';
 import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 class AppListTile extends StatelessWidget {
   final dynamic app;
   final VoidCallback onToggle;
+  final VoidCallback? onInstall; // ← add karo
   final bool showDivider;
   final bool isApkMode;
 
@@ -15,6 +16,7 @@ class AppListTile extends StatelessWidget {
     super.key,
     required this.app,
     required this.onToggle,
+    this.onInstall, // ← add karo
     this.showDivider = true,
     this.isApkMode = false,
   });
@@ -120,7 +122,7 @@ class AppListTile extends StatelessWidget {
               SizedBox(width: getWidth(8)),
               if (isApkMode) ...[
                 GestureDetector(
-                  onTap: onToggle,
+                  onTap: onInstall, // ← onToggle ki jagah onInstall
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
                     decoration: BoxDecoration(
@@ -138,10 +140,8 @@ class AppListTile extends StatelessWidget {
                   ),
                 ),
                 SizedBox(width: getWidth(4)),
-                const Icon(Icons.more_vert, 
-                color: AppColors.allsmalltextcolor, 
-                size: 20
-                ),
+                const Icon(Icons.more_vert,
+                    color: AppColors.allsmalltextcolor, size: 20),
               ] else ...[
                 GestureDetector(
                   onTap: onToggle,
@@ -150,12 +150,15 @@ class AppListTile extends StatelessWidget {
                     width: getWidth(20),
                     height: getHeight(20),
                     decoration: BoxDecoration(
-                      color: _isSelected ? AppColors.animatedboxcoloractive : Colors.transparent,
-                      border: Border.all(color: AppColors.checkboxbodercolor, width: 1.5),
+                      color: _isSelected
+                          ? AppColors.animatedboxcoloractive
+                          : Colors.transparent,
+                      border: Border.all(
+                          color: AppColors.checkboxbodercolor, width: 1.5),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: _isSelected
-                        ?  Icon(Icons.check, color: AppColors.white, size: 14)
+                        ? Icon(Icons.check, color: AppColors.white, size: 14)
                         : null,
                   ),
                 ),
