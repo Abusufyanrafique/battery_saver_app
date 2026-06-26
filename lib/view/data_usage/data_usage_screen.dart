@@ -1,4 +1,5 @@
 import 'package:battery_saver_app/bloc/battery_status_cubit_usage/battery_status_cubit.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
@@ -17,10 +18,10 @@ class DataUsageScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1035),
+      backgroundColor: AppColors.allscreenBackgroundColor,
       appBar: AppBar(
         leading:  IconButton(
-            onPressed: () => Navigator.maybePop(context),
+            onPressed: () => Navigator.pop(context),
             icon: const Image(
               image: AssetImage(AppImages.chevron),
             ),

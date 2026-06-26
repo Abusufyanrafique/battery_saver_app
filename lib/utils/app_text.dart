@@ -406,5 +406,5 @@ static const String batteryUsage ="Battery Usage";
   static const String profiletext = 'Profile';
   static const String batteryCapacity =  'Battery Capacity';
   static const String designCapacitytext = 'Design Capacity';
- 
+  static const String  cleanSummary =  'Clean Summary';
 }   

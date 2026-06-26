@@ -86,7 +86,7 @@ class _BatterySaverHomeScreenState extends State<BatterySaverHomeScreen> {
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodySmall.copyWith(
                           fontSize: getFont(20),
-                          fontWeight: FontWeight.w600,
+                          // fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

@@ -110,7 +110,7 @@ class CleaningCompleteScreen extends StatelessWidget {
                   style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                     fontSize: getFont(14),
-                    color: const Color(0xFFD9D9D9),
+                    color: AppColors.allsmalltextcolor,
                   ),
                 ),
               ),
@@ -119,7 +119,7 @@ class CleaningCompleteScreen extends StatelessWidget {
 
               // ── Clean Summary heading ──────────────────────────────────────
               Text(
-                'Clean Summary',
+               AppText.cleanSummary,
                 style: AppTextStyles.bodyMedium.copyWith(
                   fontSize: getFont(16),
                   fontWeight: FontWeight.w600,
