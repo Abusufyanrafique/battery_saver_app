@@ -2,6 +2,7 @@ import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_images.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:flutter/material.dart';
 
 import 'base_card.dart';
@@ -28,7 +29,7 @@ class BatteryCapacityCard extends StatelessWidget {
           Row(
             children: [
                Text(
-                'Battery Capacity',
+               AppText.batteryCapacity,
                 style: AppTextStyles.bodySmall.copyWith(
                       fontSize: getFont(16),
                       color: AppColors.textwhitecolor,
@@ -36,7 +37,7 @@ class BatteryCapacityCard extends StatelessWidget {
                     ),
               ),
 
-              const SizedBox(width: 8),
+               SizedBox(width: getWidth(8)),
 
              Image(image: AssetImage(AppImages.lowbattery))
             ],
@@ -45,7 +46,7 @@ class BatteryCapacityCard extends StatelessWidget {
            SizedBox(height: getHeight(12)),
 
           InfoRow(
-            label: 'Design Capacity',
+            label: AppText.designCapacitytext,
             value: designCapacity,
           ),
 
@@ -53,7 +54,7 @@ class BatteryCapacityCard extends StatelessWidget {
            SizedBox(height: getHeight(12)),
 
           InfoRow(
-            label: 'Current Capacity',
+            label: AppText.currentCapacity,
             value: currentCapacity,
           ),
         ],

@@ -401,4 +401,10 @@ static const String batteryUsage ="Battery Usage";
   static const String appsRunninginBackground = 'Apps Running in Background';
   static const String deselectAll = 'Deselect All';
   static const String selectAll = 'Select All';
+  static const String usage = 'Usage';
+  static const String tools = 'Tools';
+  static const String profiletext = 'Profile';
+  static const String batteryCapacity =  'Battery Capacity';
+  static const String designCapacitytext = 'Design Capacity';
+ 
 }   

@@ -26,109 +26,96 @@ class PhoneOptimizerDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     final List<_DrawerItem> _mainItems = [
-    _DrawerItem(
-      AppText.hometext, AppImages.menuhome, 
-      Color(0xFF9A3CFF).withOpacity(0.20),
-      onTap: () {
-  context.push(AppRoutes.home);
-}
-      
-      ),
-    _DrawerItem(
-      AppText.junkCleaner, AppImages.menujunk,
-      Color(0xFF2FE55D).withOpacity(0.20),
-        onTap: () {
-          
-  context.push(AppRoutes.junkCleanerScreen);
-}
-      ),
-    _DrawerItem(
-     AppText.phoneBoost, AppImages.menuphoneboost, 
-      Color(0xFF55D0FF).withOpacity(0.20),
-       onTap: () {
-  context.push(AppRoutes.phoneBoostScreen);
-}
-      ),
-    _DrawerItem(
-      AppText.batterySaver, AppImages.menubatterysaver, 
-      Color(0xFF00FF09).withOpacity(0.20),
-        onTap: () {
-          print("push to battery saver ");
-  context.push(AppRoutes.batterySaverScreen);
-}
-      ),
-    _DrawerItem(
-      AppText.cpuCooler, AppImages.menuCPUCooler, 
-      Color(0xFF1F8EFF).withOpacity(0.20),
-      onTap: () {
-  context.push(AppRoutes.cpuCoolerScreen);
-}
-      ),
-    _DrawerItem(
-      AppText.securityScan, AppImages.menusecurityscan, 
-      Color(0xFF69FF89).withOpacity(0.20),
-       onTap: () {
-          
-  context.push(AppRoutes.securityScanScreen);
-}
-      ),
-    _DrawerItem(
-     AppText.notificationCleaner, AppImages.menunotificationcleaner, 
-      Color(0xFF891BFF).withOpacity(0.20),
-       onTap: () {
-  context.push(AppRoutes.notificationCleanerScreen);
-}
-      ),
-    _DrawerItem(
-      AppText.appManager, AppImages.menuappsmanager, 
-      Color(0xFF37C8FF).withOpacity(0.20),
-       onTap: () {
-  context.push(AppRoutes.appManagerScreen);
-}
-      ),
-    _DrawerItem(
-      AppText.fileManager, AppImages.menufilemanager, 
-      Color(0xFFF3D917).withOpacity(0.20),
-       onTap: () {
-  context.push(AppRoutes.fileManagerScreen);
-}
-      ),
-    _DrawerItem(
-     AppText.dataUsage, AppImages.menudatausage, 
-      Color(0xFF27C3FE).withOpacity(0.20),
-       onTap: () {
-
-  context.push(AppRoutes.tooldataUsageScreen);
-}
-      ),
-  ];
-
+    final List<_DrawerItem> _mainItems = [
+  _DrawerItem(
+    AppText.hometext,
+    AppImages.menuhome,
+    AppColors.drawerHomeColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.home),
+  ),
+  _DrawerItem(
+    AppText.junkCleaner,
+    AppImages.menujunk,
+    AppColors.drawerJunkCleanerColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.junkCleanerScreen),
+  ),
+  _DrawerItem(
+    AppText.phoneBoost,
+    AppImages.menuphoneboost,
+    AppColors.drawerPhoneBoostColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.phoneBoostScreen),
+  ),
+  _DrawerItem(
+    AppText.batterySaver,
+    AppImages.menubatterysaver,
+    AppColors.drawerBatterySaverColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.batterySaverScreen),
+  ),
+  _DrawerItem(
+    AppText.cpuCooler,
+    AppImages.menuCPUCooler,
+    AppColors.drawerCpuCoolerColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.cpuCoolerScreen),
+  ),
+  _DrawerItem(
+    AppText.securityScan,
+    AppImages.menusecurityscan,
+    AppColors.drawerSecurityScanColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.securityScanScreen),
+  ),
+  _DrawerItem(
+    AppText.notificationCleaner,
+    AppImages.menunotificationcleaner,
+    AppColors.drawerNotificationCleanerColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.notificationCleanerScreen),
+  ),
+  _DrawerItem(
+    AppText.appManager,
+    AppImages.menuappsmanager,
+    AppColors.drawerAppManagerColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.appManagerScreen),
+  ),
+  _DrawerItem(
+    AppText.fileManager,
+    AppImages.menufilemanager,
+    AppColors.drawerFileManagerColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.fileManagerScreen),
+  ),
+  _DrawerItem(
+    AppText.dataUsage,
+    AppImages.menudatausage,
+    AppColors.drawerDataUsageColor.withOpacity(0.20),
+    onTap: () => context.push(AppRoutes.tooldataUsageScreen),
+  ),
+];
    final List<_DrawerItem> _bottomItems = [
-    _DrawerItem(
-      AppText.settings, AppImages.menusettings, 
-      Color(0xFF989CDF).withOpacity(0.20), onTap: () {
-    context.push("AppRoutes.settings");
-}
-      ),
-    // ignore: deprecated_member_use
-    _DrawerItem(
-     AppText.feedback,AppImages.menufeedback, 
-      Color(0xFF7075C9).withOpacity(0.20)
-      ),
-    _DrawerItem(
-      AppText.rateUs, AppImages.menurateus, 
-      Color(0xFFFFDD55).withOpacity(0.20)
-      ),
-    _DrawerItem(
-      AppText.shareApp, AppImages.menushareapp, 
-      Color(0xFF989CDF).withOpacity(0.20)
-      ),
-    _DrawerItem(
-      AppText.privacyPolicy, AppImages.menuprivacyPolicy, 
-      Color(0xFF878DF1).withOpacity(0.20)
-      ),
-  ];
+  _DrawerItem(
+    AppText.settings,
+    AppImages.menusettings,
+    AppColors.drawerSettingsColor.withOpacity(0.20),
+    // onTap: () => context.push(AppRoutes.settings),
+  ),
+  _DrawerItem(
+    AppText.feedback,
+    AppImages.menufeedback,
+    AppColors.drawerFeedbackColor.withOpacity(0.20),
+  ),
+  _DrawerItem(
+    AppText.rateUs,
+    AppImages.menurateus,
+    AppColors.drawerRateUsColor.withOpacity(0.20),
+  ),
+  _DrawerItem(
+    AppText.shareApp,
+    AppImages.menushareapp,
+    AppColors.drawerShareAppColor.withOpacity(0.20),
+  ),
+  _DrawerItem(
+    AppText.privacyPolicy,
+    AppImages.menuprivacyPolicy,
+    AppColors.drawerPrivacyPolicyColor.withOpacity(0.20),
+  ),
+];
     return Drawer(
       width: getWidth(270),
 
@@ -178,7 +165,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                   SizedBox(height: getHeight(16)),
                 ],
               ),
             ),
@@ -198,11 +185,7 @@ class PhoneOptimizerDrawer extends StatelessWidget {
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF55D0FF),
-                  Color(0xFF9A3CFF),
-                  Color(0xFF1C2A8F),
-                ],
+                colors: AppColors.drawerHeaderGradient,
               ),
             ),
             child: Container(

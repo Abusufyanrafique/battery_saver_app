@@ -27,6 +27,10 @@ import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import android.os.SystemClock
 import com.example.battery_saver_app.junk.JunkScanner
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 class MainActivity : FlutterActivity() {
 
     private val CPU_CHANNEL            = "com.example.battery_saver_app/cpu_info"
@@ -50,7 +54,9 @@ class MainActivity : FlutterActivity() {
     private val PER_CHANNEL = "com.example.battery_saver_app/battery_health"
     private val MEMORY_INFO_CHANNEL = "com.example.battery_saver_app/memory_info"
     private lateinit var deviceManager: DeviceManager
+    private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
  
+    private lateinit var cleanerNative: CleanerNative
 private val batteryHelper by lazy { BatteryHelper(this) }
 private val brightnessHelper by lazy { BrightnessHelper(this) }
 private val powerSaverHelper by lazy { PowerSaverHelper(this) }
@@ -84,6 +90,15 @@ private val appStatsHelper by lazy { AppStatsHelper() }
         super.configureFlutterEngine(flutterEngine)
          batteryHealthHelper = BatteryHealthHelper(applicationContext)
           deviceManager = DeviceManager(this)
+          cleanerNative = CleanerNative(applicationContext)
+      //=================    cleanbackground =====================
+      MethodChannel(
+    flutterEngine.dartExecutor.binaryMessenger,
+    "com.example.battery_saver_app/cleaner"
+).setMethodCallHandler { call, result ->
+    cleanerNative.handleMethodCall(call, result, activityScope)
+}
+
      //================    clean background======================
       MethodChannel(
         flutterEngine.dartExecutor.binaryMessenger,
@@ -867,6 +882,10 @@ MethodChannel(flutterEngine.dartExecutor.binaryMessenger, SCAN_CHANNEL)
         "totalMem" to memInfo.totalMem,
         "lowMemory" to memInfo.lowMemory
     )
+}
+override fun onDestroy() {
+    super.onDestroy()
+    activityScope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
 }
 //========================== memory info================================
     //   ===========getBatteryTemperature==================

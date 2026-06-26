@@ -91,7 +91,7 @@ class _CleanBackGroundView extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: getFont(20),
-                      color: const Color(0xFF55D0FF),
+                      color: AppColors.checkiconcolor,
                     ),
                   ),
                 ),
@@ -105,7 +105,7 @@ class _CleanBackGroundView extends StatelessWidget {
                     style: AppTextStyles.bodySmall.copyWith(
                       fontWeight: FontWeight.w500,
                       fontSize: getFont(14),
-                      color: const Color(0xFFD9D9D9),
+                      color: AppColors.allsmalltextcolor,
                     ),
                   ),
                 ),
@@ -144,26 +144,22 @@ class _CleanBackGroundView extends StatelessWidget {
                           gradient: const LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFF232C6D),
-                              Color(0xFF1B2153),
-                              Color(0xFF13173A),
-                            ],
+                            colors: AppColors.drawerGradient
                           ),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFF4103AC)),
+                          border: Border.all(color:AppColors.appWidgetBorderColor),
                         ),
                         child: Column(
                           children: [
                             const Icon(Icons.check_circle_outline,
                                 color: Colors.green, size: 60),
-                            const SizedBox(height: 12),
-                            const Text(
+                             SizedBox(height: getHeight(12)),
+                             Text(
                               AppText.nobackgroundAppsFound,
                               style: TextStyle(
-                                fontSize: 18,
+                                fontSize: getFont(18),
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: AppColors.white,
                               ),
                             ),
                           ],
@@ -171,9 +167,7 @@ class _CleanBackGroundView extends StatelessWidget {
                       );
                     }
 
-                    // PhoneBoostBloc ka RunningAppInfo (name, memoryMb) ko
-                    // widget ke expected RunningAppInfo (appName, sizeFormatted,
-                    // packageName, iconBytes) mein convert karo.
+                    
                     final convertedApps = apps
                         .map(
                           (e) => RunningAppInfo(
@@ -206,12 +200,7 @@ class _CleanBackGroundView extends StatelessWidget {
                 SizedBox(height: getHeight(24)),
 
                 // ── Clean Button ──────────────────────────────────
-                // ✅ FIX: Button now triggers BOTH:
-                //   1) CleanBackgroundBloc -> existing cache cleaning flow
-                //   2) PhoneBoostBloc -> stop + clear selected background apps
-                // Once both finish, the "Running Apps" section above will
-                // naturally show "No Background Apps Found" because
-                // PhoneBoostBloc removes the cleaned apps from topApps.
+                
                 BlocBuilder<CleanBackgroundBloc, CleanBackgroundState>(
                   buildWhen: (prev, curr) =>
                       prev.phase != curr.phase ||
@@ -238,7 +227,7 @@ class _CleanBackGroundView extends StatelessWidget {
                                     const PhoneBoostCleanSelectedEvent(),
                                   );
                             }
-                          : null, // cleanReady ke ilawa har phase mein disabled
+                          : null, 
                     );
                   },
                 ),

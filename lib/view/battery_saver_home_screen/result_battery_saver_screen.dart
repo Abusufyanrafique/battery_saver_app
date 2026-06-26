@@ -54,7 +54,7 @@ class ResultBatterySaverScreen extends StatelessWidget {
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(20),
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF55D0FF),
+                        color: AppColors.checkiconcolor,
                       ),
                     ),
                   ),
@@ -68,7 +68,7 @@ class ResultBatterySaverScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall.copyWith(
                         fontSize: getFont(14),
-                        color: const Color(0xFFD9D9D9),
+                        color: AppColors.allsmalltextcolor,
                       ),
                     ),
                   ),
@@ -89,8 +89,8 @@ class ResultBatterySaverScreen extends StatelessWidget {
                     text: AppText.done,
                     onPressed: () {
                       context
-                          .read<BatterySaverHomeBloc>()
-                          .add(const DeactivateBatterySaver());
+                          .read<BatterySaverHomeBloc>();
+                          // .add(const DeactivateBatterySaver());
                       Navigator.pop(context);
                     },
                   ),

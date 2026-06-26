@@ -347,5 +347,60 @@ static const List<Color> rainbowGradientColors = [
   const Color(0xFFAA00FF),
   const Color(0xFFFF5722),
 ];
+static const bottomsheetcolor =  Color(0xFF181C3B);
+static const bottomsheetbackground =  Color(0xFF0E112F);
+static const bottomsheetcolorl =  Color(0xFF6C2BD9);
+// ======================
+// Drawer Colors
+// ======================
+
+// Drawer Background
+static const List<Color> drawerBackgroundGradient = [
+  Color(0xFF0F1738),
+  Color(0xFF1A2557),
+];
+
+// Drawer Menu Icon Backgrounds
+static const Color drawerHomeColor = Color(0xFF9A3CFF);
+static const Color drawerJunkCleanerColor = Color(0xFF2FE55D);
+static const Color drawerPhoneBoostColor = Color(0xFF55D0FF);
+static const Color drawerBatterySaverColor = Color(0xFF00FF09);
+static const Color drawerCpuCoolerColor = Color(0xFF1F8EFF);
+static const Color drawerSecurityScanColor = Color(0xFF69FF89);
+static const Color drawerNotificationCleanerColor = Color(0xFF891BFF);
+static const Color drawerAppManagerColor = Color(0xFF37C8FF);
+static const Color drawerFileManagerColor = Color(0xFFF3D917);
+static const Color drawerDataUsageColor = Color(0xFF27C3FE);
+
+// Drawer Bottom Menu
+static const Color drawerSettingsColor = Color(0xFF989CDF);
+static const Color drawerFeedbackColor = Color(0xFF7075C9);
+static const Color drawerRateUsColor = Color(0xFFFFDD55);
+static const Color drawerShareAppColor = Color(0xFF989CDF);
+static const Color drawerPrivacyPolicyColor = Color(0xFF878DF1);
+
+// Drawer Divider
+static const Color drawerDividerColor = Color(0xFF373C62);
+
+// Drawer Header Border Gradient
+static const List<Color> drawerHeaderGradient = [
+  Color(0xFF55D0FF),
+  Color(0xFF9A3CFF),
+  Color(0xFF1C2A8F),
+];
+
+// Drawer Arrow
+static const Color drawerArrowColor = Color(0xFF989CDF);
+
+// Drawer Text
+static const Color drawerTextColor = Colors.white;
+
+// Drawer Selected Tile
+static const Color drawerSelectedTop = Color(0xFF2A356F);
+static const Color drawerSelectedMiddle = Color(0xFF253263);
+static const Color drawerSelectedBottom = Color(0xFF1D264D);
+
+// Drawer Small Text
+static const Color drawerSmallTextColor = Color(0xFF989CDF);
 }
 

@@ -153,14 +153,10 @@ class CleaningCompleteScreen extends StatelessWidget {
                     gradient: const LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF232C6D),
-                        Color(0xFF1B2153),
-                        Color(0xFF13173A),
-                      ],
+                      colors:AppColors.drawerGradient
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFF4103AC)),
+                    border: Border.all(color: AppColors.appWidgetBorderColor),
                   ),
                   child: Column(
                     children: cleanedApps.map((app) {

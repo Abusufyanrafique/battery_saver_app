@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:battery_plus/battery_plus.dart';
+import 'package:disk_space_plus/disk_space_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:system_info2/system_info2.dart';
 
 enum CleanPhase { idle, scanning, cleanReady, cleaning, completed }
+
+const _kCleanerChannel = MethodChannel('com.example.battery_saver_app/cleaner');
+const _kDeviceInfoChannel = MethodChannel('device_info/battery');
 
 // ═══════════════════════════════════
 // MODELS
@@ -16,21 +22,26 @@ class RunningAppInfo {
   final String packageName;
   final String appName;
   final String sizeFormatted;
+  final int cacheBytes; // real, from StorageStatsManager. -1 = unmeasurable, 0 = default/unknown source.
+  final bool recentlyUsed;
   final Uint8List? iconBytes;
 
   const RunningAppInfo({
     required this.packageName,
     required this.appName,
     required this.sizeFormatted,
+    this.cacheBytes = 0,
+    this.recentlyUsed = false,
     this.iconBytes,
   });
 }
 
+
 class CleanResultData {
-  final String junkRemoved;
-  final String appsClosed;
-  final String cacheCleared;
-  final String residualFiles;
+  final String junkRemoved; // real: own app's temp dir delta
+  final String appsClosed; // real: count actually attempted via trimBackgroundApps
+  final String cacheCleared; // real: sum of selected apps' real cacheBytes (FOUND, not force-deleted)
+  final String residualFiles; // real: own app's leftover orphaned files (.tmp/.log/.bak), NOT a fake formula
   final double beforeGB;
   final double afterGB;
   final double totalGB;
@@ -54,17 +65,38 @@ class CleanResultData {
         afterGB: 0,
         totalGB: 0,
       );
+
+  CleanResultData copyWith({
+    String? junkRemoved,
+    String? appsClosed,
+    String? cacheCleared,
+    String? residualFiles,
+    double? beforeGB,
+    double? afterGB,
+    double? totalGB,
+  }) {
+    return CleanResultData(
+      junkRemoved: junkRemoved ?? this.junkRemoved,
+      appsClosed: appsClosed ?? this.appsClosed,
+      cacheCleared: cacheCleared ?? this.cacheCleared,
+      residualFiles: residualFiles ?? this.residualFiles,
+      beforeGB: beforeGB ?? this.beforeGB,
+      afterGB: afterGB ?? this.afterGB,
+      totalGB: totalGB ?? this.totalGB,
+    );
+  }
 }
 
+
 class PerformanceData {
-  final String speedImproved;
-  final String ramFreed;
-  final String batterySaved;
+  final String speedImproved; // intentionally '' — no real metric exists
+  final String ramFreed; // real, from SysInfo before/after delta
+  final String batterySaved; // real estimate, same pattern as OptimizationBloc
 
   const PerformanceData({
-    required this.speedImproved,
-    required this.ramFreed,
-    required this.batterySaved,
+    this.speedImproved = '',
+    this.ramFreed = '',
+    this.batterySaved = '',
   });
 }
 
@@ -106,6 +138,11 @@ class CleanAgainEvent extends CleanBackgroundEvent {
   const CleanAgainEvent();
 }
 
+/// User ko Settings se wapas aane ke baad permission re-check karne ke liye.
+class RecheckPermissionEvent extends CleanBackgroundEvent {
+  const RecheckPermissionEvent();
+}
+
 // ═══════════════════════════════════
 // STATE
 // ═══════════════════════════════════
@@ -117,13 +154,13 @@ class CleanBackgroundState extends Equatable {
   final List<bool> appsSelected;
   final bool allSelected;
   final CleanResultData? cleanResult;
+  final CleanResultData? finalCleanResult;
   final PerformanceData? performanceData;
-  final int freeRamKbBeforeCleaning;
-
-  // Jo apps actually clean/remove hui unki real list (summary screen ke liye)
   final List<RunningAppInfo> cleanedApps;
 
-  final CleanResultData? finalCleanResult;
+  /// false = Usage Access permission missing. UI should show a prompt
+  /// instead of silently showing an empty/wrong list.
+  final bool permissionGranted;
 
   const CleanBackgroundState({
     required this.phase,
@@ -132,10 +169,10 @@ class CleanBackgroundState extends Equatable {
     required this.appsSelected,
     required this.allSelected,
     this.cleanResult,
-    this.performanceData,
-    this.freeRamKbBeforeCleaning = 0,
-    this.cleanedApps = const [],
     this.finalCleanResult,
+    this.performanceData,
+    this.cleanedApps = const [],
+    this.permissionGranted = true,
   });
 
   factory CleanBackgroundState.initial() => const CleanBackgroundState(
@@ -145,10 +182,10 @@ class CleanBackgroundState extends Equatable {
         appsSelected: [],
         allSelected: false,
         cleanResult: null,
-        performanceData: null,
-        freeRamKbBeforeCleaning: 0,
-        cleanedApps: [],
         finalCleanResult: null,
+        performanceData: null,
+        cleanedApps: [],
+        permissionGranted: true,
       );
 
   CleanBackgroundState copyWith({
@@ -158,10 +195,10 @@ class CleanBackgroundState extends Equatable {
     List<bool>? appsSelected,
     bool? allSelected,
     CleanResultData? cleanResult,
-    PerformanceData? performanceData,
-    int? freeRamKbBeforeCleaning,
-    List<RunningAppInfo>? cleanedApps,
     CleanResultData? finalCleanResult,
+    PerformanceData? performanceData,
+    List<RunningAppInfo>? cleanedApps,
+    bool? permissionGranted,
   }) {
     return CleanBackgroundState(
       phase: phase ?? this.phase,
@@ -170,11 +207,10 @@ class CleanBackgroundState extends Equatable {
       appsSelected: appsSelected ?? this.appsSelected,
       allSelected: allSelected ?? this.allSelected,
       cleanResult: cleanResult ?? this.cleanResult,
-      performanceData: performanceData ?? this.performanceData,
-      freeRamKbBeforeCleaning:
-          freeRamKbBeforeCleaning ?? this.freeRamKbBeforeCleaning,
-      cleanedApps: cleanedApps ?? this.cleanedApps,
       finalCleanResult: finalCleanResult ?? this.finalCleanResult,
+      performanceData: performanceData ?? this.performanceData,
+      cleanedApps: cleanedApps ?? this.cleanedApps,
+      permissionGranted: permissionGranted ?? this.permissionGranted,
     );
   }
 
@@ -186,10 +222,10 @@ class CleanBackgroundState extends Equatable {
         appsSelected,
         allSelected,
         cleanResult,
-        performanceData,
-        freeRamKbBeforeCleaning,
-        cleanedApps,
         finalCleanResult,
+        performanceData,
+        cleanedApps,
+        permissionGranted,
       ];
 }
 
@@ -200,17 +236,26 @@ class CleanBackgroundState extends Equatable {
 class CleanBackgroundBloc
     extends Bloc<CleanBackgroundEvent, CleanBackgroundState> {
   Timer? _scanTimer;
-  Timer? _cleaningTimer; 
+  Timer? _cleaningTimer;
   final Battery _battery = Battery();
-  static const _channel =
-      MethodChannel('com.example.battery_saver_app/device');
 
-  // Bytes -> GB ke liye sahi divisor (1024^3)
   static const double _bytesToGB = 1024 * 1024 * 1024;
 
   List<RunningAppInfo> _realApps = [];
-  int _totalRamBytes = 0;
-  int _usedRamBytesSnap = 0;
+
+  // Real before/after snapshots — same honest pattern as OptimizationBloc.
+  int? _ramFreeBeforeBytes;
+  int? _currentNowMicroABefore;
+  int? _currentNowMicroAAfter;
+  double? _batteryCapacityMAh;
+  double? _diskFreeBeforeMB;
+  double? _diskTotalMB;
+
+  // Real PREVIEW sizes — measured (not deleted) during scanning, so the
+  // scan screen can show a real number instead of '—'. Actual delete still
+  // only happens in _onStartCleaning.
+  double _junkPreviewMB = 0;
+  double _residualPreviewMB = 0;
 
   CleanBackgroundBloc() : super(CleanBackgroundState.initial()) {
     on<StartScanningEvent>(_onStartScanning);
@@ -218,8 +263,42 @@ class CleanBackgroundBloc
     on<ToggleAppSelectionEvent>(_onToggleApp);
     on<ToggleSelectAllAppsEvent>(_onToggleAll);
     on<StartCleaningEvent>(_onStartCleaning);
-    on<_CleaningTickEvent>(_onCleaningTick); // ✅ NEW
+    on<_CleaningTickEvent>(_onCleaningTick);
     on<CleanAgainEvent>(_onCleanAgain);
+    on<RecheckPermissionEvent>(_onRecheckPermission);
+  }
+
+  // ═══════════════════════════
+  // PERMISSION HELPERS
+  // ═══════════════════════════
+
+  Future<bool> _hasUsageAccess() async {
+    try {
+      final granted =
+          await _kCleanerChannel.invokeMethod<bool>('hasUsageAccessPermission');
+      return granted ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Settings page kholta hai — user manually permission grant karega.
+  /// UI se yeh call karo jab permissionGranted == false ho.
+  Future<void> openUsageAccessSettings() async {
+    try {
+      await _kCleanerChannel.invokeMethod('openUsageAccessSettings');
+    } catch (_) {}
+  }
+
+  Future<void> _onRecheckPermission(
+    RecheckPermissionEvent event,
+    Emitter<CleanBackgroundState> emit,
+  ) async {
+    final granted = await _hasUsageAccess();
+    emit(state.copyWith(permissionGranted: granted));
+    if (granted && state.phase == CleanPhase.idle) {
+      add(const StartScanningEvent());
+    }
   }
 
   // ═══════════════════════════
@@ -231,42 +310,100 @@ class CleanBackgroundBloc
     Emitter<CleanBackgroundState> emit,
   ) async {
     _cancelTimers();
-
     _realApps = [];
-    _totalRamBytes = 0;
-    _usedRamBytesSnap = 0;
 
-    emit(CleanBackgroundState.initial().copyWith(
-      phase: CleanPhase.scanning,
-    ));
+    emit(CleanBackgroundState.initial().copyWith(phase: CleanPhase.scanning));
+
+    // ── Real disk + RAM baseline (needed for the result screen later) ──
+    try {
+      final diskSpace = DiskSpacePlus();
+      _diskFreeBeforeMB = (await diskSpace.getFreeDiskSpace) ?? 0;
+      _diskTotalMB = (await diskSpace.getTotalDiskSpace) ?? 1;
+    } catch (_) {
+      _diskFreeBeforeMB = null;
+      _diskTotalMB = null;
+    }
 
     try {
-      _totalRamBytes = SysInfo.getTotalPhysicalMemory();
-      final freeBytes = SysInfo.getFreePhysicalMemory();
-      _usedRamBytesSnap = _totalRamBytes - freeBytes;
-    } catch (_) {}
+      _ramFreeBeforeBytes = SysInfo.getFreePhysicalMemory();
+    } catch (_) {
+      _ramFreeBeforeBytes = null;
+    }
+
+    // ── Real PREVIEW of junk + residual size — measured, NOT deleted yet.
+    // This lets the scanning screen show a real number (matching the
+    // screenshot's "Junk Files 512 MB" / "Residual Files 102 MB" cards)
+    // instead of '—'. Actual deletion still happens only on Clean Now. ──
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final tempBytes = await _dirSizeBytes(tempDir);
+      _junkPreviewMB = tempBytes / (1024 * 1024);
+    } catch (_) {
+      _junkPreviewMB = 0;
+    }
 
     try {
-      final List result = await _channel.invokeMethod('getRunningApps');
+      final docsDir = await getApplicationDocumentsDirectory();
+      _residualPreviewMB = await _orphanedFilesSizeBytes(docsDir) / (1024 * 1024);
+    } catch (_) {
+      _residualPreviewMB = 0;
+    }
 
-      _realApps = result.map((e) {
-        final map = Map<String, dynamic>.from(e);
+    // ── Real current-draw baseline for the battery-saved estimate ──
+    try {
+      final dynamic raw =
+          await _kDeviceInfoChannel.invokeMethod('getBatteryPowerInfo');
+      final map = Map<String, dynamic>.from(raw as Map);
+      _currentNowMicroABefore = (map['currentNowMicroA'] as num?)?.toInt();
+      final chargeCounterMicroAh =
+          (map['chargeCounterMicroAh'] as num?)?.toDouble();
+      _batteryCapacityMAh =
+          chargeCounterMicroAh != null ? chargeCounterMicroAh / 1000.0 : null;
+    } catch (_) {
+      _currentNowMicroABefore = null;
+      _batteryCapacityMAh = null;
+    }
 
-        final sizeMb = (map['sizeMb'] as num).toDouble();
-        final sizeStr = sizeMb >= 1024
-            ? '${(sizeMb / 1024).toStringAsFixed(1)} GB'
-            : '${sizeMb.toStringAsFixed(0)} MB';
+    // ── Real app + cache scan ──
+    final hasPermission = await _hasUsageAccess();
+    if (!hasPermission) {
+      emit(state.copyWith(
+        phase: CleanPhase.cleanReady,
+        permissionGranted: false,
+        runningApps: [],
+        appsSelected: [],
+      ));
+      return;
+    }
+
+    try {
+      final dynamic raw =
+          await _kCleanerChannel.invokeMethod('getRunningAppsWithRealCache');
+      final map = Map<String, dynamic>.from(raw as Map);
+      final List apps = (map['apps'] as List?) ?? [];
+
+      _realApps = apps.map((e) {
+        final m = Map<String, dynamic>.from(e);
+        final cacheBytes = (m['cacheBytes'] as num?)?.toInt() ?? 0;
+        final sizeMb = (m['sizeMb'] as num?)?.toDouble() ?? 0.0;
+        final sizeStr = cacheBytes < 0
+            ? 'N/A'
+            : (sizeMb >= 1024
+                ? '${(sizeMb / 1024).toStringAsFixed(1)} GB'
+                : '${sizeMb.toStringAsFixed(0)} MB');
 
         Uint8List? icon;
-        final raw = map['iconBytes'];
-        if (raw is List && raw.isNotEmpty) {
-          icon = Uint8List.fromList(raw.cast<int>());
+        final rawIcon = m['iconBytes'];
+        if (rawIcon is List && rawIcon.isNotEmpty) {
+          icon = Uint8List.fromList(rawIcon.cast<int>());
         }
 
         return RunningAppInfo(
-          packageName: map['packageName'] ?? '',
-          appName: map['appName'] ?? '',
+          packageName: m['packageName'] ?? '',
+          appName: m['appName'] ?? '',
           sizeFormatted: sizeStr,
+          cacheBytes: cacheBytes,
+          recentlyUsed: m['recentlyUsed'] == true,
           iconBytes: icon,
         );
       }).toList();
@@ -275,8 +412,8 @@ class CleanBackgroundBloc
     }
 
     final selected = List<bool>.filled(_realApps.length, true);
-
     emit(state.copyWith(
+      permissionGranted: true,
       runningApps: _realApps,
       appsSelected: selected,
       allSelected: selected.isNotEmpty && selected.every((e) => e),
@@ -288,7 +425,9 @@ class CleanBackgroundBloc
   }
 
   // ═══════════════════════════
-  // SCAN TICK
+  // SCAN TICK — purely a reveal animation over already-fetched real data.
+  // No numbers are invented here; we just progressively show _realApps
+  // and the REAL summed cache total, growing as more apps "appear".
   // ═══════════════════════════
 
   void _onScanTick(
@@ -296,37 +435,38 @@ class CleanBackgroundBloc
     Emitter<CleanBackgroundState> emit,
   ) {
     final progress = (state.scanProgress + 0.02).clamp(0.0, 1.0);
-
     final count =
         (_realApps.length * progress).ceil().clamp(0, _realApps.length);
-
     final visible = _realApps.take(count).toList();
-
     final selected = List<bool>.filled(visible.length, true);
 
-    final totalRamGB = _totalRamBytes / _bytesToGB;
-    final usedRamGB = _usedRamBytesSnap / _bytesToGB;
+    // Real cumulative cache total of apps revealed so far.
+    final cacheBytesSum = visible
+        .where((a) => a.cacheBytes > 0)
+        .fold<int>(0, (sum, a) => sum + a.cacheBytes);
+    final cacheGB = cacheBytesSum / _bytesToGB;
 
-    final junk = (usedRamGB * progress * 0.2);
-    final cache = (usedRamGB * progress * 0.15);
-    final residual = (usedRamGB * progress * 0.1);
+    final usedRamGB = _ramFreeBeforeBytes != null
+        ? (SysInfo.getTotalPhysicalMemory() - _ramFreeBeforeBytes!) / _bytesToGB
+        : 0.0;
 
     String fmt(double gb) =>
         gb >= 1 ? '${gb.toStringAsFixed(1)} GB' : '${(gb * 1024).toInt()} MB';
 
     final result = CleanResultData(
-      junkRemoved: fmt(junk),
+      // Real preview, revealed proportionally with scan progress —
+      // same real total as will be cleaned, just animated like a reveal.
+      junkRemoved: fmt(_junkPreviewMB / 1024 * progress),
       appsClosed: '${visible.length} Apps',
-      cacheCleared: fmt(cache),
-      residualFiles: fmt(residual),
+      cacheCleared: fmt(cacheGB),
+      residualFiles: fmt(_residualPreviewMB / 1024 * progress),
       beforeGB: usedRamGB,
-      afterGB: (usedRamGB - junk - cache).clamp(0, usedRamGB),
-      totalGB: totalRamGB,
+      afterGB: usedRamGB,
+      totalGB: _diskTotalMB != null ? _diskTotalMB! / 1024 : 0,
     );
 
     if (progress >= 1.0) {
       _cancelScanTimer();
-
       emit(state.copyWith(
         phase: CleanPhase.cleanReady,
         scanProgress: 1.0,
@@ -356,11 +496,7 @@ class CleanBackgroundBloc
     Emitter<CleanBackgroundState> emit,
   ) {
     final list = List<bool>.from(state.appsSelected);
-
-    if (event.index < list.length) {
-      list[event.index] = !list[event.index];
-    }
-
+    if (event.index < list.length) list[event.index] = !list[event.index];
     emit(state.copyWith(
       appsSelected: list,
       allSelected: list.every((e) => e),
@@ -372,7 +508,6 @@ class CleanBackgroundBloc
     Emitter<CleanBackgroundState> emit,
   ) {
     final newVal = !state.allSelected;
-
     emit(state.copyWith(
       allSelected: newVal,
       appsSelected: List<bool>.filled(state.runningApps.length, newVal),
@@ -380,7 +515,7 @@ class CleanBackgroundBloc
   }
 
   // ═══════════════════════════
-  // CLEANING — grid values animate ho ke 0 tak countdown karte hain
+  // CLEANING
   // ═══════════════════════════
 
   Future<void> _onStartCleaning(
@@ -389,8 +524,6 @@ class CleanBackgroundBloc
   ) async {
     _cancelTimers();
 
-    // Step 1: Selected apps ko "removed" list mein nikal lo,
-    //    unselected apps ko remainingApps mein rakho.
     final remainingApps = <RunningAppInfo>[];
     final removedApps = <RunningAppInfo>[];
 
@@ -403,89 +536,103 @@ class CleanBackgroundBloc
       }
     }
 
-    final selectedCount = removedApps.length;
-    final totalScannedCount = state.runningApps.length; // cleaning shuru hone se pehle ka total
-    final freedMb = selectedCount * 50;
+    // ── REAL action: actually call killBackgroundProcesses for selected
+    // apps. attemptedPackages reflects what the OS actually accepted a
+    // call for — not a number we made up. ──
+    List<String> attemptedPackages = [];
+    try {
+      final dynamic raw = await _kCleanerChannel.invokeMethod(
+        'trimBackgroundApps',
+        {'packageNames': removedApps.map((a) => a.packageName).toList()},
+      );
+      attemptedPackages = (raw as List?)?.cast<String>() ?? [];
+    } catch (_) {
+      attemptedPackages = [];
+    }
 
-    final scanResult = state.cleanResult ??
-        CleanResultData(
-          junkRemoved: '0 MB',
-          appsClosed: '$selectedCount Apps',
-          cacheCleared: '0 MB',
-          residualFiles: '0 MB',
-          beforeGB: 0,
-          afterGB: 0,
-          totalGB: 0,
-        );
+    // Give the OS a moment to actually reclaim memory before measuring.
+    await Future.delayed(const Duration(milliseconds: 600));
 
-    final selectionRatio = totalScannedCount > 0
-        ? (selectedCount / totalScannedCount).clamp(0.0, 1.0)
-        : 0.0;
+    // ── Real own-app temp/cache cleanup (the only cache we can actually
+    // delete — other apps' cache cannot be force-cleared without root) ──
+    double junkClearedMB = 0;
+    try {
+      final cacheDir = await _ownTempDir();
+      final before = await _dirSizeBytes(cacheDir);
+      await _clearDir(cacheDir);
+      final after = await _dirSizeBytes(cacheDir);
+      junkClearedMB =
+          (before - after).clamp(0, double.maxFinite).toDouble() / (1024 * 1024);
+    } catch (_) {
+      junkClearedMB = 0;
+    }
 
-    final scanJunkGb = _parseToGB(scanResult.junkRemoved);
-    final scanCacheGb = _parseToGB(scanResult.cacheCleared);
-    final scanResidualGb = _parseToGB(scanResult.residualFiles);
+    // ── Real "residual files" — own app's orphaned leftover files
+    // (.tmp / .log / .bak / .old) inside the app's own documents dir.
+    // This is the ONLY directory we're allowed to scan+delete in; we are
+    // not scanning the whole device (scoped storage forbids that). ──
+    double residualClearedMB = 0;
+    try {
+      final docsDir = await getApplicationDocumentsDirectory();
+      residualClearedMB = await _clearOrphanedFiles(docsDir);
+    } catch (_) {
+      residualClearedMB = 0;
+    }
+
+    // Real cache total of the apps the user selected (FOUND, not deleted —
+    // we are honest that we can't force-clear other apps' cache).
+    final selectedCacheBytes = removedApps
+        .where((a) => a.cacheBytes > 0)
+        .fold<int>(0, (sum, a) => sum + a.cacheBytes);
+    final selectedCacheGB = selectedCacheBytes / _bytesToGB;
+
+    final scanResult = state.cleanResult ?? CleanResultData.zero();
 
     final finalResult = CleanResultData(
-      junkRemoved: _fmtGB(scanJunkGb * selectionRatio),
-      appsClosed: '$selectedCount Apps',
-      cacheCleared: _fmtGB(scanCacheGb * selectionRatio),
-      residualFiles: _fmtGB(scanResidualGb * selectionRatio),
+      junkRemoved: _fmtMB(junkClearedMB),
+      appsClosed: '${attemptedPackages.length} Apps',
+      cacheCleared: _fmtGB(selectedCacheGB),
+      residualFiles: _fmtMB(residualClearedMB),
       beforeGB: scanResult.beforeGB,
-      afterGB: (scanResult.beforeGB -
-              (scanJunkGb * selectionRatio) -
-              (scanCacheGb * selectionRatio))
-          .clamp(0, scanResult.beforeGB),
+      afterGB: scanResult.afterGB,
       totalGB: scanResult.totalGB,
     );
 
-    final startResult = scanResult;
-
-    // Step 3: "cleaning" phase emit karo — list khali, lekin grid abhi
-    //    purani values dikhayega (countdown yahan se start hoga).
-    //    finalCleanResult yahin LOCK ho jata hai — aage kabhi nahi badlega.
     emit(state.copyWith(
       phase: CleanPhase.cleaning,
       runningApps: remainingApps,
       appsSelected: List<bool>.filled(remainingApps.length, false),
       allSelected: false,
-      cleanResult: startResult,
+      cleanResult: scanResult,
       cleanedApps: removedApps,
       finalCleanResult: finalResult,
     ));
 
-    // Step 4: Countdown animation — startResult se 0 tak, ~14 steps
-    //    (80ms * 14 ≈ 1.1s, jo overall cleaning delay ke barabar hai)
+    // ── Countdown animation — purely visual, counting down from the real
+    // finalResult numbers to 0. No new fake data introduced here. ──
     const totalSteps = 14;
     const stepDuration = Duration(milliseconds: 80);
-
-    final startJunkGb = _parseToGB(startResult.junkRemoved);
-    final startCacheGb = _parseToGB(startResult.cacheCleared);
-    final startResidualGb = _parseToGB(startResult.residualFiles);
-    final startAppsCount = selectedCount; // apps count bhi 0 tak girega
+    final startCacheGb = selectedCacheGB;
+    final startJunkMb = junkClearedMB;
+    final startResidualMb = residualClearedMB;
+    final startAppsCount = attemptedPackages.length;
 
     int step = 0;
-
     final completer = Completer<void>();
 
     _cleaningTimer = Timer.periodic(stepDuration, (timer) {
       step++;
       final remainingRatio = (1 - (step / totalSteps)).clamp(0.0, 1.0);
-
       final stepResult = CleanResultData(
-        junkRemoved: _fmtGB(startJunkGb * remainingRatio),
+        junkRemoved: _fmtMB(startJunkMb * remainingRatio),
         appsClosed: '${(startAppsCount * remainingRatio).round()} Apps',
         cacheCleared: _fmtGB(startCacheGb * remainingRatio),
-        residualFiles: _fmtGB(startResidualGb * remainingRatio),
-        beforeGB: startResult.beforeGB,
-        afterGB: startResult.afterGB,
-        totalGB: startResult.totalGB,
+        residualFiles: _fmtMB(startResidualMb * remainingRatio),
+        beforeGB: scanResult.beforeGB,
+        afterGB: scanResult.afterGB,
+        totalGB: scanResult.totalGB,
       );
-
-      if (!isClosed) {
-        add(_CleaningTickEvent(stepResult));
-      }
-
+      if (!isClosed) add(_CleaningTickEvent(stepResult));
       if (step >= totalSteps) {
         timer.cancel();
         _cleaningTimer = null;
@@ -494,35 +641,92 @@ class CleanBackgroundBloc
     });
 
     await completer.future;
-
     if (isClosed) return;
 
-    // Step 5: Final zero state — guarantee ke sab 0 ho (rounding errors avoid)
-    emit(state.copyWith(
-      cleanResult: CleanResultData.zero().copyWith(
-        appsClosed: '0 Apps',
-      ),
-    ));
-
-    // Chota sa pause taake user "0" state dekh sake before navigation
+    emit(state.copyWith(cleanResult: CleanResultData.zero()));
     await Future.delayed(const Duration(milliseconds: 400));
-
     if (isClosed) return;
 
-    // Step 6: "completed" emit karo — listener navigation trigger karega
+    // ── Real RAM-freed measurement (after/before delta) ──
+    // Empty string = couldn't measure (honest), NOT a fabricated number.
+    String ramFreedText = '';
+    try {
+      final ramAfterBytes = SysInfo.getFreePhysicalMemory();
+      if (_ramFreeBeforeBytes != null) {
+        final freedBytes = ramAfterBytes - _ramFreeBeforeBytes!;
+        final freedMB = freedBytes > 0 ? freedBytes / (1024 * 1024) : 0.0;
+        ramFreedText = '+${_fmtMB(freedMB)}';
+      }
+    } catch (_) {
+      ramFreedText = '';
+    }
+
+    // ── Real battery-saved estimate (same honest pattern as
+    // OptimizationBloc — empty if we can't measure it, never guessed) ──
+    String batterySavedText = '';
+    try {
+      final dynamic raw =
+          await _kDeviceInfoChannel.invokeMethod('getBatteryPowerInfo');
+      final map = Map<String, dynamic>.from(raw as Map);
+      _currentNowMicroAAfter = (map['currentNowMicroA'] as num?)?.toInt();
+
+      if (_currentNowMicroABefore != null &&
+          _currentNowMicroAAfter != null &&
+          _batteryCapacityMAh != null &&
+          _batteryCapacityMAh! > 0) {
+        final beforeMicroA = _currentNowMicroABefore!.abs();
+        final afterMicroA = _currentNowMicroAAfter!.abs();
+        final drawReductionMicroA = beforeMicroA - afterMicroA;
+
+        if (drawReductionMicroA > 0 && afterMicroA > 0) {
+          final beforeMA = beforeMicroA / 1000.0;
+          final afterMA = afterMicroA / 1000.0;
+          final hoursBefore = _batteryCapacityMAh! / beforeMA;
+          final hoursAfter = _batteryCapacityMAh! / afterMA;
+          final extraHours = (hoursAfter - hoursBefore).clamp(0.0, 24.0);
+          if (extraHours > 0.01) {
+            final h = extraHours.floor();
+            final m = ((extraHours - h) * 60).round();
+            batterySavedText = m > 0 ? '+${h}h ${m}m' : '+${h}h';
+          }
+        }
+      }
+    } catch (_) {
+      batterySavedText = '';
+    }
+
+    // Real disk space after — for the Storage Comparison card.
+    double? diskFreeAfterMB;
+    try {
+      final diskSpace = DiskSpacePlus();
+      diskFreeAfterMB = (await diskSpace.getFreeDiskSpace) ?? 0;
+    } catch (_) {
+      diskFreeAfterMB = null;
+    }
+
+    final updatedFinalResult = (diskFreeAfterMB != null && _diskTotalMB != null)
+        ? finalResult.copyWith(
+            beforeGB: _diskFreeBeforeMB != null
+                ? (_diskTotalMB! - _diskFreeBeforeMB!) / 1024
+                : finalResult.beforeGB,
+            afterGB: (_diskTotalMB! - diskFreeAfterMB) / 1024,
+            totalGB: _diskTotalMB! / 1024,
+          )
+        : finalResult;
+
     emit(state.copyWith(
       phase: CleanPhase.completed,
+      // speedImproved intentionally left at default '' — no real metric
+      // exists for it; the UI's own estimate fallback handles display.
       performanceData: PerformanceData(
-        speedImproved: '+25%',
-        ramFreed: '+${(freedMb / 1024).toStringAsFixed(2)} GB',
-        batterySaved: '+40m',
+        ramFreed: ramFreedText,
+        batterySaved: batterySavedText,
       ),
       cleanedApps: removedApps,
-      finalCleanResult: finalResult,
+      finalCleanResult: updatedFinalResult,
     ));
   }
 
- 
   void _onCleaningTick(
     _CleaningTickEvent event,
     Emitter<CleanBackgroundState> emit,
@@ -543,18 +747,97 @@ class CleanBackgroundBloc
   // HELPERS
   // ═══════════════════════════
 
-  static double _parseToGB(String formatted) {
-    final clean = formatted.trim();
-    if (clean.endsWith('GB')) {
-      return double.tryParse(clean.replaceAll('GB', '').trim()) ?? 0.0;
-    } else if (clean.endsWith('MB')) {
-      final mb = double.tryParse(clean.replaceAll('MB', '').trim()) ?? 0.0;
-      return mb / 1024;
-    }
-    return 0.0;
+  Future<Directory> _ownTempDir() async {
+    // Apni app ka real temp/cache directory — yahi delete karna safe aur
+    // legal hai (doosri apps ka cache force-clear NAHI ho sakta).
+    return await getTemporaryDirectory();
   }
 
-  static String _fmtGB(double gb) =>
+  Future<int> _dirSizeBytes(Directory dir) async {
+    int total = 0;
+    try {
+      if (dir.existsSync()) {
+        await for (final e in dir.list(recursive: true, followLinks: false)) {
+          if (e is File) total += await e.length();
+        }
+      }
+    } catch (_) {}
+    return total;
+  }
+
+  /// Real "preview" version: measures orphaned files' total size WITHOUT
+  /// deleting anything. Used during scanning so the scan screen can show a
+  /// real number; actual deletion happens later via _clearOrphanedFiles.
+  Future<int> _orphanedFilesSizeBytes(Directory dir) async {
+    const orphanExtensions = ['.tmp', '.log', '.bak', '.old'];
+    int totalBytes = 0;
+    try {
+      if (dir.existsSync()) {
+        await for (final e in dir.list(recursive: true, followLinks: false)) {
+          if (e is File) {
+            final path = e.path.toLowerCase();
+            final isOrphan = orphanExtensions.any((ext) => path.endsWith(ext));
+            if (isOrphan) {
+              try {
+                totalBytes += await e.length();
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    return totalBytes;
+  }
+
+  /// Real residual-files cleanup: deletes orphaned leftover files
+  /// (.tmp / .log / .bak / .old) inside the app's OWN documents directory
+  /// only. Returns the actual MB freed. We never scan or touch other apps'
+  /// storage — scoped storage forbids that, and we don't fake the number.
+  Future<double> _clearOrphanedFiles(Directory dir) async {
+    const orphanExtensions = ['.tmp', '.log', '.bak', '.old'];
+    int freedBytes = 0;
+    try {
+      if (dir.existsSync()) {
+        await for (final e in dir.list(recursive: true, followLinks: false)) {
+          if (e is File) {
+            final path = e.path.toLowerCase();
+            final isOrphan = orphanExtensions.any((ext) => path.endsWith(ext));
+            if (isOrphan) {
+              try {
+                final size = await e.length();
+                await e.delete();
+                freedBytes += size;
+              } catch (_) {}
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    return freedBytes / (1024 * 1024);
+  }
+
+  Future<void> _clearDir(Directory dir) async {
+    try {
+      if (dir.existsSync()) {
+        await for (final e in dir.list(recursive: false, followLinks: false)) {
+          try {
+            if (e is File) {
+              await e.delete();
+            } else if (e is Directory) {
+              await e.delete(recursive: true);
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  }
+
+  String _fmtMB(double mb) {
+    if (mb >= 1024) return '${(mb / 1024).toStringAsFixed(1)} GB';
+    return '${mb.toStringAsFixed(0)} MB';
+  }
+
+  String _fmtGB(double gb) =>
       gb >= 1 ? '${gb.toStringAsFixed(1)} GB' : '${(gb * 1024).toInt()} MB';
 
   void _cancelScanTimer() {
@@ -573,28 +856,5 @@ class CleanBackgroundBloc
   Future<void> close() {
     _cancelTimers();
     return super.close();
-  }
-}
-
-// ✅ NEW: CleanResultData ke liye chota copyWith helper (zero() ke sath use ke liye)
-extension on CleanResultData {
-  CleanResultData copyWith({
-    String? junkRemoved,
-    String? appsClosed,
-    String? cacheCleared,
-    String? residualFiles,
-    double? beforeGB,
-    double? afterGB,
-    double? totalGB,
-  }) {
-    return CleanResultData(
-      junkRemoved: junkRemoved ?? this.junkRemoved,
-      appsClosed: appsClosed ?? this.appsClosed,
-      cacheCleared: cacheCleared ?? this.cacheCleared,
-      residualFiles: residualFiles ?? this.residualFiles,
-      beforeGB: beforeGB ?? this.beforeGB,
-      afterGB: afterGB ?? this.afterGB,
-      totalGB: totalGB ?? this.totalGB,
-    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class BaseCard extends StatelessWidget {
@@ -23,15 +24,11 @@ class BaseCard extends StatelessWidget {
          gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF232C6D),
-            Color(0xFF1B2153),
-            Color(0xFF13173A),
-          ],
+          colors:AppColors.drawerGradient
         ),
         borderRadius: BorderRadius.circular(12),
           border: Border.all(
-          color: const Color(0xFF4103AC),
+          color: AppColors.appWidgetBorderColor,
           width: 1,
         ),
       ),

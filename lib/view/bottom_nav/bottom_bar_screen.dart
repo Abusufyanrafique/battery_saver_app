@@ -1,7 +1,9 @@
 import 'package:battery_saver_app/bloc/Nav_bar/nav_cubit.dart';
+import 'package:battery_saver_app/configs/colors/app_colors.dart';
 import 'package:battery_saver_app/configs/text_style/text_style.dart';
 import 'package:battery_saver_app/utils/SizeConfig.dart';
 import 'package:battery_saver_app/utils/app_icons.dart';
+import 'package:battery_saver_app/utils/app_text.dart';
 import 'package:battery_saver_app/view/data_usage/data_usage_screen.dart';
 import 'package:battery_saver_app/view/home/app_home_screen.dart';
 import 'package:battery_saver_app/view/profile/profile_screen.dart';
@@ -46,7 +48,7 @@ class BottomBarScreen extends StatelessWidget {
           width: getWidth(40),
           height: getHeight(40),
           colorFilter: const ColorFilter.mode(
-            Colors.white,
+            AppColors.white,
             BlendMode.srcIn,
           ),
         ),
@@ -67,9 +69,9 @@ class BottomBarScreen extends StatelessWidget {
           return Scaffold(
             body: pages[selectedIndex],
             bottomNavigationBar: CurvedNavigationBar(
-              color: const Color(0xFF181C3B),
-              backgroundColor: const Color(0xFF0E112F),
-              buttonBackgroundColor: const Color(0xFF6C2BD9),
+              color: AppColors.bottomsheetcolor,
+              backgroundColor: AppColors.bottomsheetbackground,
+              buttonBackgroundColor: AppColors.bottomsheetcolorl,
               index: selectedIndex, // sync bar with cubit state
               items: [
                 CurvedNavigationBarItem(
@@ -79,10 +81,10 @@ class BottomBarScreen extends StatelessWidget {
                     selectedAssetPath: AppIcons.filledhome,
 
                   ),
-                  label: 'Home',
+                  label: AppText.hometext,
                   labelStyle: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(16),
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 CurvedNavigationBarItem(
@@ -91,10 +93,10 @@ class BottomBarScreen extends StatelessWidget {
                     isSelected: selectedIndex == 1,
                      selectedAssetPath: AppIcons.filledusage,
                   ),
-                  label: 'Usage',
+                  label: AppText.usage,
                   labelStyle: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(16),
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 CurvedNavigationBarItem(
@@ -103,10 +105,10 @@ class BottomBarScreen extends StatelessWidget {
                     isSelected: selectedIndex == 2,
                      selectedAssetPath: AppIcons.filledTools,
                   ),
-                  label: 'Tools',
+                  label: AppText.tools,
                   labelStyle: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(16),
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
                 CurvedNavigationBarItem(
@@ -115,10 +117,10 @@ class BottomBarScreen extends StatelessWidget {
                     isSelected: selectedIndex == 3, 
                     selectedAssetPath: AppIcons.filledprofile,
                   ),
-                  label: 'Profile',
+                  label: AppText.profiletext,
                   labelStyle: AppTextStyles.bodySmall.copyWith(
                     fontSize: getFont(16),
-                    color: Colors.white,
+                    color: AppColors.white,
                   ),
                 ),
               ],

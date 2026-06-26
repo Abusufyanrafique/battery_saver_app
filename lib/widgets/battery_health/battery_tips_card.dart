@@ -90,7 +90,7 @@ class BatteryTipsCard extends StatelessWidget {
 
               const Icon(
                 Icons.chevron_right,
-                color: Color(0xFF55D0FF),
+                color: AppColors.checkiconcolor,
                 size: 30,
               ),
             ],
