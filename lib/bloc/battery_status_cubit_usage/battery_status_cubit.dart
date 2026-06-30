@@ -5,9 +5,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-/// ─────────────────────────────────────────────
+/// ────────────────────────────────────────────
 /// DATA MODEL
-/// ─────────────────────────────────────────────
+/// ────────────────────────────────────────────
 
 class BatteryStatusData extends Equatable {
   final int level;
@@ -172,7 +172,7 @@ class BatteryStatusCubit extends Cubit<BatteryStatusState> {
         final rawHealth = await _batteryHealthChannel.invokeMethod('getBatteryHealth');
         healthMap = Map<String, dynamic>.from(rawHealth);
       } on PlatformException catch (e) {
-        print("⚠️ Battery health fetch failed (non-fatal): ${e.message}");
+      //  debugprint("⚠️ Battery health fetch failed (non-fatal): ${e.message}");
       }
 
       final combinedMap = <String, dynamic>{}

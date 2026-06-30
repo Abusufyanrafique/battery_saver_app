@@ -51,7 +51,7 @@ class DeviceDataService {
 
       print("💾 TOTAL BYTES: $totalBytes");
 
-      // ✅ Naye CleanResultData ke saath — extra fields nahi
+      
       return CleanResultData(
         junkRemoved:   toMB(junkBytes),
         appsClosed:    '$appsCount Apps',
